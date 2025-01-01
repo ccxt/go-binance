@@ -12,10 +12,13 @@ import (
 var (
 	// Endpoints
 	BaseWsMainURL          = "wss://stream.binance.com:9443/ws"
+	BaseUSWsMainURL          = "wss://stream.binance.us:9443/ws"
 	BaseWsTestnetURL       = "wss://testnet.binance.vision/ws"
 	BaseCombinedMainURL    = "wss://stream.binance.com:9443/stream?streams="
+	BaseUSCombinedMainURL    = "wss://stream.binance.us:9443/stream?streams="
 	BaseCombinedTestnetURL = "wss://testnet.binance.vision/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-api.binance.com:443/ws-api/v3"
+	BaseUSWsApiMainURL       = "wss://ws-api.binance.us:443/ws-api/v3"
 	BaseWsApiTestnetURL    = "wss://testnet.binance.vision/ws-api/v3"
 
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
@@ -45,6 +48,9 @@ func getWsEndpoint() string {
 	if UseTestnet {
 		return BaseWsTestnetURL
 	}
+	if UseUSDomain {
+		return BaseUSWsMainURL
+	}
 	return BaseWsMainURL
 }
 
@@ -52,6 +58,9 @@ func getWsEndpoint() string {
 func getCombinedEndpoint() string {
 	if UseTestnet {
 		return BaseCombinedTestnetURL
+	}
+	if UseUSDomain {
+		return BaseUSCombinedMainURL
 	}
 	return BaseCombinedMainURL
 }
@@ -875,6 +884,9 @@ func WsApiInitReadWriteConn() (*websocket.Conn, error) {
 func getWsApiEndpoint() string {
 	if UseTestnet {
 		return BaseWsApiTestnetURL
+	}
+	if UseUSDomain {
+		return BaseUSWsApiMainURL
 	}
 	return BaseWsApiMainURL
 }

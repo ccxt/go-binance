@@ -354,6 +354,17 @@ binance.UseTestnet = true
 client := binance.NewClient(apiKey, secretKey)
 ```
 
+Use the `binance.UseUSDomain` flag to switch domain to binance.us, including both client creation and the wesockets methods.
+```go
+import (
+    "github.com/adshao/go-binance/v2"
+)
+
+binance.UseUSDomain = true
+client := binance.NewClient(apiKey, secretKey)
+```
+
+
 #### Futures (usd(s)-m futures)
 
 Use the `futures.UseTestnet` flag before calling the client creation and the websockets methods
