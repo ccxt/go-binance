@@ -22,30 +22,27 @@ func wsCombinedDepthAndTradeServe(endpoint string, depthHandler WsDepthHandler, 
 		eventType := j.Get("e").MustString()
 		if eventType == "depthUpdate" {
 			event := new(WsDepthEvent)
-			stream := j.Get("stream").MustString()
-			symbol := strings.Split(stream, "@")[0]
-			event.Symbol = strings.ToUpper(symbol)
-			data := j.Get("data").MustMap()
-			event.Time, _ = data["E"].(json.Number).Int64()
-			event.LastUpdateID, _ = data["u"].(json.Number).Int64()
-			event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
-			bidsLen := len(data["b"].([]interface{}))
+			event.Event = j.Get("e").MustString()
+			event.Time = j.Get("E").MustInt64()
+			event.Symbol = j.Get("s").MustString()
+			event.LastUpdateID = j.Get("u").MustInt64()
+			event.FirstUpdateID = j.Get("U").MustInt64()
+			bidsLen := len(j.Get("b").MustArray())
 			event.Bids = make([]Bid, bidsLen)
 			for i := 0; i < bidsLen; i++ {
-				item := data["b"].([]interface{})[i].([]interface{})
+				item := j.Get("b").GetIndex(i)
 				event.Bids[i] = Bid{
-					Price:    item[0].(string),
-					Quantity: item[1].(string),
+					Price:    item.GetIndex(0).MustString(),
+					Quantity: item.GetIndex(1).MustString(),
 				}
 			}
-			asksLen := len(data["a"].([]interface{}))
+			asksLen := len(j.Get("a").MustArray())
 			event.Asks = make([]Ask, asksLen)
 			for i := 0; i < asksLen; i++ {
-	
-				item := data["a"].([]interface{})[i].([]interface{})
+				item := j.Get("a").GetIndex(i)
 				event.Asks[i] = Ask{
-					Price:    item[0].(string),
-					Quantity: item[1].(string),
+					Price:    item.GetIndex(0).MustString(),
+					Quantity: item.GetIndex(1).MustString(),
 				}
 			}
 			depthHandler(event)
