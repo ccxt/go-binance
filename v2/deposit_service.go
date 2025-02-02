@@ -64,7 +64,7 @@ func (s *ListDepositsService) TxID(id string) *ListDepositsService {
 }
 
 // Do sends the request.
-func (s *ListDepositsService) Do(ctx context.Context) (res []*Deposit, err error) {
+func (s *ListDepositsService) Do(ctx context.Context, opts ...RequestOption) (res []*Deposit, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/sapi/v1/capital/deposit/hisrec",
@@ -92,7 +92,7 @@ func (s *ListDepositsService) Do(ctx context.Context) (res []*Deposit, err error
 		r.setParam("txId", *s.txId)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return
 	}
@@ -141,7 +141,7 @@ func (s *GetDepositsAddressService) Network(network string) *GetDepositsAddressS
 }
 
 // Do sends the request.
-func (s *GetDepositsAddressService) Do(ctx context.Context) (*GetDepositAddressResponse, error) {
+func (s *GetDepositsAddressService) Do(ctx context.Context, opts ...RequestOption) (*GetDepositAddressResponse, error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/sapi/v1/capital/deposit/address",
@@ -152,7 +152,7 @@ func (s *GetDepositsAddressService) Do(ctx context.Context) (*GetDepositAddressR
 		r.setParam("network", *s.network)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}

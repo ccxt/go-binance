@@ -6,20 +6,20 @@ import (
 	"net/http"
 )
 
-// GetPositionRiskService get account balance
-type GetPositionRiskV2Service struct {
+// GetPositionRiskV3Service get account balance
+type GetPositionRiskService struct {
 	c      *Client
 	symbol string
 }
 
 // Symbol set symbol
-func (s *GetPositionRiskV2Service) Symbol(symbol string) *GetPositionRiskV2Service {
+func (s *GetPositionRiskService) Symbol(symbol string) *GetPositionRiskService {
 	s.symbol = symbol
 	return s
 }
 
 // Do send request
-func (s *GetPositionRiskV2Service) Do(ctx context.Context, opts ...RequestOption) (res []*PositionRiskV2, err error) {
+func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) (res []*PositionRisk, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v2/positionRisk",
@@ -30,18 +30,18 @@ func (s *GetPositionRiskV2Service) Do(ctx context.Context, opts ...RequestOption
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*PositionRiskV2{}, err
+		return []*PositionRisk{}, err
 	}
-	res = make([]*PositionRiskV2, 0)
+	res = make([]*PositionRisk, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*PositionRiskV2{}, err
+		return []*PositionRisk{}, err
 	}
 	return res, nil
 }
 
 // PositionRisk define position risk info
-type PositionRiskV2 struct {
+type PositionRisk struct {
 	EntryPrice       string `json:"entryPrice"`
 	BreakEvenPrice   string `json:"breakEvenPrice"`
 	MarginType       string `json:"marginType"`
@@ -59,25 +59,25 @@ type PositionRiskV2 struct {
 	IsolatedWallet   string `json:"isolatedWallet"`
 }
 
-type GetPositionRiskService struct {
+type GetPositionRiskV3Service struct {
 	c          *Client
 	symbol     string
 	recvWindow *int64
 }
 
 // Symbol set symbol
-func (s *GetPositionRiskService) Symbol(symbol string) *GetPositionRiskService {
+func (s *GetPositionRiskV3Service) Symbol(symbol string) *GetPositionRiskV3Service {
 	s.symbol = symbol
 	return s
 }
 
-func (s *GetPositionRiskService) RecvWindow(rw int64) *GetPositionRiskService {
+func (s *GetPositionRiskV3Service) RecvWindow(rw int64) *GetPositionRiskV3Service {
 	s.recvWindow = &rw
 	return s
 }
 
 // Do send request
-func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) (res []*PositionRisk, err error) {
+func (s *GetPositionRiskV3Service) Do(ctx context.Context, opts ...RequestOption) (res []*PositionRiskV3, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v3/positionRisk",
@@ -92,18 +92,18 @@ func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) 
 
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*PositionRisk{}, err
+		return []*PositionRiskV3{}, err
 	}
-	res = make([]*PositionRisk, 0)
+	res = make([]*PositionRiskV3, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*PositionRisk{}, err
+		return []*PositionRiskV3{}, err
 	}
 	return res, nil
 }
 
-// PositionRisk define position risk info
-type PositionRisk struct {
+// PositionRiskV3 define position risk info
+type PositionRiskV3 struct {
 	Symbol                 string `json:"symbol"`
 	PositionSide           string `json:"positionSide"`
 	PositionAmt            string `json:"positionAmt"`

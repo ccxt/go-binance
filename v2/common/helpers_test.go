@@ -9,55 +9,101 @@ import (
 func TestAmountToLotSize(t *testing.T) {
 	assert := assert.New(t)
 	type args struct {
-		lot       float64
+		minQty    string
+		stepSize  string
+		amount    string
 		precision int
-		amount    float64
 	}
 	tests := []struct {
-		name string
-		args args
-		want float64
+		name   string
+		args   args
+		expect string
 	}{
 		{
 			name: "test with lot of zero and invalid amount",
 			args: args{
-				lot:       0.00100000,
+				minQty:    "0.01",
+				stepSize:  "0.01",
+				amount:    "0.001",
 				precision: 8,
-				amount:    0.00010000,
 			},
-			want: 0,
+			expect: "0",
 		},
 		{
 			name: "test with lot",
 			args: args{
-				lot:       0.00100000,
-				precision: 3,
-				amount:    1.39,
+				minQty:    "0.01",
+				stepSize:  "0.01",
+				amount:    "1.39",
+				precision: 8,
 			},
-			want: 1.389,
+			expect: "1.39",
+		},
+		{
+			name: "test with exact precision",
+			args: args{
+				minQty:    "0.01",
+				stepSize:  "0.01",
+				amount:    "1.39",
+				precision: 2,
+			},
+			expect: "1.39",
+		},
+		{
+			name: "test with small precision",
+			args: args{
+				minQty:    "0.01",
+				stepSize:  "0.01",
+				amount:    "1.39",
+				precision: 1,
+			},
+			expect: "1.3",
+		},
+		{
+			name: "test with zero precision",
+			args: args{
+				minQty:    "0.01",
+				stepSize:  "0.01",
+				amount:    "1.39",
+				precision: 0,
+			},
+			expect: "1",
 		},
 		{
 			name: "test with big decimal",
 			args: args{
-				lot:       0.00100000,
+				minQty:    "0.01",
+				stepSize:  "0.02",
+				amount:    "11.31232419283240912834434",
 				precision: 8,
-				amount:    11.31232419283240912834434,
 			},
-			want: 11.312,
+			expect: "11.31",
 		},
 		{
 			name: "test with big number",
 			args: args{
-				lot:       0.0010000,
+				minQty:    "0.0001",
+				stepSize:  "0.02",
+				amount:    "11232821093480213.31232419283240912834434",
 				precision: 8,
-				amount:    11232821093480213.31232419283240912834434,
 			},
-			want: 11232821093480213.3123,
+			expect: "11232821093480213.3001",
+		},
+		{
+			name: "test with small decimal",
+			args: args{
+				minQty:    "0.0000010",
+				stepSize:  "0.0000010",
+				amount:    "0.003923153000000002",
+				precision: 7,
+			},
+			expect: "0.003923",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(tt.want, AmountToLotSize(tt.args.lot, tt.args.precision, tt.args.amount))
+			assert.Equal(tt.expect, AmountToLotSize(tt.args.amount, tt.args.minQty, tt.args.stepSize, tt.args.precision))
 		})
 	}
 }

@@ -52,7 +52,6 @@ func (s *GetRebateNewUserService) Do(ctx context.Context, opts ...RequestOption)
 	return res, nil
 }
 
-// PositionRisk define position risk info
 type RebateNewUser struct {
 	BrokerId      string `json:"brokerId"`
 	RebateWorking bool   `json:"rebateWorking"`

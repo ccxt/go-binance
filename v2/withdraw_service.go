@@ -70,7 +70,7 @@ func (s *CreateWithdrawService) Name(v string) *CreateWithdrawService {
 }
 
 // Do sends the request.
-func (s *CreateWithdrawService) Do(ctx context.Context) (*CreateWithdrawResponse, error) {
+func (s *CreateWithdrawService) Do(ctx context.Context, opts ...RequestOption) (*CreateWithdrawResponse, error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: "/sapi/v1/capital/withdraw/apply",
@@ -95,7 +95,7 @@ func (s *CreateWithdrawService) Do(ctx context.Context) (*CreateWithdrawResponse
 		r.setParam("name", *v)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (s *ListWithdrawsService) Limit(limit int) *ListWithdrawsService {
 }
 
 // Do sends the request.
-func (s *ListWithdrawsService) Do(ctx context.Context) (res []*Withdraw, err error) {
+func (s *ListWithdrawsService) Do(ctx context.Context, opts ...RequestOption) (res []*Withdraw, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/sapi/v1/capital/withdraw/history",
@@ -199,7 +199,7 @@ func (s *ListWithdrawsService) Do(ctx context.Context) (res []*Withdraw, err err
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return
 	}

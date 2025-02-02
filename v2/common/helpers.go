@@ -3,12 +3,21 @@ package common
 import (
 	"bytes"
 	"fmt"
-	"math"
+
+	"github.com/shopspring/decimal"
 )
 
-// AmountToLotSize converts an amount to a lot sized amount
-func AmountToLotSize(lot float64, precision int, amount float64) float64 {
-	return math.Trunc(math.Floor(amount/lot)*lot*math.Pow10(precision)) / math.Pow10(precision)
+// AmountToLotSize convert amount to lot size
+func AmountToLotSize(amount, minQty, stepSize string, precision int) string {
+	amountDec := decimal.RequireFromString(amount)
+	minQtyDec := decimal.RequireFromString(minQty)
+	baseAmountDec := amountDec.Sub(minQtyDec)
+	if baseAmountDec.LessThan(decimal.Zero) {
+		return "0"
+	}
+	stepSizeDec := decimal.RequireFromString(stepSize)
+	baseAmountDec = baseAmountDec.Div(stepSizeDec).Truncate(0).Mul(stepSizeDec)
+	return baseAmountDec.Add(minQtyDec).Truncate(int32(precision)).String()
 }
 
 // ToJSONList convert v to json list if v is a map

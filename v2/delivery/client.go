@@ -496,3 +496,8 @@ func (c *Client) NewGetPositionModeService() *GetPositionModeService {
 func (c *Client) NewGetFundingInfoService() *GetFundingInfoService {
 	return &GetFundingInfoService{c: c}
 }
+
+// NewFundingRateService init funding rate service
+func (c *Client) NewFundingRateService() *FundingRateService {
+	return &FundingRateService{c: c}
+}

@@ -44,12 +44,12 @@ func (s *positionRiskServiceTestSuite) TestGetPositionRiskV2() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewGetPositionRiskV2Service().Symbol(symbol).
+	res, err := s.client.NewGetPositionRiskService().Symbol(symbol).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)
 	r.Len(res, 1)
-	e := &PositionRiskV2{
+	e := &PositionRisk{
 		EntryPrice:       "10359.38000",
 		BreakEvenPrice:   "10387.38000",
 		MarginType:       "isolated",
@@ -67,7 +67,7 @@ func (s *positionRiskServiceTestSuite) TestGetPositionRiskV2() {
 	s.assertPositionRiskV2Equal(e, res[0])
 }
 
-func (s *positionRiskServiceTestSuite) assertPositionRiskV2Equal(e, a *PositionRiskV2) {
+func (s *positionRiskServiceTestSuite) assertPositionRiskV2Equal(e, a *PositionRisk) {
 	r := s.r()
 	r.Equal(e.EntryPrice, a.EntryPrice, "EntryPrice")
 	r.Equal(e.BreakEvenPrice, a.BreakEvenPrice, "BreakEvenPrice")
@@ -121,12 +121,12 @@ func (s *positionRiskServiceTestSuite) TestGetPositionRisk() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewGetPositionRiskService().Symbol(symbol).
+	res, err := s.client.NewGetPositionRiskV3Service().Symbol(symbol).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)
 	r.Len(res, 1)
-	e := &PositionRisk{
+	e := &PositionRiskV3{
 		Symbol:                 "BTCUSDT",
 		PositionSide:           "BOTH",
 		PositionAmt:            "0.000",
@@ -151,7 +151,7 @@ func (s *positionRiskServiceTestSuite) TestGetPositionRisk() {
 	s.assertPositionRiskEqual(e, res[0])
 }
 
-func (s *positionRiskServiceTestSuite) assertPositionRiskEqual(e, a *PositionRisk) {
+func (s *positionRiskServiceTestSuite) assertPositionRiskEqual(e, a *PositionRiskV3) {
 	r := s.r()
 	r.Equal(e.Symbol, a.Symbol, "Symbol")
 	r.Equal(e.PositionSide, a.PositionSide, "PositionSide")
