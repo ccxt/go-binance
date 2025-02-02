@@ -285,7 +285,7 @@ func (s *websocketServiceTestSuite) TestDepthServe() {
 			},
 		}
 		s.assertWsDepthEventEqual(e, event)
-	}, "5", func(err error) {
+	}, func(err error) {
 		s.r().EqualError(err, fakeErrMsg)
 	})
 	s.r().NoError(err)
@@ -358,7 +358,7 @@ func (s *websocketServiceTestSuite) TestDepthServe100Ms() {
 			},
 		}
 		s.assertWsDepthEventEqual(e, event)
-	}, "5", func(err error) {
+	}, func(err error) {
 		s.r().EqualError(err, fakeErrMsg)
 	})
 	s.r().NoError(err)
