@@ -177,8 +177,8 @@ func WsDepthServe(symbol string, handler WsDepthHandler, levels string, errHandl
 }
 
 // WsDepthServe100Ms serve websocket depth handler with a symbol, using 100msec updates
-func WsDepthServe100Ms(symbol string, handler WsDepthHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@depth@100ms", getWsEndpoint(), strings.ToLower(symbol))
+func WsDepthServe100Ms(symbol string, handler WsDepthHandler, levels string, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/%s@depth%s@100ms", getWsEndpoint(), strings.ToLower(symbol), levels)
 	return wsDepthServe(endpoint, handler, errHandler)
 }
 
