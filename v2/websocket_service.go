@@ -12,13 +12,13 @@ import (
 var (
 	// Endpoints
 	BaseWsMainURL          = "wss://stream.binance.com:9443/ws"
-	BaseUSWsMainURL          = "wss://stream.binance.us:9443/ws"
+	BaseUSWsMainURL        = "wss://stream.binance.us:9443/ws"
 	BaseWsTestnetURL       = "wss://testnet.binance.vision/ws"
 	BaseCombinedMainURL    = "wss://stream.binance.com:9443/stream?streams="
-	BaseUSCombinedMainURL    = "wss://stream.binance.us:9443/stream?streams="
+	BaseUSCombinedMainURL  = "wss://stream.binance.us:9443/stream?streams="
 	BaseCombinedTestnetURL = "wss://testnet.binance.vision/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-api.binance.com:443/ws-api/v3"
-	BaseUSWsApiMainURL       = "wss://ws-api.binance.us:443/ws-api/v3"
+	BaseUSWsApiMainURL     = "wss://ws-api.binance.us:443/ws-api/v3"
 	BaseWsApiTestnetURL    = "wss://testnet.binance.vision/ws-api/v3"
 
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
@@ -171,8 +171,8 @@ func WsCombinedPartialDepthServe(symbolLevels map[string]string, handler WsParti
 type WsDepthHandler func(event *WsDepthEvent)
 
 // WsDepthServe serve websocket depth handler with a symbol, using 1sec updates
-func WsDepthServe(symbol string, handler WsDepthHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@depth", getWsEndpoint(), strings.ToLower(symbol))
+func WsDepthServe(symbol string, handler WsDepthHandler, levels string, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/%s@depth%s", getWsEndpoint(), strings.ToLower(symbol), levels)
 	return wsDepthServe(endpoint, handler, errHandler)
 }
 
