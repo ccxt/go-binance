@@ -125,6 +125,7 @@ type FuturesAlgoOrderStatusType string
 // Endpoints
 var (
 	BaseAPIMainURL    = "https://api.binance.com"
+	BaseAPIMainUSURL  = "https://api.binance.us"
 	BaseAPITestnetURL = "https://testnet.binance.vision"
 )
 
@@ -135,6 +136,9 @@ type MarginAccountBorrowRepayType string
 
 // UseTestnet switch all the API endpoints from production to the testnet
 var UseTestnet = false
+
+// UseUSDomain switch all the API endpoints from production to the binance.us
+var UseUSDomain = false
 
 // Global enums
 const (
@@ -353,6 +357,9 @@ func newJSON(data []byte) (j *simplejson.Json, err error) {
 func getAPIEndpoint() string {
 	if UseTestnet {
 		return BaseAPITestnetURL
+	}
+	if UseUSDomain {
+		return BaseAPIMainUSURL
 	}
 	return BaseAPIMainURL
 }
