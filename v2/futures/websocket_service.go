@@ -36,6 +36,11 @@ var (
 	ProxyUrl                            = ""
 )
 
+// UseUSDomain switch all the WS streams from production to the binance.us
+// currently future websocket streams are not supported on US domain, so this is set to constantly false
+const UseUSDomain = false
+
+
 func getWsProxyUrl() *string {
 	if ProxyUrl == "" {
 		return nil
