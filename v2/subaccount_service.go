@@ -341,12 +341,12 @@ type SubAccount struct {
 
 // ManagedSubAccountDepositService
 // Deposit Assets Into The Managed Sub-account（For Investor Master Account）
-// https://binance-docs.github.io/apidocs/spot/en/#deposit-assets-into-the-managed-sub-account-for-investor-master-account
+// https://developers.binance.com/docs/sub_account/managed-sub-account
 type ManagedSubAccountDepositService struct {
 	c       *Client
 	toEmail string
 	asset   string
-	amount  float64
+	amount  string
 }
 
 func (s *ManagedSubAccountDepositService) ToEmail(email string) *ManagedSubAccountDepositService {
@@ -359,7 +359,7 @@ func (s *ManagedSubAccountDepositService) Asset(asset string) *ManagedSubAccount
 	return s
 }
 
-func (s *ManagedSubAccountDepositService) Amount(amount float64) *ManagedSubAccountDepositService {
+func (s *ManagedSubAccountDepositService) Amount(amount string) *ManagedSubAccountDepositService {
 	s.amount = amount
 	return s
 }
@@ -371,7 +371,7 @@ type ManagedSubAccountDepositResponse struct {
 // Do send request
 func (s *ManagedSubAccountDepositService) Do(ctx context.Context, opts ...RequestOption) (*ManagedSubAccountDepositResponse, error) {
 	r := &request{
-		method:   "POST",
+		method:   http.MethodPost,
 		endpoint: "/sapi/v1/managed-subaccount/deposit",
 		secType:  secTypeSigned,
 	}
@@ -395,12 +395,12 @@ func (s *ManagedSubAccountDepositService) Do(ctx context.Context, opts ...Reques
 
 // ManagedSubAccountWithdrawalService
 // Withdrawal Assets From The Managed Sub-account（For Investor Master Account）
-// https://binance-docs.github.io/apidocs/spot/en/#withdrawl-assets-from-the-managed-sub-account-for-investor-master-account
+// https://developers.binance.com/docs/sub_account/managed-sub-account/Withdrawl-Assets-From-The-Managed-Sub-account
 type ManagedSubAccountWithdrawalService struct {
 	c            *Client
 	fromEmail    string
 	asset        string
-	amount       float64
+	amount       string
 	transferDate int64 // Withdrawals is automatically occur on the transfer date(UTC0). If a date is not selected, the withdrawal occurs right now
 }
 
@@ -414,7 +414,7 @@ func (s *ManagedSubAccountWithdrawalService) Asset(asset string) *ManagedSubAcco
 	return s
 }
 
-func (s *ManagedSubAccountWithdrawalService) Amount(amount float64) *ManagedSubAccountWithdrawalService {
+func (s *ManagedSubAccountWithdrawalService) Amount(amount string) *ManagedSubAccountWithdrawalService {
 	s.amount = amount
 	return s
 }
@@ -431,7 +431,7 @@ type ManagedSubAccountWithdrawalResponse struct {
 // Do send request
 func (s *ManagedSubAccountWithdrawalService) Do(ctx context.Context, opts ...RequestOption) (*ManagedSubAccountWithdrawalResponse, error) {
 	r := &request{
-		method:   "POST",
+		method:   http.MethodPost,
 		endpoint: "/sapi/v1/managed-subaccount/withdraw",
 		secType:  secTypeSigned,
 	}

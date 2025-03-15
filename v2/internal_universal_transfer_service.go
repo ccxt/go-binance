@@ -3,20 +3,21 @@ package binance
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 )
 
 // InternalUniversalTransferService Universal Transfer (For Master Account)
-// https://binance-docs.github.io/apidocs/spot/en/#universal-transfer-for-master-account
+// https://developers.binance.com/docs/sub_account/asset-management/Universal-Transfer
 type InternalUniversalTransferService struct {
 	c               *Client
-	fromEmail       *string
-	toEmail         *string
-	fromAccountType *string
-	toAccountType   *string
+	fromEmail       *string // Mandatory No. Transfer from master account by default if fromEmail is not sent.
+	toEmail         *string // Mandatory No. Transfer to master account by default if toEmail is not sent.
+	fromAccountType string  // Mandatory Yes. "SPOT","USDT_FUTURE","COIN_FUTURE","MARGIN"(Cross),"ISOLATED_MARGIN"
+	toAccountType   string  // Mandatory Yes. "SPOT","USDT_FUTURE","COIN_FUTURE","MARGIN"(Cross),"ISOLATED_MARGIN"
 	clientTranId    *string
 	symbol          *string
 	asset           string
-	amount          float64
+	amount          string
 }
 
 func (s *InternalUniversalTransferService) FromEmail(v string) *InternalUniversalTransferService {
@@ -30,12 +31,12 @@ func (s *InternalUniversalTransferService) ToEmail(v string) *InternalUniversalT
 }
 
 func (s *InternalUniversalTransferService) FromAccountType(v string) *InternalUniversalTransferService {
-	s.fromAccountType = &v
+	s.fromAccountType = v
 	return s
 }
 
 func (s *InternalUniversalTransferService) ToAccountType(v string) *InternalUniversalTransferService {
-	s.toAccountType = &v
+	s.toAccountType = v
 	return s
 }
 
@@ -49,7 +50,7 @@ func (s *InternalUniversalTransferService) Asset(v string) *InternalUniversalTra
 	return s
 }
 
-func (s *InternalUniversalTransferService) Amount(v float64) *InternalUniversalTransferService {
+func (s *InternalUniversalTransferService) Amount(v string) *InternalUniversalTransferService {
 	s.amount = v
 	return s
 }
@@ -61,7 +62,7 @@ func (s *InternalUniversalTransferService) ClientTranId(v string) *InternalUnive
 
 func (s *InternalUniversalTransferService) Do(ctx context.Context, opts ...RequestOption) (*InternalUniversalTransferResponse, error) {
 	r := &request{
-		method:   "POST",
+		method:   http.MethodPost,
 		endpoint: "/sapi/v1/sub-account/universalTransfer",
 		secType:  secTypeSigned,
 	}
@@ -73,12 +74,8 @@ func (s *InternalUniversalTransferService) Do(ctx context.Context, opts ...Reque
 	}
 	r.setParam("asset", s.asset)
 	r.setParam("amount", s.amount)
-	if v := s.fromAccountType; v != nil {
-		r.setParam("fromAccountType", *v)
-	}
-	if v := s.toAccountType; v != nil {
-		r.setParam("toAccountType", *v)
-	}
+	r.setParam("fromAccountType", s.fromAccountType)
+	r.setParam("toAccountType", s.toAccountType)
 	if v := s.clientTranId; v != nil {
 		r.setParam("clientTranId", *v)
 	}

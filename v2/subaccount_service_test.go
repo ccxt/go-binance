@@ -117,7 +117,7 @@ func (s *subAccountServiceTestSuite) TestSubManagedSubAccountDepositService() {
 
 	email := "testsub@gmail.com"
 	asset := "USDT"
-	amount := 1.0
+	amount := "1.0"
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setParams(params{
 			"toEmail": email,
@@ -146,7 +146,7 @@ func (s *subAccountServiceTestSuite) TestSubManagedSubAccountWithdrawalService()
 
 	email := "testsub@gmail.com"
 	asset := "USDT"
-	amount := 1.0
+	amount := "1.0"
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setParams(params{
 			"fromEmail": email,
