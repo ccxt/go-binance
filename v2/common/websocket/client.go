@@ -34,6 +34,9 @@ var (
 
 	// KeepAlivePingDeadline defines deadline to send ping frame
 	KeepAlivePingDeadline = 10 * time.Second
+
+	// WaitCheckInternal defines interval for ticker when it checks pending requests while stop application
+	WaitCheckInternal = 300 * time.Millisecond
 )
 
 // messageId define id field of request/response
@@ -206,31 +209,22 @@ func (c *client) read() {
 // wait until all responses received
 // make sure that you are not sending requests
 func (c *client) wait(timeout time.Duration) {
-	doneC := make(chan struct{})
+	timeoutTimer := time.NewTimer(timeout)
+	defer timeoutTimer.Stop()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	checkTicker := time.NewTicker(WaitCheckInternal)
+	defer checkTicker.Stop()
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
+	for {
+		select {
+		case <-checkTicker.C:
+			if c.requestsList.Len() == 0 {
 				return
-			default:
-				if c.requestsList.Len() == 0 {
-					doneC <- struct{}{}
-					return
-				}
 			}
+		case <-timeoutTimer.C:
+			return
 		}
-	}()
-
-	t := time.After(timeout)
-	select {
-	case <-t:
-	case <-doneC:
 	}
-
-	cancel()
 }
 
 // handleReconnect waits for reconnect signal and starts reconnect
