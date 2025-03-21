@@ -37,6 +37,12 @@ function unittest() {
     )
 }
 
+function integration() {
+    echo "Running integration test ..."
+    cd v2
+    go test -v -tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
+}
+
 if [[ -z $ACTION ]]; then
     format
     # lint

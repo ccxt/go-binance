@@ -19,6 +19,9 @@ extend-ignore-re=[
     "[Cc]ummulative",
     "OTU",
     "[Tt]ransfered",
+    "DELIVERED_SETTELMENT",
+    "SETTELMENT",
+    "[Aa]ccured"
 ]
 check-filename = true
 
