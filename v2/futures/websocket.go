@@ -87,19 +87,26 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
 
 	lastResponse := time.Now()
-	c.SetPongHandler(func(msg string) error {
+
+	c.SetPingHandler(func(pingData string) error {
+		// Respond with Pong using the server's PING payload
+		err := c.WriteControl(
+			websocket.PongMessage,
+			[]byte(pingData),
+			time.Now().Add(WebsocketPongTimeout), // Short deadline to ensure timely response
+		)
+		if err != nil {
+			return err
+		}
+
 		lastResponse = time.Now()
+
 		return nil
 	})
 
 	go func() {
 		defer ticker.Stop()
 		for {
-			deadline := time.Now().Add(10 * time.Second)
-			err := c.WriteControl(websocket.PingMessage, []byte{}, deadline)
-			if err != nil {
-				return
-			}
 			<-ticker.C
 			if time.Since(lastResponse) > timeout {
 				c.Close()

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/adshao/go-binance/v2/common"
 )
 
 // CreateMarginOrderService create order
@@ -135,6 +137,8 @@ func (s *CreateMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSpotId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice

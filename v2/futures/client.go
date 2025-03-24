@@ -100,10 +100,11 @@ const (
 	OrderTypeTrailingStopMarket OrderType = "TRAILING_STOP_MARKET"
 	OrderTypeLiquidation        OrderType = "LIQUIDATION"
 
-	TimeInForceTypeGTC TimeInForceType = "GTC" // Good Till Cancel
-	TimeInForceTypeIOC TimeInForceType = "IOC" // Immediate or Cancel
-	TimeInForceTypeFOK TimeInForceType = "FOK" // Fill or Kill
-	TimeInForceTypeGTX TimeInForceType = "GTX" // Good Till Crossing (Post Only)
+	TimeInForceTypeGTC    TimeInForceType = "GTC"     // Good Till Cancel
+	TimeInForceTypeGTEGTC TimeInForceType = "GTE_GTC" // https://github.com/ccxt/go-binance/issues/681
+	TimeInForceTypeIOC    TimeInForceType = "IOC"     // Immediate or Cancel
+	TimeInForceTypeFOK    TimeInForceType = "FOK"     // Fill or Kill
+	TimeInForceTypeGTX    TimeInForceType = "GTX"     // Good Till Crossing (Post Only)
 
 	NewOrderRespTypeACK    NewOrderRespType = "ACK"
 	NewOrderRespTypeRESULT NewOrderRespType = "RESULT"

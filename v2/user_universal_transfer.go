@@ -17,12 +17,12 @@ import (
 
 // CreateUserUniversalTransferService submits a transfer request.
 //
-// See https://binance-docs.github.io/apidocs/spot/en/#user-universal-transfer-user_data
+// See https://developers.binance.com/docs/wallet/asset/user-universal-transfer
 type CreateUserUniversalTransferService struct {
 	c          *Client
 	types      UserUniversalTransferType
 	asset      string
-	amount     float64
+	amount     string // type: DECIMAL
 	fromSymbol *string
 	toSymbol   *string
 }
@@ -40,18 +40,18 @@ func (s *CreateUserUniversalTransferService) Asset(v string) *CreateUserUniversa
 }
 
 // Amount sets the Amount parameter (MANDATORY).
-func (s *CreateUserUniversalTransferService) Amount(v float64) *CreateUserUniversalTransferService {
+func (s *CreateUserUniversalTransferService) Amount(v string) *CreateUserUniversalTransferService {
 	s.amount = v
 	return s
 }
 
-// fromSymbol sets the fromSymbol parameter
+// FromSymbol sets the fromSymbol parameter
 func (s *CreateUserUniversalTransferService) FromSymbol(v string) *CreateUserUniversalTransferService {
 	s.fromSymbol = &v
 	return s
 }
 
-// toSymbol sets the toSymbol parameter
+// ToSymbol sets the toSymbol parameter
 func (s *CreateUserUniversalTransferService) ToSymbol(v string) *CreateUserUniversalTransferService {
 	s.toSymbol = &v
 	return s

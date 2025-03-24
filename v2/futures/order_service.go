@@ -168,6 +168,8 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSwapId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice
@@ -1019,6 +1021,8 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 		}
 		if order.newClientOrderID != nil {
 			m["newClientOrderId"] = *order.newClientOrderID
+		} else {
+			m["newClientOrderId"] = common.GenerateSwapId()
 		}
 		if order.stopPrice != nil {
 			m["stopPrice"] = *order.stopPrice
@@ -1198,6 +1202,8 @@ func (s *ModifyBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 		}
 		if order.origClientOrderID != nil {
 			m["origClientOrderId"] = *order.origClientOrderID
+		} else {
+			m["newClientOrderId"] = common.GenerateSwapId()
 		}
 		if order.priceMatch != nil {
 			m["priceMatch"] = *order.priceMatch

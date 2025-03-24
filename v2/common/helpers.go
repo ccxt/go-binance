@@ -3,7 +3,9 @@ package common
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -50,4 +52,25 @@ func ToInt64(digit interface{}) (i int64, err error) {
 		return int64(floatVal), nil
 	}
 	return 0, fmt.Errorf("unexpected digit: %v", digit)
+}
+
+const (
+	SPOT_ORDER_PREFIX     = "x-HNA2TXFJ"
+	CONTRACT_ORDER_PREFIX = "x-Cb7ytekJ"
+)
+
+func BaseUID() string {
+	return strings.ReplaceAll(uuid.New().String(), "-", "")
+}
+
+func Uuid22() string {
+	return BaseUID()[:22]
+}
+
+func GenerateSpotId() string {
+	return SPOT_ORDER_PREFIX + Uuid22()
+}
+
+func GenerateSwapId() string {
+	return CONTRACT_ORDER_PREFIX + Uuid22()
 }

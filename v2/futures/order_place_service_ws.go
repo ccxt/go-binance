@@ -209,6 +209,8 @@ func (s *OrderPlaceWsRequest) buildParams() params {
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSwapId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice

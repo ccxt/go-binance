@@ -2,9 +2,11 @@ package futures
 
 import (
 	"context"
-	"github.com/adshao/go-binance/v2/common"
 	"strconv"
+	"strings"
 	"testing"
+
+	"github.com/adshao/go-binance/v2/common"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -114,6 +116,58 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 		PriceProtect:     priceProtect,
 	}
 	s.assertCreateOrderResponseEqual(e, res)
+}
+
+func (s *orderServiceTestSuite) TestCreateOrderId() {
+	data := []byte(`{
+		"cumQuote": "0",
+		"executedQty": "0",
+		"orderId": 22542179,
+		"origQty": "10",
+		"price": "10000",
+		"reduceOnly": false,
+		"side": "SELL",
+		"status": "NEW",
+		"stopPrice": "0",
+		"symbol": "BTCUSDT",
+		"timeInForce": "GTC",
+		"type": "LIMIT",
+		"updateTime": 1566818724722,
+		"workingType": "CONTRACT_PRICE",
+		"activatePrice": "1000",
+		"priceRate": "0.1",
+		"positionSide": "BOTH",
+		"closePosition": false,
+		"priceProtect": true
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	symbol := "BTCUSDT"
+	side := SideTypeSell
+	orderType := OrderTypeLimit
+	timeInForce := TimeInForceTypeGTC
+	positionSide := PositionSideTypeBoth
+	quantity := "10"
+	price := "10000"
+	reduceOnly := false
+	stopPrice := "0"
+	activationPrice := "1000"
+	callbackRate := "0.1"
+	workingType := WorkingTypeContractPrice
+	priceProtect := true
+	newOrderResponseType := NewOrderRespTypeRESULT
+	closePosition := false
+	s.assertReq(func(r *request) {
+		s.Assertions.True(strings.HasPrefix(r.form.Get("newClientOrderId"), "x-Cb7ytekJ"))
+	})
+	_, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
+		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).ClosePosition(closePosition).
+		ReduceOnly(reduceOnly).Price(price).
+		StopPrice(stopPrice).WorkingType(workingType).ActivationPrice(activationPrice).
+		CallbackRate(callbackRate).PositionSide(positionSide).
+		PriceProtect(priceProtect).NewOrderResponseType(newOrderResponseType).
+		Do(newContext())
+	s.r().NoError(err)
 }
 
 func (s *baseOrderTestSuite) assertCreateOrderResponseEqual(e, a *CreateOrderResponse) {

@@ -92,6 +92,163 @@ func (s *marginTestSuite) TestRepay() {
 	s.assertTransactionResponseEqual(e, res)
 }
 
+func (s *marginTestSuite) TestBorrowRepayBorrow() {
+	data := []byte(`{
+		"tranId": 100000001
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	asset := "BTC"
+	amount := "1.000"
+	_type := MarginAccountBorrow
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setFormParams(params{
+			"asset":      asset,
+			"amount":     amount,
+			"isIsolated": false,
+			"symbol":     "",
+			"type":       string(_type),
+		})
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewMarginBorrowRepayService().
+		Asset(asset).
+		Amount(amount).
+		Type(_type).
+		Do(newContext())
+	s.r().NoError(err)
+	e := &TransactionResponse{
+		TranID: 100000001,
+	}
+	s.assertTransactionResponseEqual(e, res)
+}
+
+func (s *marginTestSuite) TestBorrowRepayRepay() {
+	data := []byte(`{
+		"tranId": 100000001
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	asset := "BTC"
+	amount := "1.000"
+	_type := MarginAccountRepay
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setFormParams(params{
+			"asset":      asset,
+			"amount":     amount,
+			"isIsolated": false,
+			"symbol":     "",
+			"type":       string(_type),
+		})
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewMarginBorrowRepayService().
+		Asset(asset).
+		Amount(amount).
+		Type(_type).
+		Do(newContext())
+	s.r().NoError(err)
+	e := &TransactionResponse{
+		TranID: 100000001,
+	}
+	s.assertTransactionResponseEqual(e, res)
+}
+
+func (s *marginTestSuite) TestListBorrowRepay() {
+	data := []byte(`{
+		  "rows": [
+			  {
+				"type": "AUTO",
+				"isolatedSymbol": "BNBUSDT",
+				"amount": "14.00000000",
+				"asset": "BNB",   
+				"interest": "0.01866667",
+				"principal": "13.98133333",
+				"status": "CONFIRMED",
+				"timestamp": 1563438204000,
+				"txId": 2970933056
+			  }
+		  ],
+		  "total": 1
+		}
+	`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	asset := "BTC"
+	isolatedSymbol := "BTCUSDT"
+	txId := int64(100000001)
+	startTime := int64(1555056425000)
+	endTime := int64(1555056425001)
+	current := int64(1)
+	size := int64(10)
+	_type := MarginAccountRepay
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setParams(params{
+			"asset":          asset,
+			"isolatedSymbol": isolatedSymbol,
+			"txId":           txId,
+			"startTime":      startTime,
+			"endTime":        endTime,
+			"current":        current,
+			"size":           size,
+			"type":           _type,
+		})
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewListMarginBorrowRepayService().
+		Asset(asset).
+		IsolatedSymbol(isolatedSymbol).
+		TxId(txId).
+		StartTime(startTime).
+		EndTime(endTime).
+		Current(current).
+		Size(size).
+		Type(_type).
+		Do(newContext())
+	s.r().NoError(err)
+	e := &MarginBorrowRepayResponse{
+		Total: 1,
+		Rows: []MarginBorrowRepay{
+			{
+				Type:           "AUTO",
+				IsolatedSymbol: "BNBUSDT",
+				Amount:         "14.00000000",
+				Asset:          "BNB",
+				Interest:       "0.01866667",
+				Principal:      "13.98133333",
+				Status:         "CONFIRMED",
+				Timestamp:      1563438204000,
+				TxID:           2970933056,
+			},
+		},
+	}
+	s.assertListBorrowRepayResponseEqual(e, res)
+}
+
+func (s *marginTestSuite) assertListBorrowRepayResponseEqual(e, a *MarginBorrowRepayResponse) {
+	r := s.r()
+	r.Equal(e.Total, a.Total, "Total")
+	r.Len(a.Rows, len(e.Rows), "Rows")
+	for i := 0; i < len(e.Rows); i++ {
+		s.assertListBorrowRepayItemEqual(&e.Rows[i], &a.Rows[i])
+	}
+}
+
+func (s *marginTestSuite) assertListBorrowRepayItemEqual(e, a *MarginBorrowRepay) {
+	r := s.r()
+	r.Equal(e.Type, a.Type, "Type")
+	r.Equal(e.IsolatedSymbol, a.IsolatedSymbol, "IsolatedSymbol")
+	r.Equal(e.Amount, a.Amount, "Amount")
+	r.Equal(e.Asset, a.Asset, "Asset")
+	r.Equal(e.Interest, a.Interest, "Interest")
+	r.Equal(e.Principal, a.Principal, "Principal")
+	r.Equal(e.Status, a.Status, "Status")
+	r.Equal(e.Status, MarginAccountBorrowRepayStatusConfirmed, "Status")
+
+	r.Equal(e.Timestamp, a.Timestamp, "Timestamp")
+	r.Equal(e.TxID, a.TxID, "TxID")
+}
+
 func (s *marginTestSuite) TestListMarginLoans() {
 	data := []byte(`{
 		"rows": [
@@ -235,13 +392,18 @@ func (s *marginTestSuite) assertMarginRepayEqual(e, a *MarginRepay) {
 
 func (s *marginTestSuite) TestGetMarginAccount() {
 	data := []byte(`{
+		"created": true,
 		"borrowEnabled": true,
 		"marginLevel": "11.64405625",
+		"collateralMarginLevel": "0.64405625",
 		"totalAssetOfBtc": "6.82728457",
 		"totalLiabilityOfBtc": "0.58633215",
 		"totalNetAssetOfBtc": "6.24095242",
+		"totalCollateralValueInUSDT": "1234.33",
 		"tradeEnabled": true,
-		"transferEnabled": true,
+		"transferInEnabled": true,
+		"transferOutEnabled": true,
+		"accountType": "MARGIN_1",
 		"userAssets": [
 			{
 				"asset": "BTC",
@@ -286,13 +448,18 @@ func (s *marginTestSuite) TestGetMarginAccount() {
 	res, err := s.client.NewGetMarginAccountService().Do(newContext())
 	s.r().NoError(err)
 	e := &MarginAccount{
-		BorrowEnabled:       true,
-		MarginLevel:         "11.64405625",
-		TotalAssetOfBTC:     "6.82728457",
-		TotalLiabilityOfBTC: "0.58633215",
-		TotalNetAssetOfBTC:  "6.24095242",
-		TradeEnabled:        true,
-		TransferEnabled:     true,
+		Created:                    true,
+		BorrowEnabled:              true,
+		MarginLevel:                "11.64405625",
+		CollateralMarginLevel:      "0.64405625",
+		TotalAssetOfBTC:            "6.82728457",
+		TotalLiabilityOfBTC:        "0.58633215",
+		TotalNetAssetOfBTC:         "6.24095242",
+		TotalCollateralValueInUSDT: "1234.33",
+		TradeEnabled:               true,
+		TransferInEnabled:          true,
+		TransferOutEnabled:         true,
+		AccountType:                "MARGIN_1",
 		UserAssets: []UserAsset{
 			{
 				Asset:    "BTC",
@@ -433,13 +600,18 @@ func (s *marginTestSuite) assertIsolatedMarginAssetEqual(e, a IsolatedMarginAsse
 
 func (s *marginTestSuite) assertMarginAccountEqual(e, a *MarginAccount) {
 	r := s.r()
+	r.Equal(e.Created, a.Created, "Created")
 	r.Equal(e.BorrowEnabled, a.BorrowEnabled, "BorrowEnabled")
 	r.Equal(e.MarginLevel, a.MarginLevel, "MarginLevel")
+	r.Equal(e.CollateralMarginLevel, a.CollateralMarginLevel, "CollateralMarginLevel")
 	r.Equal(e.TotalAssetOfBTC, a.TotalAssetOfBTC, "TotalAssetOfBTC")
 	r.Equal(e.TotalLiabilityOfBTC, a.TotalLiabilityOfBTC, "TotalLiabilityOfBTC")
 	r.Equal(e.TotalNetAssetOfBTC, a.TotalNetAssetOfBTC, "TotalNetAssetOfBTC")
+	r.Equal(e.TotalCollateralValueInUSDT, a.TotalCollateralValueInUSDT, "TotalCollateralValueInUSDT")
 	r.Equal(e.TradeEnabled, a.TradeEnabled, "TradeEnabled")
-	r.Equal(e.TransferEnabled, a.TransferEnabled, "TransferEnabled")
+	r.Equal(e.TransferInEnabled, a.TransferInEnabled, "TransferInEnabled")
+	r.Equal(e.TransferOutEnabled, a.TransferOutEnabled, "TransferOutEnabled")
+	r.Equal(e.AccountType, a.AccountType, "AccountType")
 	r.Len(a.UserAssets, len(e.UserAssets), "UserAssets")
 	for i := 0; i < len(a.UserAssets); i++ {
 		s.assertUserAssetEqual(e.UserAssets[i], a.UserAssets[i])
@@ -721,7 +893,8 @@ func (s *marginTestSuite) TestListMarginTrades() {
 
 func (s *marginTestSuite) TestGetMaxBorrowable() {
 	data := []byte(`{
-		"amount": "1.69248805"
+		"amount": "1.69248805",
+		"borrowLimit": "1000"
 	}`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
@@ -738,13 +911,15 @@ func (s *marginTestSuite) TestGetMaxBorrowable() {
 	r := s.r()
 	r.NoError(err)
 	e := &MaxBorrowable{
-		Amount: "1.69248805",
+		Amount:      "1.69248805",
+		BorrowLimit: "1000",
 	}
 	s.assertMaxBorrowableEqual(e, borrowable)
 }
 
 func (s *marginTestSuite) assertMaxBorrowableEqual(e, a *MaxBorrowable) {
 	s.r().Equal(e.Amount, a.Amount, "Amount")
+	s.r().Equal(e.BorrowLimit, a.BorrowLimit, "BorrowLimit")
 }
 
 func (s *marginTestSuite) TestGetMaxTransferable() {

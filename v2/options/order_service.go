@@ -431,7 +431,7 @@ func (s *CancelBatchOrdersService) OrderIds(orderIds []int64) *CancelBatchOrders
 	return s
 }
 
-// ClientOrderIDList set clientOrderIds
+// ClientOrderIds set clientOrderIds
 func (s *CancelBatchOrdersService) ClientOrderIds(clientOrderIds []string) *CancelBatchOrdersService {
 	s.clientOrderIds = clientOrderIds
 	return s

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/adshao/go-binance/v2/common"
 )
 
 // CreateOrderService create order
@@ -127,6 +129,8 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSpotId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice
@@ -179,6 +183,7 @@ type CreateOrderResponse struct {
 	TransactTime             int64  `json:"transactTime"`
 	Price                    string `json:"price"`
 	OrigQuantity             string `json:"origQty"`
+	OrigQuoteOrderQuantity   string `json:"origQuoteOrderQty"`
 	ExecutedQuantity         string `json:"executedQty"`
 	CummulativeQuoteQuantity string `json:"cummulativeQuoteQty"`
 	IsIsolated               bool   `json:"isIsolated"` // for isolated margin
@@ -422,7 +427,7 @@ type Oco struct {
 func (s *ListOpenOcoService) Do(ctx context.Context, opts ...RequestOption) (res []*Oco, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/api/v3/openOrderList ",
+		endpoint: "/api/v3/openOrderList",
 		secType:  secTypeSigned,
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
@@ -807,6 +812,7 @@ type CancelOrderResponse struct {
 	TransactTime             int64                   `json:"transactTime"`
 	Price                    string                  `json:"price"`
 	OrigQuantity             string                  `json:"origQty"`
+	OrigQuoteOrderQuantity   string                  `json:"origQuoteOrderQty"`
 	ExecutedQuantity         string                  `json:"executedQty"`
 	CummulativeQuoteQuantity string                  `json:"cummulativeQuoteQty"`
 	Status                   OrderStatusType         `json:"status"`

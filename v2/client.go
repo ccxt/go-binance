@@ -132,6 +132,8 @@ var (
 // SelfTradePreventionMode define self trade prevention strategy
 type SelfTradePreventionMode string
 
+type MarginAccountBorrowRepayType string
+
 // UseTestnet switch all the API endpoints from production to the testnet
 var UseTestnet = false
 
@@ -214,9 +216,10 @@ const (
 	FuturesTransferStatusTypeConfirmed FuturesTransferStatusType = "CONFIRMED"
 	FuturesTransferStatusTypeFailed    FuturesTransferStatusType = "FAILED"
 
-	SideEffectTypeNoSideEffect SideEffectType = "NO_SIDE_EFFECT"
-	SideEffectTypeMarginBuy    SideEffectType = "MARGIN_BUY"
-	SideEffectTypeAutoRepay    SideEffectType = "AUTO_REPAY"
+	SideEffectTypeNoSideEffect    SideEffectType = "NO_SIDE_EFFECT"
+	SideEffectTypeMarginBuy       SideEffectType = "MARGIN_BUY"
+	SideEffectTypeAutoRepay       SideEffectType = "AUTO_REPAY"
+	SideEffectTypeAutoBorrowRepay SideEffectType = "AUTO_BORROW_REPAY"
 
 	TransactionTypeDeposit  TransactionType = "0"
 	TransactionTypeWithdraw TransactionType = "1"
@@ -325,6 +328,13 @@ const (
 	SelfTradePreventionModeExpireTaker SelfTradePreventionMode = "EXPIRE_TAKER"
 	SelfTradePreventionModeExpireBoth  SelfTradePreventionMode = "EXPIRE_BOTH"
 	SelfTradePreventionModeExpireMaker SelfTradePreventionMode = "EXPIRE_MAKER"
+
+	MarginAccountBorrow MarginAccountBorrowRepayType = "BORROW"
+	MarginAccountRepay  MarginAccountBorrowRepayType = "REPAY"
+
+	MarginAccountBorrowRepayStatusPending   string = "PENDING"
+	MarginAccountBorrowRepayStatusConfirmed string = "CONFIRMED"
+	MarginAccountBorrowRepayStatusFailed    string = "FAILED"
 )
 
 func currentTimestamp() int64 {
@@ -767,6 +777,10 @@ func (c *Client) NewGetAssetDetailService() *GetAssetDetailService {
 	return &GetAssetDetailService{c: c}
 }
 
+func (c *Client) NewWalletBalanceService() *WalletBalanceService {
+	return &WalletBalanceService{c: c}
+}
+
 // NewAveragePriceService init average price service
 func (c *Client) NewAveragePriceService() *AveragePriceService {
 	return &AveragePriceService{c: c}
@@ -778,13 +792,24 @@ func (c *Client) NewMarginTransferService() *MarginTransferService {
 }
 
 // NewMarginLoanService init margin account loan service
+// Deprecated: use NewMarginBorrowRepayService instead
 func (c *Client) NewMarginLoanService() *MarginLoanService {
 	return &MarginLoanService{c: c}
 }
 
 // NewMarginRepayService init margin account repay service
+// Deprecated: use NewMarginBorrowRepayService instead
 func (c *Client) NewMarginRepayService() *MarginRepayService {
 	return &MarginRepayService{c: c}
+}
+
+// NewMarginBorrowRepayService init margin account borrow/repay service
+func (c *Client) NewMarginBorrowRepayService() *MarginBorrowRepayService {
+	return &MarginBorrowRepayService{c: c}
+}
+
+func (c *Client) NewListMarginBorrowRepayService() *ListMarginBorrowRepayService {
+	return &ListMarginBorrowRepayService{c: c}
 }
 
 // NewCreateMarginOrderService init creating margin order service
@@ -813,11 +838,13 @@ func (c *Client) NewGetMarginOrderService() *GetMarginOrderService {
 }
 
 // NewListMarginLoansService init list margin loan service
+// Deprecated: use NewListMarginBorrowRepayService instead
 func (c *Client) NewListMarginLoansService() *ListMarginLoansService {
 	return &ListMarginLoansService{c: c}
 }
 
 // NewListMarginRepaysService init list margin repay service
+// Deprecated: use NewListMarginBorrowRepayService instead
 func (c *Client) NewListMarginRepaysService() *ListMarginRepaysService {
 	return &ListMarginRepaysService{c: c}
 }

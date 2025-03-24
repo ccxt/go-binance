@@ -27,7 +27,7 @@ func (s *userUniversalTransferTestSuite) TestUserUniversalTransfer() {
 
 	types := UserUniversalTransferTypeMainToUmFutures
 	asset := "USDT"
-	amount := 0.1
+	amount := "0.1"
 	fromSymbol := "USDT"
 	toSymbol := "USDT"
 
