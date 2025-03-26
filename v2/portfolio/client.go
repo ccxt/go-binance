@@ -989,3 +989,18 @@ func (c *Client) NewMarginRepayDebtService() *MarginRepayDebtService {
 func (c *Client) NewMarginAllOCOService() *MarginAllOCOService {
 	return &MarginAllOCOService{c: c}
 }
+
+// NewStartUserStreamService init starting user stream service
+func (c *Client) NewStartUserStreamService() *StartUserStreamService {
+	return &StartUserStreamService{c: c}
+}
+
+// NewKeepaliveUserStreamService init keep alive user stream service
+func (c *Client) NewKeepaliveUserStreamService() *KeepaliveUserStreamService {
+	return &KeepaliveUserStreamService{c: c}
+}
+
+// NewCloseUserStreamService init closing user stream service
+func (c *Client) NewCloseUserStreamService() *CloseUserStreamService {
+	return &CloseUserStreamService{c: c}
+}
