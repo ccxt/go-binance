@@ -1403,3 +1403,10 @@ func (c *Client) NewSimpleEarnService() *SimpleEarnService {
 }
 
 // ----- end simple earn service -----
+
+// ----- vip loan service -----
+func (c *Client) NewVipLoanService() *VipLoanService {
+	return &VipLoanService{c: c}
+}
+
+// ----- end vip loan service -----
