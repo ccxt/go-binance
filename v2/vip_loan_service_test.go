@@ -19,13 +19,13 @@ func (s *vipLoanServiceTestSuite) TestVipLoanInterestRateService() {
      "asset": "BUSD",
      "flexibleDailyInterestRate": "0.001503",
      "flexibleYearlyInterestRate": "0.548595",
-     "time": 1577233578000
+     "time": "1577233578000"
     },
     {
      "asset": "BTC",
      "flexibleDailyInterestRate": "0.001503",
      "flexibleYearlyInterestRate": "0.548595",
-     "time": 1577233562000
+     "time": "1577233562000"
     }
 ]`)
 	s.mockDo(data, nil)
@@ -42,13 +42,13 @@ func (s *vipLoanServiceTestSuite) TestVipLoanInterestRateService() {
 			Asset:                      "BUSD",
 			FlexibleDailyInterestRate:  "0.001503",
 			FlexibleYearlyInterestRate: "0.548595",
-			Time:                       1577233578000,
+			Time:                       "1577233578000",
 		},
 		{
 			Asset:                      "BTC",
 			FlexibleDailyInterestRate:  "0.001503",
 			FlexibleYearlyInterestRate: "0.548595",
-			Time:                       1577233562000,
+			Time:                       "1577233562000",
 		},
 	}
 	s.assertVipLoanInterestRateEqual(*e, *res)
@@ -70,7 +70,7 @@ func (s *vipLoanServiceTestSuite) TestVipLoanInterestRateHistory() {
     {
       "coin": "USDT",
       "annualizedInterestRate": "0.0647",
-      "time": 1575018510000
+      "time": "1575018510000"
     }
   ],
   "total": 1
@@ -84,7 +84,7 @@ func (s *vipLoanServiceTestSuite) TestVipLoanInterestRateHistory() {
 			{
 				Coin:                   "USDT",
 				AnnualizedInterestRate: "0.0647",
-				Time:                   1575018510000,
+				Time:                   "1575018510000",
 			},
 		},
 		Total: 1,

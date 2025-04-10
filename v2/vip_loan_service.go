@@ -95,7 +95,7 @@ type VipLoanInterestRateElement struct {
 	Asset                      string `json:"asset"`
 	FlexibleDailyInterestRate  string `json:"flexibleDailyInterestRate"`
 	FlexibleYearlyInterestRate string `json:"flexibleYearlyInterestRate"`
-	Time                       int64  `json:"time"`
+	Time                       string `json:"time"`
 }
 
 type VipLoanInterestRateHistoryService struct {
@@ -173,7 +173,7 @@ type VipLoanInterestRateHistoryResponse struct {
 type VipLoanInterestRateHistory struct {
 	Coin                   string `json:"coin"`
 	AnnualizedInterestRate string `json:"annualizedInterestRate"`
-	Time                   int64  `json:"time"`
+	Time                   string `json:"time"`
 }
 
 type VipLoanLoanableAssetDataService struct {
@@ -271,15 +271,25 @@ type VipLoanCollateralAssetDataResponse struct {
 }
 
 type VipLoanCollateralAssetData struct {
-	CollateralCoin        string `json:"collateralCoin"`
-	FirstCollateralRatio  string `json:"_1stCollateralRatio"`
-	FirstCollateralRange  string `json:"_1stCollateralRange"`
-	SecondCollateralRatio string `json:"_2ndCollateralRatio"`
-	SecondCollateralRange string `json:"_2ndCollateralRange"`
-	ThirdCollateralRatio  string `json:"_3rdCollateralRatio"`
-	ThirdCollateralRange  string `json:"_3rdCollateralRange"`
-	FourthCollateralRatio string `json:"_4thCollateralRatio"`
-	FourthCollateralRange string `json:"_4thCollateralRange"`
+	CollateralCoin         string `json:"collateralCoin"`
+	FirstCollateralRatio   string `json:"_1stCollateralRatio"`
+	FirstCollateralRange   string `json:"_1stCollateralRange"`
+	SecondCollateralRatio  string `json:"_2ndCollateralRatio"`
+	SecondCollateralRange  string `json:"_2ndCollateralRange"`
+	ThirdCollateralRatio   string `json:"_3rdCollateralRatio"`
+	ThirdCollateralRange   string `json:"_3rdCollateralRange"`
+	FourthCollateralRatio  string `json:"_4thCollateralRatio"`
+	FourthCollateralRange  string `json:"_4thCollateralRange"`
+	FifthCollateralRatio   string `json:"_5thCollateralRatio"`
+	FifthCollateralRange   string `json:"_5thCollateralRange"`
+	SixthCollateralRatio   string `json:"_6thCollateralRatio"`
+	SixthCollateralRange   string `json:"_6thCollateralRange"`
+	SeventhCollateralRatio string `json:"_7thCollateralRatio"`
+	SeventhCollateralRange string `json:"_7thCollateralRange"`
+	EighthCollateralRatio  string `json:"_8thCollateralRatio"`
+	EighthCollateralRange  string `json:"_8thCollateralRange"`
+	NinthCollateralRatio   string `json:"_9thCollateralRatio"`
+	NinthCollateralRange   string `json:"_9thCollateralRange"`
 }
 
 type VipLoanOngoingOrdersService struct {
@@ -688,7 +698,7 @@ func (s *VipLoanRenewService) Do(ctx context.Context, opts ...RequestOption) (*V
 		"orderId":  s.orderId,
 		"loanTerm": s.loanTerm,
 	}
-	r.setFormParams(m)
+	r.setParams(m)
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
@@ -736,7 +746,7 @@ func (s *VipLoanRepayService) Do(ctx context.Context, opts ...RequestOption) (*V
 		"orderId": s.orderId,
 		"amount":  s.amount,
 	}
-	r.setFormParams(m)
+	r.setParams(m)
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
@@ -811,15 +821,27 @@ func (s *VipLoanBorrowService) Do(ctx context.Context, opts ...RequestOption) (*
 		endpoint: "/sapi/v1/loan/vip/borrow",
 		secType:  secTypeSigned,
 	}
-	m := params{
-		"loanAccountId":       s.loanAccountId,
-		"loanAmount":          s.loanAmount,
-		"collateralAccountId": s.collateralAccountId,
-		"collateralCoin":      s.collateralCoin,
-		"isFlexibleRate":      s.isFlexibleRate,
-		"loanTerm":            s.loanTerm,
+	if s.loanAccountId != nil {
+		r.setParam("loanAccountId", *s.loanAccountId)
 	}
-	r.setFormParams(m)
+	if s.loanCoin != "" {
+		r.setParam("loanCoin", s.loanCoin)
+	}
+	if s.loanAmount != nil {
+		r.setParam("loanAmount", *s.loanAmount)
+	}
+	if s.collateralAccountId != nil {
+		r.setParam("collateralAccountId", *s.collateralAccountId)
+	}
+	if s.collateralCoin != nil {
+		r.setParam("collateralCoin", *s.collateralCoin)
+	}
+	if s.isFlexibleRate != nil {
+		r.setParam("isFlexibleRate", *s.isFlexibleRate)
+	}
+	if s.loanTerm != nil {
+		r.setParam("loanTerm", *s.loanTerm)
+	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
