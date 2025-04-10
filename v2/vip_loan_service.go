@@ -60,11 +60,11 @@ func (s *VipLoanService) Borrow() *VipLoanBorrowService {
 
 type VipLoanInterestRateService struct {
 	c        *Client
-	loanCoin *string // Mandatory: YES, max 10 assets split by comma
+	loanCoin string // Mandatory: YES, max 10 assets split by comma
 }
 
 func (s *VipLoanInterestRateService) LoanCoin(loanCoin string) *VipLoanInterestRateService {
-	s.loanCoin = &loanCoin
+	s.loanCoin = loanCoin
 	return s
 }
 
@@ -74,9 +74,9 @@ func (s *VipLoanInterestRateService) Do(ctx context.Context) (*VipLoanInterestRa
 		endpoint: "/sapi/v1/loan/vip/request/interestRate",
 		secType:  secTypeSigned,
 	}
-	if s.loanCoin != nil {
-		r.setParam("loanCoin", *s.loanCoin)
-	}
+
+	r.setParam("loanCoin", s.loanCoin)
+
 	data, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ type VipLoanInterestRateElement struct {
 
 type VipLoanInterestRateHistoryService struct {
 	c         *Client
-	coin      *string
+	coin      string
 	startTime *int64
 	endTime   *int64
 	current   *int64 // Mandatory: NO, default 1
@@ -108,7 +108,7 @@ type VipLoanInterestRateHistoryService struct {
 }
 
 func (s *VipLoanInterestRateHistoryService) Coin(coin string) *VipLoanInterestRateHistoryService {
-	s.coin = &coin
+	s.coin = coin
 	return s
 }
 
@@ -138,9 +138,9 @@ func (s *VipLoanInterestRateHistoryService) Do(ctx context.Context) (*VipLoanInt
 		endpoint: "/sapi/v1/loan/vip/interestRateHistory",
 		secType:  secTypeSigned,
 	}
-	if s.coin != nil {
-		r.setParam("coin", *s.coin)
-	}
+
+	r.setParam("coin", s.coin)
+
 	if s.startTime != nil {
 		r.setParam("startTime", *s.startTime)
 	}
@@ -674,17 +674,17 @@ type VipLoanApplicationStatus struct {
 
 type VipLoanRenewService struct {
 	c        *Client
-	orderId  *int64 // Mandatory: YES
-	loanTerm *int64 // Mandatory: YES, 30 or 60 days
+	orderId  int64 // Mandatory: YES
+	loanTerm int64 // Mandatory: YES, 30 or 60 days
 }
 
 func (s *VipLoanRenewService) OrderId(orderId int64) *VipLoanRenewService {
-	s.orderId = &orderId
+	s.orderId = orderId
 	return s
 }
 
 func (s *VipLoanRenewService) LoanTerm(loanTerm int64) *VipLoanRenewService {
-	s.loanTerm = &loanTerm
+	s.loanTerm = loanTerm
 	return s
 }
 
@@ -722,17 +722,17 @@ type VipLoanRenew struct {
 
 type VipLoanRepayService struct {
 	c       *Client
-	orderId *int64
-	amount  *float64
+	orderId int64
+	amount  float64
 }
 
 func (s *VipLoanRepayService) OrderId(orderId int64) *VipLoanRepayService {
-	s.orderId = &orderId
+	s.orderId = orderId
 	return s
 }
 
 func (s *VipLoanRepayService) Amount(amount float64) *VipLoanRepayService {
-	s.amount = &amount
+	s.amount = amount
 	return s
 }
 
@@ -771,17 +771,17 @@ type VipLoanRepay struct {
 
 type VipLoanBorrowService struct {
 	c                   *Client
-	loanAccountId       *int64
+	loanAccountId       int64
 	loanCoin            string // Mandatory: YES
-	loanAmount          *float64
-	collateralAccountId *string // Mandatory: YES, accounts split by comma
-	collateralCoin      *string // Mandatory: YES, coins split by comma
-	isFlexibleRate      *bool   // Mandatory: YES, TRUE: flexible rate; FALSE: fixed rate
-	loanTerm            *int64  // Mandatory: YES for fixed interest, No for floating interest, 30 or 60
+	loanAmount          float64
+	collateralAccountId string // Mandatory: YES, accounts split by comma
+	collateralCoin      string // Mandatory: YES, coins split by comma
+	isFlexibleRate      bool   // Mandatory: YES, TRUE: flexible rate; FALSE: fixed rate
+	loanTerm            *int64 // Mandatory: YES for fixed interest, No for floating interest, 30 or 60
 }
 
 func (s *VipLoanBorrowService) LoanAccountId(loanAccountId int64) *VipLoanBorrowService {
-	s.loanAccountId = &loanAccountId
+	s.loanAccountId = loanAccountId
 	return s
 }
 
@@ -791,22 +791,22 @@ func (s *VipLoanBorrowService) LoanCoin(loanCoin string) *VipLoanBorrowService {
 }
 
 func (s *VipLoanBorrowService) LoanAmount(loanAmount float64) *VipLoanBorrowService {
-	s.loanAmount = &loanAmount
+	s.loanAmount = loanAmount
 	return s
 }
 
 func (s *VipLoanBorrowService) CollateralAccountId(collateralAccountId string) *VipLoanBorrowService {
-	s.collateralAccountId = &collateralAccountId
+	s.collateralAccountId = collateralAccountId
 	return s
 }
 
 func (s *VipLoanBorrowService) CollateralCoin(collateralCoin string) *VipLoanBorrowService {
-	s.collateralCoin = &collateralCoin
+	s.collateralCoin = collateralCoin
 	return s
 }
 
 func (s *VipLoanBorrowService) IsFlexibleRate(isFlexibleRate bool) *VipLoanBorrowService {
-	s.isFlexibleRate = &isFlexibleRate
+	s.isFlexibleRate = isFlexibleRate
 	return s
 }
 
@@ -821,24 +821,19 @@ func (s *VipLoanBorrowService) Do(ctx context.Context, opts ...RequestOption) (*
 		endpoint: "/sapi/v1/loan/vip/borrow",
 		secType:  secTypeSigned,
 	}
-	if s.loanAccountId != nil {
-		r.setParam("loanAccountId", *s.loanAccountId)
-	}
-	if s.loanCoin != "" {
-		r.setParam("loanCoin", s.loanCoin)
-	}
-	if s.loanAmount != nil {
-		r.setParam("loanAmount", *s.loanAmount)
-	}
-	if s.collateralAccountId != nil {
-		r.setParam("collateralAccountId", *s.collateralAccountId)
-	}
-	if s.collateralCoin != nil {
-		r.setParam("collateralCoin", *s.collateralCoin)
-	}
-	if s.isFlexibleRate != nil {
-		r.setParam("isFlexibleRate", *s.isFlexibleRate)
-	}
+
+	r.setParam("loanAccountId", s.loanAccountId)
+
+	r.setParam("loanCoin", s.loanCoin)
+
+	r.setParam("loanAmount", s.loanAmount)
+
+	r.setParam("collateralAccountId", s.collateralAccountId)
+
+	r.setParam("collateralCoin", s.collateralCoin)
+
+	r.setParam("isFlexibleRate", s.isFlexibleRate)
+
 	if s.loanTerm != nil {
 		r.setParam("loanTerm", *s.loanTerm)
 	}
