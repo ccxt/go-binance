@@ -1,4 +1,4 @@
-package portfolio
+package binance
 
 import (
 	"os"
@@ -16,6 +16,10 @@ func SetupTest(t *testing.T) *baseIntegrationTestSuite {
 	apiKey := os.Getenv("BINANCE_API_KEY")
 	secretKey := os.Getenv("BINANCE_SECRET_KEY")
 	proxyURL := os.Getenv("BINANCE_PROXY_URL")
+	useTestnet := true
+	if os.Getenv("BINANCE_USE_TESTNET") == "false" {
+		useTestnet = false
+	}
 
 	if apiKey == "" || secretKey == "" {
 		t.Skip("API key and secret are required for integration tests")
@@ -29,6 +33,7 @@ func SetupTest(t *testing.T) *baseIntegrationTestSuite {
 	}
 
 	client.Debug = true
+	UseTestnet = useTestnet // Set the global testnet flag
 
 	return &baseIntegrationTestSuite{
 		client: client,
