@@ -229,7 +229,7 @@ func (c *client) wait(timeout time.Duration) {
 
 // handleReconnect waits for reconnect signal and starts reconnect
 func (c *client) handleReconnect() {
-	for _ = range c.reconnectSignal {
+	for range c.reconnectSignal {
 		c.debug("reconnect: received signal")
 
 		b := &backoff.Backoff{
@@ -389,8 +389,6 @@ func (c *connection) RestoreConnection() (Connection, error) {
 
 // keepAlive handles ping-pong for connection
 func (c *connection) keepAlive(timeout time.Duration) {
-	ticker := time.NewTicker(timeout)
-
 	c.updateLastResponse()
 
 	c.conn.SetPongHandler(func(msg string) error {
@@ -399,7 +397,9 @@ func (c *connection) keepAlive(timeout time.Duration) {
 	})
 
 	go func() {
+		ticker := time.NewTicker(timeout)
 		defer ticker.Stop()
+
 		for {
 			err := c.ping()
 			if err != nil {
