@@ -344,6 +344,7 @@ func NewConnection(
 		initUnderlyingWsConnFn: initUnderlyingWsConnFn,
 		keepaliveTimeout:       keepaliveTimeout,
 		isKeepAliveNeeded:      isKeepAliveNeeded,
+		done:                   make(chan struct{}),
 	}
 
 	if isKeepAliveNeeded {
@@ -362,6 +363,7 @@ type connection struct {
 	initUnderlyingWsConnFn func() (*websocket.Conn, error)
 	keepaliveTimeout       time.Duration
 	isKeepAliveNeeded      bool
+	done                   chan struct{}
 }
 
 type Connection interface {
@@ -379,7 +381,11 @@ func (c *connection) WriteMessage(messageType int, data []byte) error {
 
 // ReadMessage wrapper for conn.ReadMessage
 func (c *connection) ReadMessage() (int, []byte, error) {
-	return c.conn.ReadMessage()
+	msgType, msg, err := c.conn.ReadMessage()
+	if err != nil {
+		close(c.done)
+	}
+	return msgType, msg, err
 }
 
 // RestoreConnection recreates ws connection with the same underlying connection callback and keepalive timeout
@@ -401,15 +407,19 @@ func (c *connection) keepAlive(timeout time.Duration) {
 		defer ticker.Stop()
 
 		for {
-			err := c.ping()
-			if err != nil {
+			select {
+			case <-c.done:
 				return
-			}
+			case <-ticker.C:
+				err := c.ping()
+				if err != nil {
+					return
+				}
 
-			<-ticker.C
-			if c.isLastResponseOutdated(timeout) {
-				c.close()
-				return
+				if c.isLastResponseOutdated(timeout) {
+					c.close()
+					return
+				}
 			}
 		}
 	}()
@@ -442,10 +452,5 @@ func (c *connection) ping() error {
 	defer c.connectionMu.Unlock()
 
 	deadline := time.Now().Add(KeepAlivePingDeadline)
-	err := c.conn.WriteControl(websocket.PingMessage, []byte{}, deadline)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.conn.WriteControl(websocket.PingMessage, []byte{}, deadline)
 }
