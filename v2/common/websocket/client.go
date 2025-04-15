@@ -337,6 +337,8 @@ func NewConnection(
 		return nil, err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	wsConn := &connection{
 		conn:                   underlyingWsConn,
 		connectionMu:           sync.Mutex{},
@@ -344,7 +346,8 @@ func NewConnection(
 		initUnderlyingWsConnFn: initUnderlyingWsConnFn,
 		keepaliveTimeout:       keepaliveTimeout,
 		isKeepAliveNeeded:      isKeepAliveNeeded,
-		done:                   make(chan struct{}),
+		ctx:                    ctx,
+		cancel:                 cancel,
 	}
 
 	if isKeepAliveNeeded {
@@ -363,7 +366,8 @@ type connection struct {
 	initUnderlyingWsConnFn func() (*websocket.Conn, error)
 	keepaliveTimeout       time.Duration
 	isKeepAliveNeeded      bool
-	done                   chan struct{}
+	ctx                    context.Context
+	cancel                 context.CancelFunc
 }
 
 type Connection interface {
@@ -383,7 +387,7 @@ func (c *connection) WriteMessage(messageType int, data []byte) error {
 func (c *connection) ReadMessage() (int, []byte, error) {
 	msgType, msg, err := c.conn.ReadMessage()
 	if err != nil {
-		close(c.done)
+		c.cancel()
 	}
 	return msgType, msg, err
 }
@@ -408,7 +412,7 @@ func (c *connection) keepAlive(timeout time.Duration) {
 
 		for {
 			select {
-			case <-c.done:
+			case <-c.ctx.Done():
 				return
 			case <-ticker.C:
 				err := c.ping()
