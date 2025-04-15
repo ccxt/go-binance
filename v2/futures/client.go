@@ -534,6 +534,16 @@ func (c *Client) NewGetBalanceService() *GetBalanceService {
 	return &GetBalanceService{c: c}
 }
 
+// NewGetAccountConfigService init get futures account configuration service
+func (c *Client) NewGetAccountConfigService() *AccountConfigService {
+	return &AccountConfigService{c: c}
+}
+
+// NewGetSymbolConfigService init get futures symbol configuration service
+func (c *Client) NewGetSymbolConfigService() *SymbolConfigService {
+	return &SymbolConfigService{c: c}
+}
+
 func (c *Client) NewGetPositionRiskService() *GetPositionRiskService {
 	return &GetPositionRiskService{c: c}
 }
