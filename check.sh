@@ -7,11 +7,13 @@ ACTION=$1
 function format() {
     echo "Running gofmt ..."
     if [[ $1 == "-w" ]]; then
-        gofmt -w $(find . -type f -name '*.go' -not -path "./vendor/*")
+        gofmt -w $(find . -type f -name '*.go')
     elif [[ $1 == "-l" ]]; then
-        gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*")
+        gofmt -l $(find . -type f -name '*.go')
+    elif [[ $1 == "-d" ]]; then
+        gofmt -d $(find . -type f -name '*.go')
     else
-        UNFORMATTED=$(gofmt -l $(find . -type f -name '*.go' -not -path "./vendor/*"))
+        UNFORMATTED=$(gofmt -l $(find . -type f -name '*.go'))
         if [[ ! -z "$UNFORMATTED" ]]; then
             echo "The following files are not properly formatted:"
             echo "$UNFORMATTED"

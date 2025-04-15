@@ -226,6 +226,7 @@ func (s *CreateFuturesAlgoTwapOrderService) Do(ctx context.Context, opts ...Requ
 	}
 	res = new(CreateFuturesAlgoOrderResponse)
 	err = json.Unmarshal(data, res)
+	// why do we print response here
 	fmt.Printf("response is %v", data)
 
 	if err != nil {
