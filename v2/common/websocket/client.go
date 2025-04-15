@@ -229,7 +229,7 @@ func (c *client) wait(timeout time.Duration) {
 
 // handleReconnect waits for reconnect signal and starts reconnect
 func (c *client) handleReconnect() {
-	for _ = range c.reconnectSignal {
+	for range c.reconnectSignal {
 		c.debug("reconnect: received signal")
 
 		b := &backoff.Backoff{
@@ -337,6 +337,8 @@ func NewConnection(
 		return nil, err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	wsConn := &connection{
 		conn:                   underlyingWsConn,
 		connectionMu:           sync.Mutex{},
@@ -344,6 +346,8 @@ func NewConnection(
 		initUnderlyingWsConnFn: initUnderlyingWsConnFn,
 		keepaliveTimeout:       keepaliveTimeout,
 		isKeepAliveNeeded:      isKeepAliveNeeded,
+		ctx:                    ctx,
+		cancel:                 cancel,
 	}
 
 	if isKeepAliveNeeded {
@@ -362,6 +366,8 @@ type connection struct {
 	initUnderlyingWsConnFn func() (*websocket.Conn, error)
 	keepaliveTimeout       time.Duration
 	isKeepAliveNeeded      bool
+	ctx                    context.Context
+	cancel                 context.CancelFunc
 }
 
 type Connection interface {
@@ -379,7 +385,11 @@ func (c *connection) WriteMessage(messageType int, data []byte) error {
 
 // ReadMessage wrapper for conn.ReadMessage
 func (c *connection) ReadMessage() (int, []byte, error) {
-	return c.conn.ReadMessage()
+	msgType, msg, err := c.conn.ReadMessage()
+	if err != nil {
+		c.cancel()
+	}
+	return msgType, msg, err
 }
 
 // RestoreConnection recreates ws connection with the same underlying connection callback and keepalive timeout
@@ -389,8 +399,6 @@ func (c *connection) RestoreConnection() (Connection, error) {
 
 // keepAlive handles ping-pong for connection
 func (c *connection) keepAlive(timeout time.Duration) {
-	ticker := time.NewTicker(timeout)
-
 	c.updateLastResponse()
 
 	c.conn.SetPongHandler(func(msg string) error {
@@ -399,17 +407,23 @@ func (c *connection) keepAlive(timeout time.Duration) {
 	})
 
 	go func() {
+		ticker := time.NewTicker(timeout)
 		defer ticker.Stop()
-		for {
-			err := c.ping()
-			if err != nil {
-				return
-			}
 
-			<-ticker.C
-			if c.isLastResponseOutdated(timeout) {
-				c.close()
+		for {
+			select {
+			case <-c.ctx.Done():
 				return
+			case <-ticker.C:
+				err := c.ping()
+				if err != nil {
+					return
+				}
+
+				if c.isLastResponseOutdated(timeout) {
+					c.close()
+					return
+				}
 			}
 		}
 	}()
@@ -442,10 +456,5 @@ func (c *connection) ping() error {
 	defer c.connectionMu.Unlock()
 
 	deadline := time.Now().Add(KeepAlivePingDeadline)
-	err := c.conn.WriteControl(websocket.PingMessage, []byte{}, deadline)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.conn.WriteControl(websocket.PingMessage, []byte{}, deadline)
 }

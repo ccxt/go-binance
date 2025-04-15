@@ -58,7 +58,7 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 		if WebsocketKeepalive {
 			// This function overwrites the default ping frame handler
 			// sent by the websocket API server
-			keepAlive(c, WebsocketTimeout)
+			keepAlive(doneC, c, WebsocketTimeout)
 		}
 
 		// Wait for the stopC channel to be closed.  We do that in a
@@ -87,9 +87,7 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 	return
 }
 
-func keepAlive(c *websocket.Conn, timeout time.Duration) {
-	ticker := time.NewTicker(timeout)
-
+func keepAlive(done chan struct{}, c *websocket.Conn, timeout time.Duration) {
 	lastResponse := time.Now()
 
 	c.SetPingHandler(func(pingData string) error {
@@ -109,12 +107,18 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 	})
 
 	go func() {
+		ticker := time.NewTicker(timeout)
 		defer ticker.Stop()
+
 		for {
-			<-ticker.C
-			if time.Since(lastResponse) > timeout {
-				c.Close()
+			select {
+			case <-done:
 				return
+			case <-ticker.C:
+				if time.Since(lastResponse) > timeout {
+					c.Close()
+					return
+				}
 			}
 		}
 	}()
