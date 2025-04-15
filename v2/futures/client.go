@@ -529,6 +529,11 @@ func (c *Client) NewGetAccountService() *GetAccountService {
 	return &GetAccountService{c: c}
 }
 
+// NewGetAccountV3Service init getting account service
+func (c *Client) NewGetAccountV3Service() *GetAccountV3Service {
+	return &GetAccountV3Service{c: c}
+}
+
 // NewGetBalanceService init getting balance service
 func (c *Client) NewGetBalanceService() *GetBalanceService {
 	return &GetBalanceService{c: c}
