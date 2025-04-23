@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -425,6 +426,19 @@ type Client struct {
 	Logger     *log.Logger
 	TimeOffset int64
 	do         doFunc
+
+	UsedWeight UsedWeight
+	OrderCount OrderCount
+}
+
+type UsedWeight struct {
+	Used   int64
+	Used1M int64 // used in last 1 minute
+}
+
+type OrderCount struct {
+	Count10s int64
+	Count1d  int64
 }
 
 func (c *Client) debug(format string, v ...interface{}) {
@@ -521,6 +535,34 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	if err != nil {
 		return []byte{}, err
 	}
+
+	usedWeight := res.Header.Get("X-Mbx-Used-Weight")
+	if usedWeight != "" {
+		if used, err := strconv.ParseInt(usedWeight, 10, 64); err == nil {
+			c.UsedWeight.Used = used
+		}
+	}
+	usedWeight1M := res.Header.Get("X-Mbx-Used-Weight-1m")
+	if usedWeight1M != "" {
+		if used, err := strconv.ParseInt(usedWeight1M, 10, 64); err == nil {
+			c.UsedWeight.Used1M = used
+		}
+	}
+
+	orderCount10s := res.Header.Get("X-Mbx-Order-Count-10s")
+	if orderCount10s != "" {
+		if count, err := strconv.ParseInt(orderCount10s, 10, 64); err == nil {
+			c.OrderCount.Count10s = count
+		}
+	}
+
+	orderCount1d := res.Header.Get("X-Mbx-Order-Count-1d")
+	if orderCount1d != "" {
+		if count, err := strconv.ParseInt(orderCount1d, 10, 64); err == nil {
+			c.OrderCount.Count1d = count
+		}
+	}
+
 	data, err = io.ReadAll(res.Body)
 	if err != nil {
 		return []byte{}, err
@@ -934,6 +976,16 @@ func (c *Client) NewCloseIsolatedMarginUserStreamService() *CloseIsolatedMarginU
 // NewMarginInterestHistoryService init margin interest history service
 func (c *Client) NewMarginInterestHistoryService() *MarginInterestHistoryService {
 	return &MarginInterestHistoryService{c: c}
+}
+
+// NewMarginInterestRateHistoryService init margin interest rate history service
+func (c *Client) NewMarginInterestRateHistoryService() *MarginInterestRateHistoryService {
+	return &MarginInterestRateHistoryService{c: c}
+}
+
+// NewMarginNextHourlyInterestRateService init margin next hourly interest rate service
+func (c *Client) NewMarginNextHourlyInterestRateService() *MarginNextHourlyInterestRateService {
+	return &MarginNextHourlyInterestRateService{c: c}
 }
 
 // NewFuturesTransferService init futures transfer service
@@ -1410,3 +1462,6 @@ func (c *Client) NewVipLoanService() *VipLoanService {
 }
 
 // ----- end vip loan service -----
+func (c *Client) NewDualInvestmentService() *DualInvestmentService {
+	return &DualInvestmentService{c: c}
+}

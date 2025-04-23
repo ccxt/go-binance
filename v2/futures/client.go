@@ -529,9 +529,24 @@ func (c *Client) NewGetAccountService() *GetAccountService {
 	return &GetAccountService{c: c}
 }
 
+// NewGetAccountV3Service init getting account service
+func (c *Client) NewGetAccountV3Service() *GetAccountV3Service {
+	return &GetAccountV3Service{c: c}
+}
+
 // NewGetBalanceService init getting balance service
 func (c *Client) NewGetBalanceService() *GetBalanceService {
 	return &GetBalanceService{c: c}
+}
+
+// NewGetAccountConfigService init get futures account configuration service
+func (c *Client) NewGetAccountConfigService() *AccountConfigService {
+	return &AccountConfigService{c: c}
+}
+
+// NewGetSymbolConfigService init get futures symbol configuration service
+func (c *Client) NewGetSymbolConfigService() *SymbolConfigService {
+	return &SymbolConfigService{c: c}
 }
 
 func (c *Client) NewGetPositionRiskService() *GetPositionRiskService {
@@ -739,4 +754,9 @@ func (c *Client) NewConvertAcceptService() *ConvertAcceptService {
 // NewGetConvertStatusService init get convert status service
 func (c *Client) NewGetConvertStatusService() *ConvertStatusService {
 	return &ConvertStatusService{c: c}
+}
+
+// NewApiTradingStatusService init get api trading status service
+func (c *Client) NewApiTradingStatusService() *ApiTradingStatusService {
+	return &ApiTradingStatusService{c: c}
 }
