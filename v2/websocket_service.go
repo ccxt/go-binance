@@ -12,11 +12,11 @@ import (
 var (
 	// Endpoints
 	BaseWsMainURL          = "wss://stream.binance.com:9443/ws"
-	BaseWsTestnetURL       = "wss://testnet.binance.vision/ws"
+	BaseWsTestnetURL       = "wss://stream.testnet.binance.vision/ws"
 	BaseCombinedMainURL    = "wss://stream.binance.com:9443/stream?streams="
-	BaseCombinedTestnetURL = "wss://testnet.binance.vision/stream?streams="
+	BaseCombinedTestnetURL = "wss://stream.testnet.binance.vision/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-api.binance.com:443/ws-api/v3"
-	BaseWsApiTestnetURL    = "wss://testnet.binance.vision/ws-api/v3"
+	BaseWsApiTestnetURL    = "wss://ws-api.testnet.binance.vision/ws-api/v3"
 
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
 	WebsocketTimeout = time.Second * 600

@@ -5,5 +5,6 @@ func main() {
 	// Ohlcv()
 	// SpotOrder()
 	// FuturesOrder()
-	WalletBalance()
+	// WalletBalance()
+	WatchMiniMarketsStat()
 }
