@@ -29,6 +29,10 @@ var (
 	ProxyUrl = ""
 )
 
+// UseUSDomain switch all the WS streams from production to the binance.us
+// currently option websocket streams are not supported on US domain, so this is set to constantly false
+const UseUSDomain = false
+
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getWsEndpoint() string {
 	if UseTestnet {
