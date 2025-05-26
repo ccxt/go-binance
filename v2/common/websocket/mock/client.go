@@ -112,6 +112,13 @@ func (m *MockClient) WriteSync(id string, data []byte, timeout time.Duration) ([
 	return ret0, ret1
 }
 
+func (m *MockClient) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
 // WriteSync indicates an expected call of WriteSync.
 func (mr *MockClientMockRecorder) WriteSync(id, data, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
