@@ -27,7 +27,7 @@ func (s *SymbolConfigService) Symbol(symbol string) *SymbolConfigService {
 }
 
 // Do send request
-func (s *SymbolConfigService) Do(ctx context.Context) ([]*SymbolConfig, error) {
+func (s *SymbolConfigService) Do(ctx context.Context, opts ...RequestOption) ([]*SymbolConfig, error) {
 	r := &request{
 		method:   "GET",
 		endpoint: "/fapi/v1/symbolConfig",
@@ -36,7 +36,7 @@ func (s *SymbolConfigService) Do(ctx context.Context) ([]*SymbolConfig, error) {
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
 	}
-	data, _, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}

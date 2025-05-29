@@ -23,13 +23,13 @@ type AccountConfig struct {
 }
 
 // Do send request
-func (s *AccountConfigService) Do(ctx context.Context) (*AccountConfig, error) {
+func (s *AccountConfigService) Do(ctx context.Context, opts ...RequestOption) (*AccountConfig, error) {
 	r := &request{
 		method:   "GET",
 		endpoint: "/fapi/v1/accountConfig",
 		secType:  secTypeSigned,
 	}
-	data, _, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
