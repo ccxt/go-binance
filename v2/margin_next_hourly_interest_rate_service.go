@@ -36,7 +36,7 @@ func (s *MarginNextHourlyInterestRateService) Do(ctx context.Context) (*MarginNe
 		r.setParam("assets", *s.assets)
 	}
 	if s.isolated != nil {
-		r.setParam("isolated", *s.isolated)
+		r.setParam("isIsolated", *s.isolated)
 	}
 	data, err := s.c.callAPI(ctx, r)
 	if err != nil {
