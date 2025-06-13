@@ -64,6 +64,10 @@ func (c *client) debug(format string, v ...interface{}) {
 	}
 }
 
+func (c *client) Close() error {
+	return c.conn.Close()
+}
+
 // NewClient init client
 func NewClient(conn Connection) (Client, error) {
 	client := &client{
@@ -90,6 +94,7 @@ type Client interface {
 	GetReadErrorChannel() <-chan error
 	GetReconnectCount() int64
 	Wait(timeout time.Duration)
+	Close() error
 }
 
 // Write sends data into websocket connection
@@ -368,6 +373,7 @@ type Connection interface {
 	WriteMessage(messageType int, data []byte) error
 	ReadMessage() (messageType int, p []byte, err error)
 	RestoreConnection() (Connection, error)
+	Close() error
 }
 
 // WriteMessage is a thread-safe method for conn.WriteMessage
@@ -408,7 +414,7 @@ func (c *connection) keepAlive(timeout time.Duration) {
 
 			<-ticker.C
 			if c.isLastResponseOutdated(timeout) {
-				c.close()
+				c.Close()
 				return
 			}
 		}
@@ -430,7 +436,7 @@ func (c *connection) isLastResponseOutdated(timeout time.Duration) bool {
 }
 
 // close thread-safe method for closing connection
-func (c *connection) close() error {
+func (c *connection) Close() error {
 	c.connectionMu.Lock()
 	defer c.connectionMu.Unlock()
 	return c.conn.Close()
