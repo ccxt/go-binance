@@ -564,7 +564,7 @@ type SubAccountFuturesAccountAsset struct {
 	WalletBalance          string `json:"walletBalance"`
 }
 
-// SubaccountFuturesSummaryV1Service Get Summary of Sub-account's Futures Account (For Master Account)
+// SubAccountFuturesSummaryV1Service Get Summary of Sub-account's Futures Account (For Master Account)
 // https://binance-docs.github.io/apidocs/spot/en/#get-summary-of-sub-account-39-s-futures-account-for-master-account
 type SubAccountFuturesSummaryV1Service struct {
 	c *Client
