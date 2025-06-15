@@ -140,6 +140,8 @@ var UseTestnet = false
 // UseUSDomain switch all the API endpoints from production to the binance.us
 var UseUSDomain = false
 
+var UseFutures = false
+
 // Global enums
 const (
 	SideTypeBuy  SideType = "BUY"

@@ -57,6 +57,9 @@ func getWsEndpoint() string {
 	if UseUSDomain {
 		return BaseUSWsMainURL
 	}
+	if UseFutures {
+		return BaseFuturesWsMainURL
+	}
 	return BaseWsMainURL
 }
 
