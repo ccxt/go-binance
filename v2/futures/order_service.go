@@ -973,7 +973,7 @@ type CreateBatchOrdersResponse struct {
 	// List of orders which were placed successfully which can have a length between 0 and N
 	Orders []*Order
 	// List of errors of length N, where each item corresponds to a nil value if
-	// the order from that specific index was placed succeessfully OR an non-nil *APIError if there was an error with
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
 	// the order at that index
 	Errors []error
 }
@@ -1157,7 +1157,7 @@ type ModifyBatchOrdersResponse struct {
 	// List of orders which were modified successfully which can have a length between 0 and N
 	Orders []*Order
 	// List of errors of length N, where each item corresponds to a nil value if
-	// the order from that specific index was placed succeessfully OR an non-nil *APIError if there was an error with
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
 	// the order at that index
 	Errors []error
 }
