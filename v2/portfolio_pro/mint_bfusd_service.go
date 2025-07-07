@@ -54,5 +54,4 @@ type BFUSDResponse struct {
 	TargetAsset    string `json:"targetAsset"`
 	FromAssetQty   string `json:"fromAssetQty"`
 	TargetAssetQty string `json:"targetAssetQty"`
-	RedeemRate     string `json:"redeemRate"`
 }
