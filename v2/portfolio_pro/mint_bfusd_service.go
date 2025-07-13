@@ -9,8 +9,9 @@ import (
 type MintBFUSDService struct {
 	c *Client
 
-	fromAsset string
-	amount    string
+	fromAsset   string
+	targetAsset string
+	amount      string
 }
 
 func (s *MintBFUSDService) FromAsset(fromAsset string) *MintBFUSDService {
@@ -23,6 +24,11 @@ func (s *MintBFUSDService) Amount(amount string) *MintBFUSDService {
 	return s
 }
 
+func (s *MintBFUSDService) TargetAsset(targetAsset string) *MintBFUSDService {
+	s.targetAsset = targetAsset
+	return s
+}
+
 func (s *MintBFUSDService) Do(ctx context.Context, opts ...RequestOption) (*MintBFUSDResponse, error) {
 	r := &request{
 		method:   http.MethodPost,
@@ -30,7 +36,7 @@ func (s *MintBFUSDService) Do(ctx context.Context, opts ...RequestOption) (*Mint
 		secType:  secTypeSigned,
 	}
 	r.setParam("fromAsset", s.fromAsset)
-	r.setParam("targetAsset", "BFUSD")
+	r.setParam("targetAsset", s.targetAsset)
 	r.setParam("amount", s.amount)
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -44,6 +50,8 @@ func (s *MintBFUSDService) Do(ctx context.Context, opts ...RequestOption) (*Mint
 	return res, nil
 }
 
+// Example:
+// {"fromAssetQty":"10","targetAssetQty":"9.9966156","mintRate":"0.99966156","fromAsset":"USDC","targetAsset":"BFUSD"}
 type MintBFUSDResponse struct {
 	BFUSDResponse
 	MintRate string `json:"mintRate"`

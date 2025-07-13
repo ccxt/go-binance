@@ -37,6 +37,7 @@ func (s *redeemBFUSDServiceTestSuite) TestRedeemBFUSD() {
 	})
 
 	res, err := s.client.NewRedeemBFUSDService().
+		FromAsset("BFUSD").
 		TargetAsset(targetAsset).
 		Amount(amount).
 		Do(newContext())

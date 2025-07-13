@@ -9,12 +9,18 @@ import (
 type RedeemBFUSDService struct {
 	c *Client
 
-	amount      string
+	fromAsset   string
 	targetAsset string
+	amount      string
 }
 
 func (s *RedeemBFUSDService) Amount(amount string) *RedeemBFUSDService {
 	s.amount = amount
+	return s
+}
+
+func (s *RedeemBFUSDService) FromAsset(fromAsset string) *RedeemBFUSDService {
+	s.fromAsset = fromAsset
 	return s
 }
 
@@ -29,7 +35,7 @@ func (s *RedeemBFUSDService) Do(ctx context.Context, opts ...RequestOption) (*Re
 		endpoint: "/sapi/v1/portfolio/redeem",
 		secType:  secTypeSigned,
 	}
-	r.setParam("fromAsset", "BFUSD")
+	r.setParam("fromAsset", s.fromAsset)
 	r.setParam("targetAsset", s.targetAsset)
 	r.setParam("amount", s.amount)
 	data, err := s.c.callAPI(ctx, r, opts...)
@@ -45,6 +51,8 @@ func (s *RedeemBFUSDService) Do(ctx context.Context, opts ...RequestOption) (*Re
 	return res, nil
 }
 
+// Example:
+// {"fromAssetQty":"10","targetAssetQty":"9.9983733","redeemRate":"0.99983733","fromAsset":"BFUSD","targetAsset":"USDC"}
 type RedeemBFUSDResponse struct {
 	BFUSDResponse
 	RedeemRate string `json:"redeemRate"`

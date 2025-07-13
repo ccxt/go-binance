@@ -38,6 +38,7 @@ func (s *mintBFUSDServiceTestSuite) TestMintBFUSD() {
 
 	res, err := s.client.NewMintBFUSDService().
 		FromAsset(fromAsset).
+		TargetAsset("BFUSD").
 		Amount(amount).
 		Do(newContext())
 	s.r().NoError(err)
