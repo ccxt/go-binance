@@ -27,7 +27,9 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 		"status": "FILLED",
 		"timeInForce": "GTC",
 		"type": "LIMIT",
-		"side": "BUY"
+		"side": "BUY",
+		"selfTradePreventionMode": "EXPIRE_TAKER",
+		"autoRepayAtCancel": false
 	}`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
@@ -41,21 +43,25 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 	newClientOrderID := "myOrder1"
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setFormParams(params{
-			"symbol":           symbol,
-			"side":             side,
-			"type":             orderType,
-			"timeInForce":      timeInForce,
-			"quantity":         quantity,
-			"quoteOrderQty":    quoteOrderQty,
-			"price":            price,
-			"newClientOrderId": newClientOrderID,
-			"sideEffectType":   SideEffectTypeNoSideEffect,
+			"symbol":                  symbol,
+			"side":                    side,
+			"type":                    orderType,
+			"timeInForce":             timeInForce,
+			"quantity":                quantity,
+			"quoteOrderQty":           quoteOrderQty,
+			"price":                   price,
+			"newClientOrderId":        newClientOrderID,
+			"sideEffectType":          SideEffectTypeNoSideEffect,
+			"selfTradePreventionMode": SelfTradePreventionModeExpireTaker,
+			"autoRepayAtCancel":       "FALSE",
 		})
 		s.assertRequestEqual(e, r)
 	})
 	res, err := s.client.NewCreateMarginOrderService().Symbol(symbol).Side(side).
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).QuoteOrderQty(quoteOrderQty).
 		Price(price).NewClientOrderID(newClientOrderID).SideEffectType(SideEffectTypeNoSideEffect).
+		SelfTradePreventionMode(SelfTradePreventionModeExpireTaker).
+		AutoRepayAtCancel(false).
 		Do(newContext())
 	s.r().NoError(err)
 	e := &CreateOrderResponse{
@@ -71,6 +77,7 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 		TimeInForce:              TimeInForceTypeGTC,
 		Type:                     OrderTypeLimit,
 		Side:                     SideTypeBuy,
+		SelfTradePreventionMode:  SelfTradePreventionModeExpireTaker,
 	}
 	s.assertCreateOrderResponseEqual(e, res)
 }

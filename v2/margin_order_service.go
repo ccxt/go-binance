@@ -10,20 +10,22 @@ import (
 
 // CreateMarginOrderService create order
 type CreateMarginOrderService struct {
-	c                *Client
-	symbol           string
-	side             SideType
-	orderType        OrderType
-	quantity         *string
-	quoteOrderQty    *string
-	price            *string
-	stopPrice        *string
-	newClientOrderID *string
-	icebergQuantity  *string
-	newOrderRespType *NewOrderRespType
-	sideEffectType   *SideEffectType
-	timeInForce      *TimeInForceType
-	isIsolated       *bool
+	c                       *Client
+	symbol                  string
+	side                    SideType
+	orderType               OrderType
+	quantity                *string
+	quoteOrderQty           *string
+	price                   *string
+	stopPrice               *string
+	newClientOrderID        *string
+	icebergQuantity         *string
+	newOrderRespType        *NewOrderRespType
+	sideEffectType          *SideEffectType
+	timeInForce             *TimeInForceType
+	isIsolated              *bool
+	selfTradePreventionMode *SelfTradePreventionMode
+	autoRepayAtCancel       *bool
 }
 
 // Symbol set symbol
@@ -104,6 +106,18 @@ func (s *CreateMarginOrderService) SideEffectType(sideEffectType SideEffectType)
 	return s
 }
 
+// SelfTradePreventionMode set selfTradePreventionMode
+func (s *CreateMarginOrderService) SelfTradePreventionMode(selfTradePreventionMode SelfTradePreventionMode) *CreateMarginOrderService {
+	s.selfTradePreventionMode = &selfTradePreventionMode
+	return s
+}
+
+// AutoRepayAtCancel set autoRepayAtCancel
+func (s *CreateMarginOrderService) AutoRepayAtCancel(autoRepayAtCancel bool) *CreateMarginOrderService {
+	s.autoRepayAtCancel = &autoRepayAtCancel
+	return s
+}
+
 // Do send request
 func (s *CreateMarginOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
 	r := &request{
@@ -151,6 +165,16 @@ func (s *CreateMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 	}
 	if s.sideEffectType != nil {
 		m["sideEffectType"] = *s.sideEffectType
+	}
+	if s.selfTradePreventionMode != nil {
+		m["selfTradePreventionMode"] = *s.selfTradePreventionMode
+	}
+	if s.autoRepayAtCancel != nil {
+		if *s.autoRepayAtCancel {
+			m["autoRepayAtCancel"] = "TRUE"
+		} else {
+			m["autoRepayAtCancel"] = "FALSE"
+		}
 	}
 	r.setFormParams(m)
 	res = new(CreateOrderResponse)
