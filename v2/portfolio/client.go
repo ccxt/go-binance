@@ -447,7 +447,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		// Return the parsed error with the raw response included
 		return nil, &res.Header, NewErrorFromResponse(apiErr.Code, apiErr.Message, data)
 	}
-	return data, &res.Header, nil
+	return data, &res.Header, err
 }
 
 // SetApiEndpoint set api Endpoint

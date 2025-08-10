@@ -370,7 +370,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		}
 		return nil, &res.Header, apiErr
 	}
-	return data, &res.Header, nil
+	return data, &res.Header, err
 }
 
 // SetApiEndpoint set api Endpoint
