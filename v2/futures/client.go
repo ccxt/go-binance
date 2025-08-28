@@ -78,8 +78,8 @@ type SelfTradePreventionMode string
 
 // Endpoints
 var (
-	BaseApiMainUrl    = "https://fapi.binance.com"
-	BaseApiTestnetUrl = "https://testnet.binancefuture.com"
+	BaseAPIMainURL    = "https://fapi.binance.com"
+	BaseAPITestnetURL = "https://testnet.binancefuture.com"
 )
 
 // Global enums
@@ -219,9 +219,9 @@ func newJSON(data []byte) (j *simplejson.Json, err error) {
 // getApiEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getApiEndpoint() string {
 	if UseTestnet {
-		return BaseApiTestnetUrl
+		return BaseAPITestnetURL
 	}
-	return BaseApiMainUrl
+	return BaseAPIMainURL
 }
 
 // NewClient initialize an API client instance with API key and secret key.
