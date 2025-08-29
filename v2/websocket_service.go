@@ -2,7 +2,9 @@ package binance
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -17,6 +19,7 @@ var (
 	BaseCombinedTestnetURL = "wss://stream.testnet.binance.vision/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-api.binance.com:443/ws-api/v3"
 	BaseWsApiTestnetURL    = "wss://ws-api.testnet.binance.vision/ws-api/v3"
+	BaseWsAnnouncementURL  = "wss://api.binance.com/sapi/wss"
 
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
 	WebsocketTimeout = time.Second * 600
@@ -135,20 +138,20 @@ func WsCombinedPartialDepthServe(symbolLevels map[string]string, handler WsParti
 		event.Symbol = strings.ToUpper(symbol)
 		data := j.Get("data").MustMap()
 		event.LastUpdateID, _ = data["lastUpdateId"].(json.Number).Int64()
-		bidsLen := len(data["bids"].([]interface{}))
+		bidsLen := len(data["bids"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["bids"].([]interface{})[i].([]interface{})
+			item := data["bids"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["asks"].([]interface{}))
+		asksLen := len(data["asks"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
 
-			item := data["asks"].([]interface{})[i].([]interface{})
+			item := data["asks"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -258,20 +261,20 @@ func wsCombinedDepthServe(endpoint string, handler WsDepthHandler, errHandler Er
 		event.Time, _ = data["E"].(json.Number).Int64()
 		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
 		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]interface{}))
+		bidsLen := len(data["b"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]interface{})[i].([]interface{})
+			item := data["b"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["a"].([]interface{}))
+		asksLen := len(data["a"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
 
-			item := data["a"].([]interface{})[i].([]interface{})
+			item := data["a"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -870,6 +873,80 @@ func WsApiInitReadWriteConn() (*websocket.Conn, error) {
 	}
 
 	return conn, err
+}
+
+type WsAnnouncementEvent struct {
+	CatalogID   int64  `json:"catalogId"`
+	CatalogName string `json:"catalogName"`
+	PublishDate int64  `json:"publishDate"`
+	Title       string `json:"title"`
+	Body        string `json:"body"`
+	Disclaimer  string `json:"disclaimer"`
+}
+
+type WsAnnouncementParam struct {
+	Random     string
+	Topic      string
+	RecvWindow int64
+	Timestamp  int64
+	Signature  string
+	ApiKey     string
+}
+type WsAnnouncementHandler func(event *WsAnnouncementEvent)
+
+// WsAnnouncementServe establishes a WebSocket connection to listen for Binance announcements.
+// See API documentation: https://developers.binance.com/docs/cms/announcement
+//
+// Parameters:
+//
+//	params - Should be created using client.CreateAnnouncementParam
+//	handler - Callback function to handle incoming announcement messages
+//	errHandler - Error callback function for connection errors
+//
+// Returns:
+//
+//	doneC - Channel that closes when the connection terminates
+//	stopC - Channel that can be closed to stop the connection
+//	err - Any initial connection error
+func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	if UseTestnet {
+		return nil, nil, errors.New("not support testnet")
+	}
+	endpoint := fmt.Sprintf("%s?random=%s&topic=%s&recvWindow=%d&timestamp=%d&signature=%s",
+		BaseWsAnnouncementURL, params.Random, params.Topic, params.RecvWindow, params.Timestamp, params.Signature,
+	)
+
+	cfg := newWsConfig(endpoint)
+	cfg.Header = &http.Header{}
+	cfg.Header.Add("X-MBX-APIKEY", params.ApiKey)
+	wsHandler := func(message []byte) {
+		event := struct {
+			Type  string `json:"type"`
+			Topic string `json:"topic"`
+			Data  string `json:"data"`
+		}{}
+
+		err := json.Unmarshal(message, &event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+
+		if event.Type != "DATA" {
+			errHandler(errors.New("type is not DATA: " + event.Type))
+			return
+		}
+
+		if event.Topic != "com_announcement_en" {
+			errHandler(errors.New("topic is not com_announcement_en: " + event.Topic))
+			return
+		}
+
+		e := new(WsAnnouncementEvent)
+		json.Unmarshal([]byte(event.Data), &e)
+		handler(e)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
 }
 
 // getWsApiEndpoint return the base endpoint of the API WS according the UseTestnet flag

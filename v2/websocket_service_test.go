@@ -1678,3 +1678,45 @@ func (s *websocketServiceTestSuite) assertWsBookTickerEvent(e, a *WsBookTickerEv
 	r.Equal(e.BestAskPrice, a.BestAskPrice, "BestAskPrice")
 	r.Equal(e.BestAskQty, a.BestAskQty, "BestAskQty")
 }
+
+// https://binance-docs.github.io/apidocs/spot/en/#all-book-tickers-stream
+func (s *websocketServiceTestSuite) TestWsAnnouncementServe() {
+	data := []byte(`{
+  "type": "DATA",
+  "topic": "com_announcement_en",
+  "data": "{\"catalogId\":161,\"catalogName\":\"Delisting\",\"publishDate\":1753257631403,\"title\":\"Notice of...\",\"body\":\"This is...\",\"disclaimer\":\"Trade on-the-go...\"}"
+}`)
+	fakeErrMsg := "fake error"
+	s.mockWsServe(data, errors.New(fakeErrMsg))
+	defer s.assertWsServe()
+
+	doneC, stopC, err := WsAnnouncementServe(WsAnnouncementParam{}, func(event *WsAnnouncementEvent) {
+		e := &WsAnnouncementEvent{
+			CatalogID:   161,
+			CatalogName: "Delisting",
+			PublishDate: 1753257631403,
+			Title:       "Notice of...",
+			Body:        "This is...",
+			Disclaimer:  "Trade on-the-go...",
+		}
+		_ = e
+		s.assertWsAnnouncementEvent(e, event)
+	},
+		func(err error) {
+			s.r().EqualError(err, fakeErrMsg)
+		})
+
+	s.r().NoError(err)
+	stopC <- struct{}{}
+	<-doneC
+}
+
+func (s *websocketServiceTestSuite) assertWsAnnouncementEvent(e, a *WsAnnouncementEvent) {
+	r := s.r()
+	r.Equal(e.CatalogID, a.CatalogID, "CatalogID")
+	r.Equal(e.CatalogName, a.CatalogName, "CatalogName")
+	r.Equal(e.PublishDate, a.PublishDate, "PublishDate")
+	r.Equal(e.Title, a.Title, "Title")
+	r.Equal(e.Body, a.Body, "Body")
+	r.Equal(e.Disclaimer, a.Disclaimer, "Disclaimer")
+}

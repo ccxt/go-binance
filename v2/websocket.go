@@ -17,6 +17,7 @@ type ErrHandler func(err error)
 // WsConfig webservice configuration
 type WsConfig struct {
 	Endpoint string
+	Header   *http.Header
 	Proxy    *string
 }
 
@@ -42,7 +43,7 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 		EnableCompression: true,
 	}
 
-	c, _, err := Dialer.Dial(cfg.Endpoint, nil)
+	c, _, err := Dialer.Dial(cfg.Endpoint, *cfg.Header)
 	if err != nil {
 		return nil, nil, err
 	}
