@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"time"
@@ -28,7 +29,14 @@ func newWsConfig(endpoint string) *WsConfig {
 	}
 }
 
-var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+func wsServe(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	return wsServeWithConnHandler(cfg, handler, errHandler, nil)
+}
+
+type ConnHandler func(context.Context, *websocket.Conn)
+
+// WsServeWithConnHandler serves websocket with custom connection handler, useful for custom keepalive
+var wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler, connHandler ConnHandler) (doneC, stopC chan struct{}, err error) {
 	proxy := http.ProxyFromEnvironment
 	if cfg.Proxy != nil {
 		u, err := url.Parse(*cfg.Proxy)
@@ -62,6 +70,13 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 			keepAlive(c, WebsocketTimeout)
 		}
 
+		// Custom connection handling, useful in active keepalive scenarios
+		if connHandler != nil {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			go connHandler(ctx, c)
+		}
+
 		// Wait for the stopC channel to be closed.  We do that in a
 		// separate goroutine because ReadMessage is a blocking
 		// operation.
@@ -86,6 +101,21 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 		}
 	}()
 	return
+}
+
+func keepAliveHandler(duration time.Duration) ConnHandler {
+	return func(ctx context.Context, c *websocket.Conn) {
+		ticker := time.NewTicker(duration)
+		for {
+			select {
+			case <-ctx.Done():
+				ticker.Stop()
+				return
+			case <-ticker.C:
+				c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketPongTimeout))
+			}
+		}
+	}
 }
 
 func keepAlive(c *websocket.Conn, timeout time.Duration) {
@@ -137,7 +167,7 @@ var WsGetReadWriteConnection = func(cfg *WsConfig) (*websocket.Conn, error) {
 		EnableCompression: false,
 	}
 
-	c, _, err := Dialer.Dial(cfg.Endpoint, nil)
+	c, _, err := Dialer.Dial(cfg.Endpoint, *cfg.Header)
 	if err != nil {
 		return nil, err
 	}

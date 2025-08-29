@@ -9,7 +9,7 @@ import (
 
 type websocketServiceTestSuite struct {
 	baseTestSuite
-	origWsServe func(*WsConfig, WsHandler, ErrHandler) (chan struct{}, chan struct{}, error)
+	origWsServe func(*WsConfig, WsHandler, ErrHandler, ConnHandler) (chan struct{}, chan struct{}, error)
 	serveCount  int
 }
 
@@ -18,16 +18,16 @@ func TestWebsocketService(t *testing.T) {
 }
 
 func (s *websocketServiceTestSuite) SetupTest() {
-	s.origWsServe = wsServe
+	s.origWsServe = wsServeWithConnHandler
 }
 
 func (s *websocketServiceTestSuite) TearDownTest() {
-	wsServe = s.origWsServe
+	wsServeWithConnHandler = s.origWsServe
 	s.serveCount = 0
 }
 
 func (s *websocketServiceTestSuite) mockWsServe(data []byte, err error) {
-	wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, innerErr error) {
+	wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler, connHandler ConnHandler) (doneC, stopC chan struct{}, innerErr error) {
 		s.serveCount++
 		doneC = make(chan struct{})
 		stopC = make(chan struct{})
