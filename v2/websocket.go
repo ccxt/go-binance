@@ -30,7 +30,13 @@ func newWsConfig(endpoint string) *WsConfig {
 }
 
 func wsServe(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	return wsServeWithConnHandler(cfg, handler, errHandler, nil)
+	return wsServeWithConnHandler(cfg, handler, errHandler, func(ctx context.Context, c *websocket.Conn) {
+		if WebsocketKeepalive {
+			// This function overwrites the default ping frame handler
+			// sent by the websocket API server
+			keepAlive(c, WebsocketTimeout)
+		}
+	})
 }
 
 type ConnHandler func(context.Context, *websocket.Conn)
@@ -64,11 +70,6 @@ var wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler E
 		// closed by the client.
 
 		defer close(doneC)
-		if WebsocketKeepalive {
-			// This function overwrites the default ping frame handler
-			// sent by the websocket API server
-			keepAlive(c, WebsocketTimeout)
-		}
 
 		// Custom connection handling, useful in active keepalive scenarios
 		if connHandler != nil {
@@ -103,16 +104,33 @@ var wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler E
 	return
 }
 
-func keepAliveHandler(duration time.Duration) ConnHandler {
+func keepAliveHandler(interval time.Duration, pongTimeout time.Duration) ConnHandler {
 	return func(ctx context.Context, c *websocket.Conn) {
-		ticker := time.NewTicker(duration)
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		lastResponse := time.Now()
+		c.SetPongHandler(func(appData string) error {
+			lastResponse = time.Now()
+			return nil
+		})
+
+		lastPongTicker := time.NewTicker(pongTimeout)
+		defer lastPongTicker.Stop()
+
 		for {
 			select {
 			case <-ctx.Done():
-				ticker.Stop()
 				return
 			case <-ticker.C:
-				c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketPongTimeout))
+				if err := c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketPongTimeout)); err != nil {
+					return
+				}
+			case <-lastPongTicker.C:
+				if time.Since(lastResponse) > pongTimeout {
+					c.Close()
+					return
+				}
 			}
 		}
 	}
