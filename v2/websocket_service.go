@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -917,7 +916,6 @@ func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandl
 	)
 
 	cfg := newWsConfig(endpoint)
-	cfg.Header = &http.Header{}
 	cfg.Header.Add("X-MBX-APIKEY", params.ApiKey)
 	wsHandler := func(message []byte) {
 		event := struct {

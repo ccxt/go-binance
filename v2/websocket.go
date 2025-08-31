@@ -18,7 +18,7 @@ type ErrHandler func(err error)
 // WsConfig webservice configuration
 type WsConfig struct {
 	Endpoint string
-	Header   *http.Header
+	Header   http.Header
 	Proxy    *string
 }
 
@@ -26,6 +26,7 @@ func newWsConfig(endpoint string) *WsConfig {
 	return &WsConfig{
 		Endpoint: endpoint,
 		Proxy:    getWsProxyUrl(),
+		Header:   make(http.Header),
 	}
 }
 
@@ -57,7 +58,7 @@ var wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler E
 		EnableCompression: true,
 	}
 
-	c, _, err := Dialer.Dial(cfg.Endpoint, *cfg.Header)
+	c, _, err := Dialer.Dial(cfg.Endpoint, cfg.Header)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -189,7 +190,7 @@ var WsGetReadWriteConnection = func(cfg *WsConfig) (*websocket.Conn, error) {
 		EnableCompression: false,
 	}
 
-	c, _, err := Dialer.Dial(cfg.Endpoint, *cfg.Header)
+	c, _, err := Dialer.Dial(cfg.Endpoint, cfg.Header)
 	if err != nil {
 		return nil, err
 	}
