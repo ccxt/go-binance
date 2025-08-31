@@ -34,7 +34,7 @@ func wsServe(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, st
 		if WebsocketKeepalive {
 			// This function overwrites the default ping frame handler
 			// sent by the websocket API server
-			keepAlive(c, WebsocketTimeout)
+			keepAliveWithPong(ctx, c, WebsocketTimeout)
 		}
 	})
 }
@@ -104,7 +104,8 @@ var wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler E
 	return
 }
 
-func keepAliveHandler(interval time.Duration, pongTimeout time.Duration) ConnHandler {
+// keepAliveWithPing Keepalive by actively sending ping messages
+func keepAliveWithPing(interval time.Duration, pongTimeout time.Duration) ConnHandler {
 	return func(ctx context.Context, c *websocket.Conn) {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -136,8 +137,10 @@ func keepAliveHandler(interval time.Duration, pongTimeout time.Duration) ConnHan
 	}
 }
 
-func keepAlive(c *websocket.Conn, timeout time.Duration) {
+// keepAliveWithPong Keepalive by responding to ping messages
+func keepAliveWithPong(ctx context.Context, c *websocket.Conn, timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
+	defer ticker.Stop()
 
 	lastResponse := time.Now()
 
@@ -157,16 +160,17 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 		return nil
 	})
 
-	go func() {
-		defer ticker.Stop()
-		for {
-			<-ticker.C
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
 			if time.Since(lastResponse) > timeout {
 				c.Close()
 				return
 			}
 		}
-	}()
+	}
 }
 
 var WsGetReadWriteConnection = func(cfg *WsConfig) (*websocket.Conn, error) {
