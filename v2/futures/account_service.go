@@ -127,6 +127,7 @@ type AccountPosition struct {
 	Notional               string           `json:"notional"`
 	BidNotional            string           `json:"bidNotional"`
 	AskNotional            string           `json:"askNotional"`
+	IsolatedWallet         string           `json:"isolatedWallet"`
 	UpdateTime             int64            `json:"updateTime"`
 }
 

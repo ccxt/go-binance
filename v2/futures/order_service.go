@@ -32,6 +32,7 @@ type CreateOrderService struct {
 	newOrderRespType        NewOrderRespType
 	closePosition           *string
 	selfTradePreventionMode *SelfTradePreventionMode
+	goodTillDate            int64
 }
 
 // Symbol set symbol
@@ -139,6 +140,12 @@ func (s *CreateOrderService) SelfTradePreventionMode(selfTradePreventionMode Sel
 	return s
 }
 
+// GoodTillDate set goodTillDate
+func (s *CreateOrderService) GoodTillDate(goodTillDate int64) *CreateOrderService {
+	s.goodTillDate = goodTillDate
+	return s
+}
+
 func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
 	r := &request{
 		method:   http.MethodPost,
@@ -191,6 +198,9 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.selfTradePreventionMode != nil {
 		m["selfTradePreventionMode"] = *s.selfTradePreventionMode
+	}
+	if s.goodTillDate > 0 && *s.timeInForce == TimeInForceTypeGTD {
+		m["goodTillDate"] = s.goodTillDate
 	}
 	r.setFormParams(m)
 	data, header, err = s.c.callAPI(ctx, r, opts...)
@@ -973,7 +983,7 @@ type CreateBatchOrdersResponse struct {
 	// List of orders which were placed successfully which can have a length between 0 and N
 	Orders []*Order
 	// List of errors of length N, where each item corresponds to a nil value if
-	// the order from that specific index was placed succeessfully OR an non-nil *APIError if there was an error with
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
 	// the order at that index
 	Errors []error
 }
@@ -1157,7 +1167,7 @@ type ModifyBatchOrdersResponse struct {
 	// List of orders which were modified successfully which can have a length between 0 and N
 	Orders []*Order
 	// List of errors of length N, where each item corresponds to a nil value if
-	// the order from that specific index was placed succeessfully OR an non-nil *APIError if there was an error with
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
 	// the order at that index
 	Errors []error
 }

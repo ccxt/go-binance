@@ -10,20 +10,22 @@ import (
 
 // CreateMarginOrderService create order
 type CreateMarginOrderService struct {
-	c                *Client
-	symbol           string
-	side             SideType
-	orderType        OrderType
-	quantity         *string
-	quoteOrderQty    *string
-	price            *string
-	stopPrice        *string
-	newClientOrderID *string
-	icebergQuantity  *string
-	newOrderRespType *NewOrderRespType
-	sideEffectType   *SideEffectType
-	timeInForce      *TimeInForceType
-	isIsolated       *bool
+	c                       *Client
+	symbol                  string
+	side                    SideType
+	orderType               OrderType
+	quantity                *string
+	quoteOrderQty           *string
+	price                   *string
+	stopPrice               *string
+	newClientOrderID        *string
+	icebergQuantity         *string
+	newOrderRespType        *NewOrderRespType
+	sideEffectType          *SideEffectType
+	timeInForce             *TimeInForceType
+	isIsolated              *bool
+	selfTradePreventionMode *SelfTradePreventionMode
+	autoRepayAtCancel       *bool
 }
 
 // Symbol set symbol
@@ -104,6 +106,18 @@ func (s *CreateMarginOrderService) SideEffectType(sideEffectType SideEffectType)
 	return s
 }
 
+// SelfTradePreventionMode set selfTradePreventionMode
+func (s *CreateMarginOrderService) SelfTradePreventionMode(selfTradePreventionMode SelfTradePreventionMode) *CreateMarginOrderService {
+	s.selfTradePreventionMode = &selfTradePreventionMode
+	return s
+}
+
+// AutoRepayAtCancel set autoRepayAtCancel
+func (s *CreateMarginOrderService) AutoRepayAtCancel(autoRepayAtCancel bool) *CreateMarginOrderService {
+	s.autoRepayAtCancel = &autoRepayAtCancel
+	return s
+}
+
 // Do send request
 func (s *CreateMarginOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
 	r := &request{
@@ -151,6 +165,16 @@ func (s *CreateMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 	}
 	if s.sideEffectType != nil {
 		m["sideEffectType"] = *s.sideEffectType
+	}
+	if s.selfTradePreventionMode != nil {
+		m["selfTradePreventionMode"] = *s.selfTradePreventionMode
+	}
+	if s.autoRepayAtCancel != nil {
+		if *s.autoRepayAtCancel {
+			m["autoRepayAtCancel"] = "TRUE"
+		} else {
+			m["autoRepayAtCancel"] = "FALSE"
+		}
 	}
 	r.setFormParams(m)
 	res = new(CreateOrderResponse)
@@ -238,6 +262,53 @@ func (s *CancelMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 	err = json.Unmarshal(data, res)
 	if err != nil {
 		return nil, err
+	}
+	return res, nil
+}
+
+// CancelAllMarginOrdersService cancel an order
+type CancelAllMarginOrdersService struct {
+	c          *Client
+	symbol     string
+	isIsolated *bool
+}
+
+// Symbol set symbol
+func (s *CancelAllMarginOrdersService) Symbol(symbol string) *CancelAllMarginOrdersService {
+	s.symbol = symbol
+	return s
+}
+
+// IsIsolated set isIsolated
+func (s *CancelAllMarginOrdersService) IsIsolated(isIsolated bool) *CancelAllMarginOrdersService {
+	s.isIsolated = &isIsolated
+	return s
+}
+
+// Do send request
+func (s *CancelAllMarginOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*CancelAllMarginOrdersResponse, err error) {
+	r := &request{
+		method:   http.MethodDelete,
+		endpoint: "/sapi/v1/margin/openOrders",
+		secType:  secTypeSigned,
+	}
+	r.setFormParam("symbol", s.symbol)
+	if s.isIsolated != nil {
+		if *s.isIsolated {
+			r.setFormParam("isIsolated", "TRUE")
+		} else {
+			r.setFormParam("isIsolated", "FALSE")
+		}
+	}
+
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return []*CancelAllMarginOrdersResponse{}, err
+	}
+	res = make([]*CancelAllMarginOrdersResponse, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return []*CancelAllMarginOrdersResponse{}, err
 	}
 	return res, nil
 }
@@ -448,6 +519,52 @@ type CancelMarginOrderResponse struct {
 	TimeInForce              TimeInForceType `json:"timeInForce"`
 	Type                     OrderType       `json:"type"`
 	Side                     SideType        `json:"side"`
+}
+
+// CancelAllMarginOrdersResponse define response of canceling order
+type CancelAllMarginOrdersResponse struct {
+	Symbol                   string                         `json:"symbol"`
+	OrigClientOrderID        string                         `json:"origClientOrderId"`
+	OrderID                  string                         `json:"orderId"`
+	ClientOrderID            string                         `json:"clientOrderId"`
+	TransactTime             int64                          `json:"transactTime"`
+	Price                    string                         `json:"price"`
+	OrigQuantity             string                         `json:"origQty"`
+	ExecutedQuantity         string                         `json:"executedQty"`
+	CummulativeQuoteQuantity string                         `json:"cummulativeQuoteQty"`
+	Status                   OrderStatusType                `json:"status"`
+	TimeInForce              TimeInForceType                `json:"timeInForce"`
+	Type                     OrderType                      `json:"type"`
+	Side                     SideType                       `json:"side"`
+	SelfTradePreventionMode  string                         `json:"selfTradePreventionMode"`
+	OrderListID              int64                          `json:"orderListId"`
+	ContingencyType          string                         `json:"contingencyType"`
+	ListStatusType           string                         `json:"listStatusType"`
+	ListOrderStatus          string                         `json:"listOrderStatus"`
+	ListClientOrderID        string                         `json:"listClientOrderId"`
+	TransactionTime          int64                          `json:"transactionTime"`
+	IsIsolated               bool                           `json:"isIsolated"`
+	Orders                   []*MarginOCOOrder              `json:"orders"`
+	OrderReports             []*CancelAllMarginOrdersReport `json:"orderReports"`
+}
+
+// CancelAllMarginOrdersReport may be returned in an array of MarginOCOOrderReport in a CreateMarginOCOResponse
+type CancelAllMarginOrdersReport struct {
+	Symbol                   string          `json:"symbol"`
+	OrderID                  int64           `json:"orderId"`
+	OrderListID              int64           `json:"orderListId"`
+	ClientOrderID            string          `json:"clientOrderId"`
+	OrigClientOrderID        string          `json:"origClientOrderId"`
+	Price                    string          `json:"price"`
+	OrigQuantity             string          `json:"origQty"`
+	ExecutedQuantity         string          `json:"executedQty"`
+	CummulativeQuoteQuantity string          `json:"cummulativeQuoteQty"`
+	Status                   OrderStatusType `json:"status"`
+	TimeInForce              TimeInForceType `json:"timeInForce"`
+	Type                     OrderType       `json:"type"`
+	Side                     SideType        `json:"side"`
+	StopPrice                string          `json:"stopPrice"`
+	IcebergQty               string          `json:"icebergQty"`
 }
 
 // CreateMarginOCOService create a new OCO for a margin account

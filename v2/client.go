@@ -862,6 +862,11 @@ func (c *Client) NewCancelMarginOrderService() *CancelMarginOrderService {
 	return &CancelMarginOrderService{c: c}
 }
 
+// NewCancelAllMarginOrdersService init cancel all orders service
+func (c *Client) NewCancelAllMarginOrdersService() *CancelAllMarginOrdersService {
+	return &CancelAllMarginOrdersService{c: c}
+}
+
 // NewCreateMarginOCOService init creating margin order service
 func (c *Client) NewCreateMarginOCOService() *CreateMarginOCOService {
 	return &CreateMarginOCOService{c: c}
@@ -1463,4 +1468,44 @@ func (c *Client) NewSimpleEarnService() *SimpleEarnService {
 
 func (c *Client) NewDualInvestmentService() *DualInvestmentService {
 	return &DualInvestmentService{c: c}
+}
+
+// NewOrderCreateWsService init order creation websocket service
+func (c *Client) NewOrderCreateWsService() (*OrderCreateWsService, error) {
+	return NewOrderCreateWsService(c.APIKey, c.SecretKey)
+}
+
+// NewOrderListCreateWsService init order list creation websocket service (OCO)
+func (c *Client) NewOrderListCreateWsService() (*OrderListCreateWsService, error) {
+	return NewOrderListCreateWsService(c.APIKey, c.SecretKey)
+}
+
+// NewOrderListPlaceWsService init order list placement websocket service (deprecated OCO)
+func (c *Client) NewOrderListPlaceWsService() (*OrderListPlaceWsService, error) {
+	return NewOrderListPlaceWsService(c.APIKey, c.SecretKey)
+}
+
+// NewOrderListPlaceOtoWsService init order list placement websocket service (OTO)
+func (c *Client) NewOrderListPlaceOtoWsService() (*OrderListPlaceOtoWsService, error) {
+	return NewOrderListPlaceOtoWsService(c.APIKey, c.SecretKey)
+}
+
+// NewOrderListPlaceOtocoWsService init order list placement websocket service (OTOCO)
+func (c *Client) NewOrderListPlaceOtocoWsService() (*OrderListPlaceOtocoWsService, error) {
+	return NewOrderListPlaceOtocoWsService(c.APIKey, c.SecretKey)
+}
+
+// NewOrderListCancelWsService init order list cancellation websocket service
+func (c *Client) NewOrderListCancelWsService() (*OrderListCancelWsService, error) {
+	return NewOrderListCancelWsService(c.APIKey, c.SecretKey)
+}
+
+// NewSorOrderPlaceWsService init SOR order placement websocket service
+func (c *Client) NewSorOrderPlaceWsService() (*SorOrderPlaceWsService, error) {
+	return NewSorOrderPlaceWsService(c.APIKey, c.SecretKey)
+}
+
+// NewSorOrderTestWsService init SOR order testing websocket service
+func (c *Client) NewSorOrderTestWsService() (*SorOrderTestWsService, error) {
+	return NewSorOrderTestWsService(c.APIKey, c.SecretKey)
 }

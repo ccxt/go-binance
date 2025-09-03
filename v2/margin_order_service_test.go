@@ -27,7 +27,9 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 		"status": "FILLED",
 		"timeInForce": "GTC",
 		"type": "LIMIT",
-		"side": "BUY"
+		"side": "BUY",
+		"selfTradePreventionMode": "EXPIRE_TAKER",
+		"autoRepayAtCancel": false
 	}`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
@@ -41,21 +43,25 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 	newClientOrderID := "myOrder1"
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setFormParams(params{
-			"symbol":           symbol,
-			"side":             side,
-			"type":             orderType,
-			"timeInForce":      timeInForce,
-			"quantity":         quantity,
-			"quoteOrderQty":    quoteOrderQty,
-			"price":            price,
-			"newClientOrderId": newClientOrderID,
-			"sideEffectType":   SideEffectTypeNoSideEffect,
+			"symbol":                  symbol,
+			"side":                    side,
+			"type":                    orderType,
+			"timeInForce":             timeInForce,
+			"quantity":                quantity,
+			"quoteOrderQty":           quoteOrderQty,
+			"price":                   price,
+			"newClientOrderId":        newClientOrderID,
+			"sideEffectType":          SideEffectTypeNoSideEffect,
+			"selfTradePreventionMode": SelfTradePreventionModeExpireTaker,
+			"autoRepayAtCancel":       "FALSE",
 		})
 		s.assertRequestEqual(e, r)
 	})
 	res, err := s.client.NewCreateMarginOrderService().Symbol(symbol).Side(side).
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).QuoteOrderQty(quoteOrderQty).
 		Price(price).NewClientOrderID(newClientOrderID).SideEffectType(SideEffectTypeNoSideEffect).
+		SelfTradePreventionMode(SelfTradePreventionModeExpireTaker).
+		AutoRepayAtCancel(false).
 		Do(newContext())
 	s.r().NoError(err)
 	e := &CreateOrderResponse{
@@ -71,6 +77,7 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 		TimeInForce:              TimeInForceTypeGTC,
 		Type:                     OrderTypeLimit,
 		Side:                     SideTypeBuy,
+		SelfTradePreventionMode:  SelfTradePreventionModeExpireTaker,
 	}
 	s.assertCreateOrderResponseEqual(e, res)
 }
@@ -208,6 +215,57 @@ func (s *marginOrderServiceTestSuite) TestCancelOrder() {
 		Side:                     SideTypeSell,
 	}
 	s.assertCancelMarginOrderResponseEqual(e, res)
+}
+
+func (s *marginOrderServiceTestSuite) TestCancelAllOrder() {
+	data := []byte(`[{
+		"symbol": "LTCBTC",
+		"orderId": "28",
+		"origClientOrderId": "myOrder1",
+		"clientOrderId": "cancelMyOrder1",
+		"transactTime": 1507725176595,
+		"price": "1.00000000",
+		"origQty": "10.00000000",
+		"executedQty": "8.00000000",
+		"cummulativeQuoteQty": "8.00000000",
+		"status": "CANCELED",
+		"timeInForce": "GTC",
+		"type": "LIMIT",
+		"side": "SELL"
+	}]`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+
+	symbol := "LTCBTC"
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setFormParams(params{
+			"symbol": symbol,
+		})
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewCancelAllMarginOrdersService().Symbol(symbol).
+		Do(newContext())
+	r := s.r()
+	r.NoError(err)
+	e := []*CancelAllMarginOrdersResponse{
+		&CancelAllMarginOrdersResponse{
+			Symbol:                   "LTCBTC",
+			OrderID:                  "28",
+			OrigClientOrderID:        "myOrder1",
+			ClientOrderID:            "cancelMyOrder1",
+			TransactTime:             1507725176595,
+			Price:                    "1.00000000",
+			OrigQuantity:             "10.00000000",
+			ExecutedQuantity:         "8.00000000",
+			CummulativeQuoteQuantity: "8.00000000",
+			Status:                   OrderStatusTypeCanceled,
+			TimeInForce:              TimeInForceTypeGTC,
+			Type:                     OrderTypeLimit,
+			Side:                     SideTypeSell,
+		},
+	}
+	s.assertCancelAllMarginOrdersResponseEqual(e, res)
 }
 
 func (s *marginOrderServiceTestSuite) TestGetOrder() {
@@ -433,6 +491,24 @@ func (s *marginOrderServiceTestSuite) assertCancelMarginOrderResponseEqual(e, a 
 	r.Equal(e.TimeInForce, a.TimeInForce, "TimeInForce")
 	r.Equal(e.Type, a.Type, "Type")
 	r.Equal(e.Side, a.Side, "Side")
+}
+
+func (s *marginOrderServiceTestSuite) assertCancelAllMarginOrdersResponseEqual(e, a []*CancelAllMarginOrdersResponse) {
+	r := s.r()
+	r.Equal(len(e), len(a), "Length")
+	r.Equal(e[0].Symbol, a[0].Symbol, "Symbol")
+	r.Equal(e[0].OrderID, a[0].OrderID, "OrderID")
+	r.Equal(e[0].OrigClientOrderID, a[0].OrigClientOrderID, "OrigClientOrderID")
+	r.Equal(e[0].ClientOrderID, a[0].ClientOrderID, "ClientOrderID")
+	r.Equal(e[0].TransactTime, a[0].TransactTime, "TransactTime")
+	r.Equal(e[0].Price, a[0].Price, "Price")
+	r.Equal(e[0].OrigQuantity, a[0].OrigQuantity, "OrigQuantity")
+	r.Equal(e[0].ExecutedQuantity, a[0].ExecutedQuantity, "ExecutedQuantity")
+	r.Equal(e[0].CummulativeQuoteQuantity, a[0].CummulativeQuoteQuantity, "CummulativeQuoteQuantity")
+	r.Equal(e[0].Status, a[0].Status, "Status")
+	r.Equal(e[0].TimeInForce, a[0].TimeInForce, "TimeInForce")
+	r.Equal(e[0].Type, a[0].Type, "Type")
+	r.Equal(e[0].Side, a[0].Side, "Side")
 }
 
 func (s *marginOrderServiceTestSuite) TestCreateOCO() {

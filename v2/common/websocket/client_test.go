@@ -233,7 +233,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 func startWsTestServer(stopCh chan struct{}) {
 	server := &http.Server{
-		Addr: ":8080",
+		Addr: "localhost:8080",
 	}
 
 	http.HandleFunc("/ws", wsHandler)
