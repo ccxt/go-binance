@@ -1699,7 +1699,6 @@ func (s *websocketServiceTestSuite) TestWsAnnouncementServe() {
 			Body:        "This is...",
 			Disclaimer:  "Trade on-the-go...",
 		}
-		_ = e
 		s.assertWsAnnouncementEvent(e, event)
 	},
 		func(err error) {

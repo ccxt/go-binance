@@ -909,7 +909,7 @@ type WsAnnouncementHandler func(event *WsAnnouncementEvent)
 //	err - Any initial connection error
 func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
 	if UseTestnet {
-		return nil, nil, errors.New("not support testnet")
+		return nil, nil, errors.New("testnet is not supported")
 	}
 	endpoint := fmt.Sprintf("%s?random=%s&topic=%s&recvWindow=%d&timestamp=%d&signature=%s",
 		BaseWsAnnouncementURL, params.Random, params.Topic, params.RecvWindow, params.Timestamp, params.Signature,
@@ -941,7 +941,10 @@ func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandl
 		}
 
 		e := new(WsAnnouncementEvent)
-		json.Unmarshal([]byte(event.Data), &e)
+		if err := json.Unmarshal([]byte(event.Data), &e); err != nil {
+			errHandler(err)
+			return
+		}
 		handler(e)
 	}
 	return wsServeWithConnHandler(cfg, wsHandler, errHandler, keepAliveWithPing(30*time.Second, WebsocketTimeout))

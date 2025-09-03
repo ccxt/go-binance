@@ -16,7 +16,7 @@ import (
 // if not specified.
 func (c *Client) CreateAnnouncementParam(opts ...RequestOption) (WsAnnouncementParam, error) {
 	if c.APIKey == "" || c.SecretKey == "" {
-		return WsAnnouncementParam{}, errors.New("miss apikey or secret key")
+		return WsAnnouncementParam{}, errors.New("missing API key or secret key")
 	}
 	kt := c.KeyType
 	if kt == "" {
