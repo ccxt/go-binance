@@ -18,12 +18,14 @@ type ErrHandler func(err error)
 type WsConfig struct {
 	Endpoint string
 	Proxy    *string
+	Header   http.Header
 }
 
 func newWsConfig(endpoint string) *WsConfig {
 	return &WsConfig{
 		Endpoint: endpoint,
 		Proxy:    getWsProxyUrl(),
+		Header:   Header,
 	}
 }
 

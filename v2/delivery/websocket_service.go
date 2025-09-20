@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -25,6 +26,7 @@ var (
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
 	ProxyUrl   = ""
+	Header     = make(http.Header)
 )
 
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
