@@ -127,7 +127,7 @@ func keepAliveWithPing(interval time.Duration, pongTimeout time.Duration) ConnHa
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if err := c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketKeepaliveTimeout)); err != nil {
+				if err := c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketPingTimeout)); err != nil {
 					return
 				}
 			case <-lastPongTicker.C:
@@ -153,7 +153,7 @@ func keepAliveWithPong(ctx context.Context, c *websocket.Conn, timeout time.Dura
 		err := c.WriteControl(
 			websocket.PongMessage,
 			[]byte(pingData),
-			time.Now().Add(WebsocketKeepaliveTimeout), // Short deadline to ensure timely response
+			time.Now().Add(WebsocketPongTimeout), // Short deadline to ensure timely response
 		)
 		if err != nil {
 			return err
