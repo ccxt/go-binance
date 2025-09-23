@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -111,9 +112,10 @@ func keepAliveWithPing(interval time.Duration, pongTimeout time.Duration) ConnHa
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 
-		lastResponse := time.Now()
+		var lastResponse int64
+		atomic.StoreInt64(&lastResponse, time.Now().Unix())
 		c.SetPongHandler(func(appData string) error {
-			lastResponse = time.Now()
+			atomic.StoreInt64(&lastResponse, time.Now().Unix())
 			return nil
 		})
 
@@ -125,11 +127,11 @@ func keepAliveWithPing(interval time.Duration, pongTimeout time.Duration) ConnHa
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if err := c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketPongTimeout)); err != nil {
+				if err := c.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(WebsocketKeepaliveTimeout)); err != nil {
 					return
 				}
 			case <-lastPongTicker.C:
-				if time.Since(lastResponse) > pongTimeout {
+				if time.Since(time.Unix(atomic.LoadInt64(&lastResponse), 0)) > pongTimeout {
 					c.Close()
 					return
 				}
@@ -143,20 +145,21 @@ func keepAliveWithPong(ctx context.Context, c *websocket.Conn, timeout time.Dura
 	ticker := time.NewTicker(timeout)
 	defer ticker.Stop()
 
-	lastResponse := time.Now()
+	var lastResponse int64
+	atomic.StoreInt64(&lastResponse, time.Now().Unix())
 
 	c.SetPingHandler(func(pingData string) error {
 		// Respond with Pong using the server's PING payload
 		err := c.WriteControl(
 			websocket.PongMessage,
 			[]byte(pingData),
-			time.Now().Add(WebsocketPongTimeout), // Short deadline to ensure timely response
+			time.Now().Add(WebsocketKeepaliveTimeout), // Short deadline to ensure timely response
 		)
 		if err != nil {
 			return err
 		}
 
-		lastResponse = time.Now()
+		atomic.StoreInt64(&lastResponse, time.Now().Unix())
 
 		return nil
 	})
@@ -166,7 +169,7 @@ func keepAliveWithPong(ctx context.Context, c *websocket.Conn, timeout time.Dura
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			if time.Since(lastResponse) > timeout {
+			if time.Since(time.Unix(atomic.LoadInt64(&lastResponse), 0)) > timeout {
 				c.Close()
 				return
 			}
