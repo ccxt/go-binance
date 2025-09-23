@@ -955,7 +955,7 @@ func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandl
 	)
 
 	cfg := newWsConfig(endpoint)
-	cfg.Header.Add("X-MBX-APIKEY", params.ApiKey)
+	cfg.Header.Set("X-MBX-APIKEY", params.ApiKey)
 	wsHandler := func(message []byte) {
 		event := struct {
 			Type  string `json:"type"`
