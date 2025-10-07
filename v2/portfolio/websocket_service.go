@@ -3,6 +3,7 @@ package portfolio
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -24,6 +25,7 @@ var (
 	// using for websocket API (read/write)
 	WebsocketTimeoutReadWriteConnection = time.Second * 10
 	ProxyUrl                            = ""
+	Header                              = make(http.Header)
 )
 
 func getWsProxyUrl() *string {
