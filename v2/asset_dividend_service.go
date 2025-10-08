@@ -76,7 +76,7 @@ func (s *AssetDividendService) Do(ctx context.Context) (*DividendResponseWrapper
 
 // DividendResponseWrapper represents a wrapper around a AssetDividendService.
 type DividendResponseWrapper struct {
-	Rows  *[]DividendResponse `json:"rows"`
+	Rows  []*DividendResponse `json:"rows"`
 	Total int32               `json:"total"`
 }
 

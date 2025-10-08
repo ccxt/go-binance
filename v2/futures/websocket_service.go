@@ -1062,6 +1062,9 @@ type WsUserDataEvent struct {
 
 	// TRADE_LITE
 	WsUserDataTradeLite
+
+	// CONDITIONAL_ORDER_TRIGGER_REJECT
+	WsUserDataConditionalOrderTriggerReject
 }
 
 type WsUserDataAccountConfigUpdate struct {
@@ -1094,6 +1097,10 @@ type WsUserDataTradeLite struct {
 	OrderID         int64    `json:"i"`
 }
 
+type WsUserDataConditionalOrderTriggerReject struct {
+	ConditionalOrderTriggerReject WsConditionalOrderTriggerReject `json:"or"`
+}
+
 func (w *WsUserDataTradeLite) fromSimpleJson(j *simplejson.Json) (err error) {
 	w.Symbol = j.Get("s").MustString()
 	w.OriginalQty = j.Get("q").MustString()
@@ -1120,10 +1127,11 @@ func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 	}
 
 	eventMaps := map[UserDataEventType]any{
-		UserDataEventTypeMarginCall:          &e.WsUserDataMarginCall,
-		UserDataEventTypeAccountUpdate:       &e.WsUserDataAccountUpdate,
-		UserDataEventTypeOrderTradeUpdate:    &e.WsUserDataOrderTradeUpdate,
-		UserDataEventTypeAccountConfigUpdate: &e.WsUserDataAccountConfigUpdate,
+		UserDataEventTypeMarginCall:                    &e.WsUserDataMarginCall,
+		UserDataEventTypeAccountUpdate:                 &e.WsUserDataAccountUpdate,
+		UserDataEventTypeOrderTradeUpdate:              &e.WsUserDataOrderTradeUpdate,
+		UserDataEventTypeAccountConfigUpdate:           &e.WsUserDataAccountConfigUpdate,
+		UserDataEventTypeConditionalOrderTriggerReject: &e.WsUserDataConditionalOrderTriggerReject,
 	}
 
 	switch e.Event {
@@ -1214,6 +1222,12 @@ type WsOrderTradeUpdate struct {
 type WsAccountConfigUpdate struct {
 	Symbol   string `json:"s"`
 	Leverage int64  `json:"l"`
+}
+
+type WsConditionalOrderTriggerReject struct {
+	Symbol       string `json:"s"`
+	OrderId      int64  `json:"i"`
+	RejectReason string `json:"r"`
 }
 
 // WsUserDataHandler handle WsUserDataEvent

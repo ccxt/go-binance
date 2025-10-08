@@ -168,6 +168,12 @@ type ListDualInvestmentPosition struct {
 	PurchaseEndTime    int64                            `json:"purchaseEndTime"`
 	OptionType         DualInvestmentOptionType         `json:"optionType"`
 	AutoCompoundPlan   DualInvestmentCompoundPlan       `json:"autoCompoundPlan"`
+
+	// Settlement fields (only present for SETTLED positions)
+	SettlePrice  *string `json:"settlePrice,omitempty"`  // Actual market price at settlement
+	SettleAmount *string `json:"settleAmount,omitempty"` // Amount received after settlement
+	SettleAsset  *string `json:"settleAsset,omitempty"`  // Coin received (investCoin or exercisedCoin)
+	IsExercised  *bool   `json:"isExercised,omitempty"`  // Whether the option was exercised
 }
 
 func (s *ListDualInvestmentPositionService) Status(status ListDualInvestmentPositionStatus) *ListDualInvestmentPositionService {

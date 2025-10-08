@@ -187,6 +187,74 @@ func (s *dualInvestmentServiceTestSuite) TestListPositions() {
 	r.Equal(DualInvestmentCompoundPlanStandard, resp.List[0].AutoCompoundPlan)
 }
 
+func (s *dualInvestmentServiceTestSuite) TestListPositionsSettled() {
+	data := []byte(`{
+    "total": 1,
+    "list": [
+        {
+            "id": "15653189",
+            "investCoin": "BTC",
+            "exercisedCoin": "FDUSD",
+            "subscriptionAmount": "0.00498",
+            "strikePrice": "120500",
+            "duration": 7,
+            "settleDate": 1758873600000,
+            "purchaseStatus": "SETTLED",
+            "apr": "0.1123",
+            "orderId": 37623188787,
+            "purchaseEndTime": 1758816000000,
+            "optionType": "CALL",
+            "autoCompoundPlan": "NONE",
+            "settlePrice": "109308.64",
+            "isExercised": false,
+            "settleAsset": "BTC",
+            "settleAmount": "0.00499045"
+        }
+    ]
+}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setParams(params{
+			"status": "SETTLED",
+		})
+		s.assertRequestEqual(e, r)
+	})
+
+	resp, err := s.client.NewDualInvestmentService().
+		ListPositionService().
+		Status(ListDualInvestmentPositionStatusSettled).
+		Do(newContext())
+	r := s.r()
+	r.NoError(err)
+	r.Equal(1, len(resp.List))
+
+	pos := resp.List[0]
+	r.Equal("15653189", pos.ID)
+	r.Equal("BTC", pos.InvestCoin)
+	r.Equal("FDUSD", pos.ExercisedCoin)
+	r.Equal("0.00498", pos.SubscriptionAmount)
+	r.Equal("120500", pos.StrikePrice)
+	r.Equal(7, pos.Duration)
+	r.Equal(int64(1758873600000), pos.SettleDate)
+	r.Equal(ListDualInvestmentPositionStatusSettled, pos.PurchaseStatus)
+	r.Equal("0.1123", pos.APR)
+	r.Equal(int64(37623188787), pos.OrderID)
+	r.Equal(int64(1758816000000), pos.PurchaseEndTime)
+	r.Equal(DualInvestmentOptionTypeCall, pos.OptionType)
+	r.Equal(DualInvestmentCompoundPlanNone, pos.AutoCompoundPlan)
+
+	// Assert settlement fields
+	r.NotNil(pos.SettlePrice)
+	r.Equal("109308.64", *pos.SettlePrice)
+	r.NotNil(pos.SettleAmount)
+	r.Equal("0.00499045", *pos.SettleAmount)
+	r.NotNil(pos.SettleAsset)
+	r.Equal("BTC", *pos.SettleAsset)
+	r.NotNil(pos.IsExercised)
+	r.Equal(false, *pos.IsExercised)
+}
+
 func (s *dualInvestmentServiceTestSuite) TestGetAccounts() {
 	data := []byte(`{
    "totalAmountInBTC": "0.01067982",   

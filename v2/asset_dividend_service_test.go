@@ -63,7 +63,7 @@ func (s *assetDividendServiceTestSuite) TestListAssetDividend() {
 		Do(context.Background())
 	r := s.r()
 	r.NoError(err)
-	rows := *dividend.Rows
+	rows := dividend.Rows
 
 	s.Len(rows, 2)
 	s.assertDividendEqual(&DividendResponse{
@@ -73,7 +73,7 @@ func (s *assetDividendServiceTestSuite) TestListAssetDividend() {
 		Time:   1563189166000,
 		Info:   `BHFT distribution`,
 		TranID: 2968885920,
-	}, &rows[0])
+	}, rows[0])
 	s.assertDividendEqual(&DividendResponse{
 		ID:     1631750237,
 		Amount: `10.00000000`,
@@ -81,7 +81,7 @@ func (s *assetDividendServiceTestSuite) TestListAssetDividend() {
 		Time:   1563189165000,
 		Info:   `BHFT distribution`,
 		TranID: 2968885920,
-	}, &rows[1])
+	}, rows[1])
 	s.Equal(int32(2), dividend.Total, `Total`)
 }
 

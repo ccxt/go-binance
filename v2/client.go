@@ -132,6 +132,9 @@ var (
 // SelfTradePreventionMode define self trade prevention strategy
 type SelfTradePreventionMode string
 
+// CancelReplaceMode define cancel replace mode
+type CancelReplaceMode string
+
 type MarginAccountBorrowRepayType string
 
 // UseTestnet switch all the API endpoints from production to the testnet
@@ -325,6 +328,9 @@ const (
 	SelfTradePreventionModeExpireTaker SelfTradePreventionMode = "EXPIRE_TAKER"
 	SelfTradePreventionModeExpireBoth  SelfTradePreventionMode = "EXPIRE_BOTH"
 	SelfTradePreventionModeExpireMaker SelfTradePreventionMode = "EXPIRE_MAKER"
+
+	CancelReplaceModeStopOnFailure CancelReplaceMode = "STOP_ON_FAILURE"
+	CancelReplaceModeAllowFailure  CancelReplaceMode = "ALLOW_FAILURE"
 
 	MarginAccountBorrow MarginAccountBorrowRepayType = "BORROW"
 	MarginAccountRepay  MarginAccountBorrowRepayType = "REPAY"
@@ -685,6 +691,11 @@ func (c *Client) NewGetOrderService() *GetOrderService {
 // NewCancelOrderService init cancel order service
 func (c *Client) NewCancelOrderService() *CancelOrderService {
 	return &CancelOrderService{c: c}
+}
+
+// NewCancelReplaceOrderService init cancel replace order service
+func (c *Client) NewCancelReplaceOrderService() *CancelReplaceOrderService {
+	return &CancelReplaceOrderService{c: c}
 }
 
 // NewCancelOpenOrdersService init cancel open orders service
