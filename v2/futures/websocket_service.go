@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -34,6 +35,7 @@ var (
 	// using for websocket API (read/write)
 	WebsocketTimeoutReadWriteConnection = time.Second * 10
 	ProxyUrl                            = ""
+	Header                              = make(http.Header)
 )
 
 func getWsProxyUrl() *string {
