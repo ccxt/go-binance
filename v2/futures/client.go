@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -348,14 +349,14 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 	return nil
 }
 
-func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, rateLimits map[string]string, err error) {
 	err = c.parseRequest(r, opts...)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return []byte{}, nil, err
 	}
 	req, err := http.NewRequest(r.method, r.fullURL, r.body)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return []byte{}, nil, err
 	}
 	req = req.WithContext(ctx)
 	req.Header = r.header
@@ -366,11 +367,11 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	}
 	res, err := f(req)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return []byte{}, nil, err
 	}
 	data, err = io.ReadAll(res.Body)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return []byte{}, nil, err
 	}
 	defer func() {
 		cerr := res.Body.Close()
@@ -384,6 +385,14 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	c.debug("response body: %s\n", string(data))
 	c.debug("response status code: %d\n", res.StatusCode)
 
+	// Parse rate limit headers
+	rateLimits = make(map[string]string)
+	for key, values := range res.Header {
+		if len(values) > 0 && (strings.HasPrefix(key, "X-Mbx-Order-Count-") || strings.HasPrefix(key, "X-Mbx-Used-Weight-")) {
+			rateLimits[key] = values[0]
+		}
+	}
+
 	if res.StatusCode >= http.StatusBadRequest {
 		apiErr := new(common.APIError)
 		e := json.Unmarshal(data, apiErr)
@@ -393,9 +402,9 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		if !apiErr.IsValid() {
 			apiErr.Response = data
 		}
-		return nil, &res.Header, apiErr
+		return nil, rateLimits, apiErr
 	}
-	return data, &res.Header, nil
+	return data, rateLimits, nil
 }
 
 // SetApiEndpoint set api Endpoint

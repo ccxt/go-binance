@@ -146,7 +146,7 @@ func (s *CreateOrderService) GoodTillDate(goodTillDate int64) *CreateOrderServic
 	return s
 }
 
-func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: endpoint,
@@ -203,23 +203,23 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 		m["goodTillDate"] = s.goodTillDate
 	}
 	r.setFormParams(m)
-	data, header, err = s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err = s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return []byte{}, nil, err
 	}
-	return data, header, nil
+	return data, rateLimits, nil
 }
 
 // Do send request
 func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
-	data, header, err := s.createOrder(ctx, "/fapi/v1/order", opts...)
+	data, rateLimits, err := s.createOrder(ctx, "/fapi/v1/order", opts...)
 	if err != nil {
 		return nil, err
 	}
 	res = new(CreateOrderResponse)
 	err = json.Unmarshal(data, res)
-	res.RateLimitOrder10s = header.Get("X-Mbx-Order-Count-10s")
-	res.RateLimitOrder1m = header.Get("X-Mbx-Order-Count-1m")
+	res.RateLimitOrder10s = rateLimits["X-Mbx-Order-Count-10s"]
+	res.RateLimitOrder1m = rateLimits["X-Mbx-Order-Count-1m"]
 
 	if err != nil {
 		return nil, err
@@ -313,7 +313,7 @@ func (s *ModifyOrderService) PriceMatch(priceMatch PriceMatchType) *ModifyOrderS
 	return s
 }
 
-func (s *ModifyOrderService) modifyOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+func (s *ModifyOrderService) modifyOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodPut,
 		endpoint: endpoint,
@@ -337,11 +337,11 @@ func (s *ModifyOrderService) modifyOrder(ctx context.Context, endpoint string, o
 		m["priceMatch"] = *s.priceMatch
 	}
 	r.setFormParams(m)
-	data, header, err = s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err = s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return []byte{}, nil, err
 	}
-	return data, header, nil
+	return data, rateLimits, nil
 }
 
 // Do send request:
