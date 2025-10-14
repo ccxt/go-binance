@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	BaseApiMainUrl = "https://api.binance.com"
+	BaseAPIMainURL = "https://api.binance.com"
 )
 
 // Global enums
@@ -39,7 +39,7 @@ func FormatTimestamp(t time.Time) int64 {
 
 // getApiEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getApiEndpoint() string {
-	return BaseApiMainUrl
+	return BaseAPIMainURL
 }
 
 // NewClient initialize an API client instance with API key and secret key.

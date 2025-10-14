@@ -73,8 +73,8 @@ type ForceOrderCloseType string
 
 // Endpoints
 const (
-	baseApiMainUrl    = "https://eapi.binance.com"
-	baseApiTestnetUrl = "https://testnet.binancefuture.com"
+	BaseAPIMainURL    = "https://eapi.binance.com"
+	BaseAPITestnetURL = "https://testnet.binancefuture.com"
 )
 
 // Global enums
@@ -196,7 +196,7 @@ func newJSON(data []byte) (j *simplejson.Json, err error) {
 
 // getApiEndpoint return the base endpoint of the WS
 func getApiEndpoint() string {
-	return baseApiMainUrl
+	return BaseAPIMainURL
 }
 
 // NewClient initialize an API client instance with API key and secret key.
