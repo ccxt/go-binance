@@ -27,7 +27,7 @@ func (s *DepthService) Limit(limit int) *DepthService {
 }
 
 // Do send request
-func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *DepthResponse, err error) {
+func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *DepthResponse, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/depth",
@@ -36,13 +36,13 @@ func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *Dept
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	j, err := newJSON(data)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(DepthResponse)
 	res.Time = j.Get("E").MustInt64()
@@ -66,7 +66,7 @@ func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *Dept
 			Quantity: item.GetIndex(1).MustString(),
 		}
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // DepthResponse define depth info with bids and asks

@@ -63,7 +63,7 @@ func (s *klineServiceTestSuite) TestKlines() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	klines, err := s.client.NewKlinesService().Symbol(symbol).
+	klines, _, err := s.client.NewKlinesService().Symbol(symbol).
 		Interval(interval).Limit(limit).StartTime(startTime).
 		EndTime(endTime).Do(newContext())
 	s.r().NoError(err)

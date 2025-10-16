@@ -47,7 +47,7 @@ func (s *KlinesService) EndTime(endTime int64) *KlinesService {
 }
 
 // Do send request
-func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*Kline, err error) {
+func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*Kline, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/klines",
@@ -63,13 +63,13 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 	if s.endTime != nil {
 		r.setParam("endTime", *s.endTime)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*Kline{}, err
+		return []*Kline{}, nil, err
 	}
 	j, err := newJSON(data)
 	if err != nil {
-		return []*Kline{}, err
+		return []*Kline{}, nil, err
 	}
 	num := len(j.MustArray())
 	res = make([]*Kline, num)
@@ -77,7 +77,7 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 		item := j.GetIndex(i)
 		if len(item.MustArray()) < 11 {
 			err = fmt.Errorf("invalid kline response")
-			return []*Kline{}, err
+			return []*Kline{}, nil, err
 		}
 		res[i] = &Kline{
 			OpenTime:                 item.GetIndex(0).MustInt64(),
@@ -93,7 +93,7 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 			TakerBuyQuoteAssetVolume: item.GetIndex(10).MustString(),
 		}
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // Kline define kline info

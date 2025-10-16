@@ -14,22 +14,22 @@ type GetBalanceService struct {
 // Do send request
 //
 // https://developers.binance.com/docs/derivatives/usds-margined-futures/account/rest-api/Futures-Account-Balance-V3
-func (s *GetBalanceService) Do(ctx context.Context, opts ...RequestOption) (res []*Balance, err error) {
+func (s *GetBalanceService) Do(ctx context.Context, opts ...RequestOption) (res []*Balance, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v3/balance",
 		secType:  secTypeSigned,
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*Balance{}, err
+		return []*Balance{}, nil, err
 	}
 	res = make([]*Balance, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*Balance{}, err
+		return []*Balance{}, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // Balance define user balance of your account
@@ -51,22 +51,22 @@ type GetAccountService struct {
 }
 
 // Do send request
-func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res *Account, err error) {
+func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res *Account, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v2/account",
 		secType:  secTypeSigned,
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(Account)
 	err = json.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // Account define account info
@@ -137,22 +137,22 @@ type GetAccountV3Service struct {
 }
 
 // Do send request
-func (s *GetAccountV3Service) Do(ctx context.Context, opts ...RequestOption) (res *AccountV3, err error) {
+func (s *GetAccountV3Service) Do(ctx context.Context, opts ...RequestOption) (res *AccountV3, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v3/account",
 		secType:  secTypeSigned,
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(AccountV3)
 	err = json.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // AccountV3 define account info

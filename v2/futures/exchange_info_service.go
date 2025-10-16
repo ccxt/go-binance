@@ -14,23 +14,23 @@ type ExchangeInfoService struct {
 }
 
 // Do send request
-func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (res *ExchangeInfo, err error) {
+func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (res *ExchangeInfo, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/exchangeInfo",
 		secType:  secTypeNone,
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(ExchangeInfo)
 	err = json.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // ExchangeInfo exchange info

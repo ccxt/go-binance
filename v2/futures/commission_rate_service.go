@@ -18,7 +18,7 @@ func (service *CommissionRateService) Symbol(symbol string) *CommissionRateServi
 }
 
 // Do send request
-func (s *CommissionRateService) Do(ctx context.Context, opts ...RequestOption) (res *CommissionRate, err error) {
+func (s *CommissionRateService) Do(ctx context.Context, opts ...RequestOption) (res *CommissionRate, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/commissionRate",
@@ -27,16 +27,16 @@ func (s *CommissionRateService) Do(ctx context.Context, opts ...RequestOption) (
 	if s.symbol != "" {
 		r.setParam("symbol", s.symbol)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(CommissionRate)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // Commission Rate

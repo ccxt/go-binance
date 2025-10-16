@@ -39,7 +39,7 @@ func (s *depthServiceTestSuite) TestDepth() {
 			setParam("limit", limit)
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewDepthService().Symbol(symbol).Limit(limit).Do(newContext())
+	res, _, err := s.client.NewDepthService().Symbol(symbol).Limit(limit).Do(newContext())
 	s.r().NoError(err)
 	e := &DepthResponse{
 		LastUpdateID: 1027024,

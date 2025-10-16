@@ -31,7 +31,7 @@ func (commissionRateService *commissionRateServiceTestSuite) TestCommissionRate(
 		requestParams := newSignedRequest().setParam("symbol", symbol)
 		commissionRateService.assertRequestEqual(requestParams, request)
 	})
-	res, err := commissionRateService.client.NewCommissionRateService().Symbol(symbol).Do(newContext())
+	res, _, err := commissionRateService.client.NewCommissionRateService().Symbol(symbol).Do(newContext())
 	commissionRateService.r().NoError(err)
 	expectation := &CommissionRate{
 		Symbol:              symbol,

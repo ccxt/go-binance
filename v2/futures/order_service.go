@@ -211,52 +211,47 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 }
 
 // Do send request
-func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
+func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, rateLimits map[string]string, err error) {
 	data, rateLimits, err := s.createOrder(ctx, "/fapi/v1/order", opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(CreateOrderResponse)
 	err = json.Unmarshal(data, res)
-	res.RateLimitOrder10s = rateLimits["X-Mbx-Order-Count-10s"]
-	res.RateLimitOrder1m = rateLimits["X-Mbx-Order-Count-1m"]
-
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // CreateOrderResponse define create order response
 type CreateOrderResponse struct {
-	Symbol                  string           `json:"symbol"`                      //
-	OrderID                 int64            `json:"orderId"`                     //
-	ClientOrderID           string           `json:"clientOrderId"`               //
-	Price                   string           `json:"price"`                       //
-	OrigQuantity            string           `json:"origQty"`                     //
-	ExecutedQuantity        string           `json:"executedQty"`                 //
-	CumQuote                string           `json:"cumQuote"`                    //
-	ReduceOnly              bool             `json:"reduceOnly"`                  //
-	Status                  OrderStatusType  `json:"status"`                      //
-	StopPrice               string           `json:"stopPrice"`                   // please ignore when order type is TRAILING_STOP_MARKET
-	TimeInForce             TimeInForceType  `json:"timeInForce"`                 //
-	Type                    OrderType        `json:"type"`                        //
-	Side                    SideType         `json:"side"`                        //
-	UpdateTime              int64            `json:"updateTime"`                  // update time
-	WorkingType             WorkingType      `json:"workingType"`                 //
-	ActivatePrice           string           `json:"activatePrice"`               // activation price, only return with TRAILING_STOP_MARKET order
-	PriceRate               string           `json:"priceRate"`                   // callback rate, only return with TRAILING_STOP_MARKET order
-	AvgPrice                string           `json:"avgPrice"`                    //
-	PositionSide            PositionSideType `json:"positionSide"`                //
-	ClosePosition           bool             `json:"closePosition"`               // if Close-All
-	PriceProtect            bool             `json:"priceProtect"`                // if conditional order trigger is protected
-	PriceMatch              string           `json:"priceMatch"`                  // price match mode
-	SelfTradePreventionMode string           `json:"selfTradePreventionMode"`     // self trading prevention mode
-	GoodTillDate            int64            `json:"goodTillDate"`                // order pre-set auto cancel time for TIF GTD order
-	CumQty                  string           `json:"cumQty"`                      //
-	OrigType                OrderType        `json:"origType"`                    //
-	RateLimitOrder10s       string           `json:"rateLimitOrder10s,omitempty"` //
-	RateLimitOrder1m        string           `json:"rateLimitOrder1m,omitempty"`  //
+	Symbol                  string           `json:"symbol"`                  //
+	OrderID                 int64            `json:"orderId"`                 //
+	ClientOrderID           string           `json:"clientOrderId"`           //
+	Price                   string           `json:"price"`                   //
+	OrigQuantity            string           `json:"origQty"`                 //
+	ExecutedQuantity        string           `json:"executedQty"`             //
+	CumQuote                string           `json:"cumQuote"`                //
+	ReduceOnly              bool             `json:"reduceOnly"`              //
+	Status                  OrderStatusType  `json:"status"`                  //
+	StopPrice               string           `json:"stopPrice"`               // please ignore when order type is TRAILING_STOP_MARKET
+	TimeInForce             TimeInForceType  `json:"timeInForce"`             //
+	Type                    OrderType        `json:"type"`                    //
+	Side                    SideType         `json:"side"`                    //
+	UpdateTime              int64            `json:"updateTime"`              // update time
+	WorkingType             WorkingType      `json:"workingType"`             //
+	ActivatePrice           string           `json:"activatePrice"`           // activation price, only return with TRAILING_STOP_MARKET order
+	PriceRate               string           `json:"priceRate"`               // callback rate, only return with TRAILING_STOP_MARKET order
+	AvgPrice                string           `json:"avgPrice"`                //
+	PositionSide            PositionSideType `json:"positionSide"`            //
+	ClosePosition           bool             `json:"closePosition"`           // if Close-All
+	PriceProtect            bool             `json:"priceProtect"`            // if conditional order trigger is protected
+	PriceMatch              string           `json:"priceMatch"`              // price match mode
+	SelfTradePreventionMode string           `json:"selfTradePreventionMode"` // self trading prevention mode
+	GoodTillDate            int64            `json:"goodTillDate"`            // order pre-set auto cancel time for TIF GTD order
+	CumQty                  string           `json:"cumQty"`                  //
+	OrigType                OrderType        `json:"origType"`                //
 }
 
 // ModifyOrderService create order
@@ -354,18 +349,17 @@ func (s *ModifyOrderService) modifyOrder(ctx context.Context, endpoint string, o
 //     -- when the order is TimeInForceTypeGTX and the new price will cause it to be executed immediately
 //   - One order can only be modified for less than 10000 times
 //   - Will set ModifyOrderResponse.SelfTradePreventionMode to "NONE"
-func (s *ModifyOrderService) Do(ctx context.Context, opts ...RequestOption) (res *ModifyOrderResponse, err error) {
-	data, _, err := s.modifyOrder(ctx, "/fapi/v1/order", opts...)
+func (s *ModifyOrderService) Do(ctx context.Context, opts ...RequestOption) (res *ModifyOrderResponse, rateLimits map[string]string, err error) {
+	data, rateLimits, err := s.modifyOrder(ctx, "/fapi/v1/order", opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(ModifyOrderResponse)
 	err = json.Unmarshal(data, res)
-
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 type ModifyOrderResponse struct {
@@ -409,7 +403,7 @@ func (s *ListOpenOrdersService) Symbol(symbol string) *ListOpenOrdersService {
 }
 
 // Do send request
-func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*Order, err error) {
+func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*Order, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/openOrders",
@@ -418,16 +412,16 @@ func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (
 	if s.symbol != "" {
 		r.setParam("symbol", s.symbol)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*Order{}, err
+		return []*Order{}, nil, err
 	}
 	res = make([]*Order, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*Order{}, err
+		return []*Order{}, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // GetOpenOrderService query current open order
@@ -453,7 +447,7 @@ func (s *GetOpenOrderService) OrigClientOrderID(origClientOrderID string) *GetOp
 	return s
 }
 
-func (s *GetOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (res *Order, err error) {
+func (s *GetOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (res *Order, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/openOrder",
@@ -461,7 +455,7 @@ func (s *GetOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (re
 	}
 	r.setParam("symbol", s.symbol)
 	if s.orderID == nil && s.origClientOrderID == nil {
-		return nil, errors.New("either orderId or origClientOrderId must be sent")
+		return nil, nil, errors.New("either orderId or origClientOrderId must be sent")
 	}
 	if s.orderID != nil {
 		r.setParam("orderId", *s.orderID)
@@ -469,16 +463,16 @@ func (s *GetOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (re
 	if s.origClientOrderID != nil {
 		r.setParam("origClientOrderId", *s.origClientOrderID)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	res = new(Order)
 	err = json.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // GetOrderService get an order

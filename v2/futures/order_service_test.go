@@ -85,7 +85,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
+	res, _, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).ClosePosition(closePosition).
 		ReduceOnly(reduceOnly).Price(price).NewClientOrderID(newClientOrderID).
 		StopPrice(stopPrice).WorkingType(workingType).ActivationPrice(activationPrice).
@@ -160,7 +160,7 @@ func (s *orderServiceTestSuite) TestCreateOrderId() {
 	s.assertReq(func(r *request) {
 		s.Assertions.True(strings.HasPrefix(r.form.Get("newClientOrderId"), "x-ftGmvgAN"))
 	})
-	_, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
+	_, _, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).ClosePosition(closePosition).
 		ReduceOnly(reduceOnly).Price(price).
 		StopPrice(stopPrice).WorkingType(workingType).ActivationPrice(activationPrice).
@@ -231,7 +231,7 @@ func (s *orderServiceTestSuite) TestListOpenOrders() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	orders, err := s.client.NewListOpenOrdersService().Symbol(symbol).
+	orders, _, err := s.client.NewListOpenOrdersService().Symbol(symbol).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)
@@ -322,7 +322,7 @@ func (s *orderServiceTestSuite) TestGetOpenOrder() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	order, err := s.client.NewGetOpenOrderService().Symbol(symbol).OrderID(orderId).
+	order, _, err := s.client.NewGetOpenOrderService().Symbol(symbol).OrderID(orderId).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)
@@ -541,7 +541,7 @@ func (s *orderServiceTestSuite) TestModifyOrder() {
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewModifyOrderService().OrderID(orderID).OrigClientOrderID(origClientOrderID).
+	res, _, err := s.client.NewModifyOrderService().OrderID(orderID).OrigClientOrderID(origClientOrderID).
 		Symbol(symbol).Side(side).Quantity(quantity).Price(price).PriceMatch(priceMatch).Do(newContext())
 	r := s.r()
 	r.NoError(err)

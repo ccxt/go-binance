@@ -43,7 +43,7 @@ func (s *tickerServiceTestSuite) TestListBookTickers() {
 		s.assertRequestEqual(e, r)
 	})
 
-	tickers, err := s.client.NewListBookTickersService().Do(newContext())
+	tickers, _, err := s.client.NewListBookTickersService().Do(newContext())
 	r := s.r()
 	r.NoError(err)
 	r.Len(tickers, 2)
@@ -89,7 +89,7 @@ func (s *tickerServiceTestSuite) TestSingleBookTicker() {
 		s.assertRequestEqual(e, r)
 	})
 
-	tickers, err := s.client.NewListBookTickersService().Symbol("LTCBTC").Do(newContext())
+	tickers, _, err := s.client.NewListBookTickersService().Symbol("LTCBTC").Do(newContext())
 	r := s.r()
 	r.NoError(err)
 	r.Len(tickers, 1)
@@ -135,7 +135,7 @@ func (s *tickerServiceTestSuite) TestListPrices() {
 		s.assertRequestEqual(e, r)
 	})
 
-	prices, err := s.client.NewListPricesService().Do(newContext())
+	prices, _, err := s.client.NewListPricesService().Do(newContext())
 	r := s.r()
 	r.NoError(err)
 	r.Len(prices, 2)
@@ -165,7 +165,7 @@ func (s *tickerServiceTestSuite) TestListSinglePrice() {
 		s.assertRequestEqual(e, r)
 	})
 
-	prices, err := s.client.NewListPricesService().Symbol(symbol).Do(newContext())
+	prices, _, err := s.client.NewListPricesService().Symbol(symbol).Do(newContext())
 	r := s.r()
 	r.NoError(err)
 	r.Len(prices, 1)
@@ -210,7 +210,7 @@ func (s *tickerServiceTestSuite) TestPriceChangeStats() {
 		e := newRequest().setParam("symbol", symbol)
 		s.assertRequestEqual(e, r)
 	})
-	stats, err := s.client.NewListPriceChangeStatsService().Symbol(symbol).Do(newContext())
+	stats, _, err := s.client.NewListPriceChangeStatsService().Symbol(symbol).Do(newContext())
 	r := s.r()
 	r.NoError(err)
 	r.Len(stats, 1)
@@ -284,7 +284,7 @@ func (s *tickerServiceTestSuite) TestListPriceChangeStats() {
 		e := newRequest()
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewListPriceChangeStatsService().Do(newContext())
+	res, _, err := s.client.NewListPriceChangeStatsService().Do(newContext())
 	r := s.r()
 	r.NoError(err)
 	e := []*PriceChangeStats{

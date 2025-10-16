@@ -35,7 +35,7 @@ func (s *accountServiceTestSuite) TestGetBalance() {
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewGetBalanceService().Do(newContext())
+	res, _, err := s.client.NewGetBalanceService().Do(newContext())
 	s.r().NoError(err)
 	s.r().Len(res, 1)
 	e := &Balance{
@@ -124,7 +124,7 @@ func (s *accountServiceTestSuite) TestGetAccount() {
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewGetAccountService().Do(newContext())
+	res, _, err := s.client.NewGetAccountService().Do(newContext())
 	s.r().NoError(err)
 	e := &Account{
 		Assets: []*AccountAsset{
@@ -307,7 +307,7 @@ func (s *accountServiceTestSuite) TestGetAccountV3() {
 		s.assertRequestEqual(expected, r)
 	})
 
-	res, err := s.client.NewGetAccountV3Service().Do(newContext())
+	res, _, err := s.client.NewGetAccountV3Service().Do(newContext())
 	s.r().NoError(err)
 
 	expected := &AccountV3{

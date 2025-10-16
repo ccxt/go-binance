@@ -21,7 +21,7 @@ func (s *ListBookTickersService) Symbol(symbol string) *ListBookTickersService {
 }
 
 // Do send request
-func (s *ListBookTickersService) Do(ctx context.Context, opts ...RequestOption) (res []*BookTicker, err error) {
+func (s *ListBookTickersService) Do(ctx context.Context, opts ...RequestOption) (res []*BookTicker, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/ticker/bookTicker",
@@ -29,17 +29,17 @@ func (s *ListBookTickersService) Do(ctx context.Context, opts ...RequestOption) 
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	data = common.ToJSONList(data)
 	if err != nil {
-		return []*BookTicker{}, err
+		return []*BookTicker{}, nil, err
 	}
 	res = make([]*BookTicker, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*BookTicker{}, err
+		return []*BookTicker{}, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // BookTicker define book ticker info
@@ -66,7 +66,7 @@ func (s *ListPricesService) Symbol(symbol string) *ListPricesService {
 }
 
 // Do send request
-func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res []*SymbolPrice, err error) {
+func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res []*SymbolPrice, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v2/ticker/price",
@@ -74,17 +74,17 @@ func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res 
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*SymbolPrice{}, err
+		return []*SymbolPrice{}, nil, err
 	}
 	data = common.ToJSONList(data)
 	res = make([]*SymbolPrice, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*SymbolPrice{}, err
+		return []*SymbolPrice{}, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // SymbolPrice define symbol and price pair
@@ -106,7 +106,7 @@ func (s *ListPriceChangeStatsService) Symbol(symbol string) *ListPriceChangeStat
 }
 
 // Do send request
-func (s *ListPriceChangeStatsService) Do(ctx context.Context, opts ...RequestOption) (res []*PriceChangeStats, err error) {
+func (s *ListPriceChangeStatsService) Do(ctx context.Context, opts ...RequestOption) (res []*PriceChangeStats, rateLimits map[string]string, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/ticker/24hr",
@@ -114,17 +114,17 @@ func (s *ListPriceChangeStatsService) Do(ctx context.Context, opts ...RequestOpt
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
 	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, rateLimits, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return res, err
+		return res, nil, err
 	}
 	data = common.ToJSONList(data)
 	res = make([]*PriceChangeStats, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return res, rateLimits, nil
 }
 
 // PriceChangeStats define price change stats
