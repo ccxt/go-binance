@@ -74,7 +74,6 @@ type OrderCancelWsResponse struct {
 	Error *common.APIError `json:"error,omitempty"`
 }
 
-// OrderCancelWsService cancel order
 type OrderCancelWsService struct {
 	c          websocket.Client
 	ApiKey     string
@@ -84,27 +83,38 @@ type OrderCancelWsService struct {
 }
 
 // NewOrderCancelWsService init OrderCancelWsService
-func NewOrderCancelWsService(apiKey, secretKey string) (*OrderCancelWsService, error) {
+func NewOrderCancelWsService(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*OrderCancelWsService, error) {
+	service := &OrderCancelWsService{
+		ApiKey:    apiKey,
+		SecretKey: secretKey,
+		KeyType:   common.KeyTypeHmac,
+	}
+
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+		return service, nil
+	}
+
 	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
 	if err != nil {
 		return nil, err
 	}
-
 	client, err := websocket.NewClient(conn)
 	if err != nil {
 		return nil, err
 	}
+	service.c = client
 
-	return &OrderCancelWsService{
-		c:         client,
-		ApiKey:    apiKey,
-		SecretKey: secretKey,
-		KeyType:   common.KeyTypeHmac,
-	}, nil
+	return service, nil
 }
 
 // Do - sends 'order.cancel' request
-func (s *OrderCancelWsService) Do(requestID string, request *OrderCancelRequest) error {
+func (s *OrderCancelWsService) Do(requestID string, request *OrderCancelRequest, opts ...websocket.RequestOption) error {
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -120,7 +130,7 @@ func (s *OrderCancelWsService) Do(requestID string, request *OrderCancelRequest)
 		return err
 	}
 
-	if err := s.c.Write(requestID, rawData); err != nil {
+	if err := s.c.Write(requestID, rawData, opts...); err != nil {
 		return err
 	}
 

@@ -8,7 +8,6 @@ import (
 	"github.com/adshao/go-binance/v2/common/websocket"
 )
 
-// OrderPlaceWsService creates order
 type OrderPlaceWsService struct {
 	c          websocket.Client
 	ApiKey     string
@@ -18,23 +17,34 @@ type OrderPlaceWsService struct {
 }
 
 // NewOrderPlaceWsService init OrderPlaceWsService
-func NewOrderPlaceWsService(apiKey, secretKey string) (*OrderPlaceWsService, error) {
+func NewOrderPlaceWsService(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*OrderPlaceWsService, error) {
+	service := &OrderPlaceWsService{
+		ApiKey:    apiKey,
+		SecretKey: secretKey,
+		KeyType:   common.KeyTypeHmac,
+	}
+
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+		return service, nil
+	}
+
 	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
 	if err != nil {
 		return nil, err
 	}
-
 	client, err := websocket.NewClient(conn)
 	if err != nil {
 		return nil, err
 	}
+	service.c = client
 
-	return &OrderPlaceWsService{
-		c:         client,
-		ApiKey:    apiKey,
-		SecretKey: secretKey,
-		KeyType:   common.KeyTypeHmac,
-	}, nil
+	return service, nil
 }
 
 // OrderPlaceWsRequest parameters for 'order.place' websocket API
@@ -238,7 +248,7 @@ func (s *OrderPlaceWsRequest) buildParams() params {
 }
 
 // Do - sends 'order.place' request
-func (s *OrderPlaceWsService) Do(requestID string, request *OrderPlaceWsRequest) error {
+func (s *OrderPlaceWsService) Do(requestID string, request *OrderPlaceWsRequest, opts ...websocket.RequestOption) error {
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -254,7 +264,7 @@ func (s *OrderPlaceWsService) Do(requestID string, request *OrderPlaceWsRequest)
 		return err
 	}
 
-	if err := s.c.Write(requestID, rawData); err != nil {
+	if err := s.c.Write(requestID, rawData, opts...); err != nil {
 		return err
 	}
 

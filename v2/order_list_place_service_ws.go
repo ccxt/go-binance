@@ -18,23 +18,34 @@ type OrderListPlaceWsService struct {
 }
 
 // NewOrderListPlaceWsService init OrderListPlaceWsService
-func NewOrderListPlaceWsService(apiKey, secretKey string) (*OrderListPlaceWsService, error) {
+func NewOrderListPlaceWsService(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*OrderListPlaceWsService, error) {
+	service := &OrderListPlaceWsService{
+		ApiKey:    apiKey,
+		SecretKey: secretKey,
+		KeyType:   common.KeyTypeHmac,
+	}
+
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+		return service, nil
+	}
+
 	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
 	if err != nil {
 		return nil, err
 	}
-
 	client, err := websocket.NewClient(conn)
 	if err != nil {
 		return nil, err
 	}
+	service.c = client
 
-	return &OrderListPlaceWsService{
-		c:         client,
-		ApiKey:    apiKey,
-		SecretKey: secretKey,
-		KeyType:   common.KeyTypeHmac,
-	}, nil
+	return service, nil
 }
 
 // OrderListPlaceWsRequest parameters for 'orderList.place' websocket API (deprecated OCO)
@@ -136,7 +147,7 @@ func (s *OrderListPlaceWsRequest) buildParams() params {
 }
 
 // Do - sends 'orderList.place' request
-func (s *OrderListPlaceWsService) Do(requestID string, request *OrderListPlaceWsRequest) error {
+func (s *OrderListPlaceWsService) Do(requestID string, request *OrderListPlaceWsRequest, opts ...websocket.RequestOption) error {
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -152,7 +163,7 @@ func (s *OrderListPlaceWsService) Do(requestID string, request *OrderListPlaceWs
 		return err
 	}
 
-	if err := s.c.Write(requestID, rawData); err != nil {
+	if err := s.c.Write(requestID, rawData, opts...); err != nil {
 		return err
 	}
 

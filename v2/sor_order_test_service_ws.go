@@ -18,23 +18,34 @@ type SorOrderTestWsService struct {
 }
 
 // NewSorOrderTestWsService init SorOrderTestWsService
-func NewSorOrderTestWsService(apiKey, secretKey string) (*SorOrderTestWsService, error) {
+func NewSorOrderTestWsService(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*SorOrderTestWsService, error) {
+	service := &SorOrderTestWsService{
+		ApiKey:    apiKey,
+		SecretKey: secretKey,
+		KeyType:   common.KeyTypeHmac,
+	}
+
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+		return service, nil
+	}
+
 	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
 	if err != nil {
 		return nil, err
 	}
-
 	client, err := websocket.NewClient(conn)
 	if err != nil {
 		return nil, err
 	}
+	service.c = client
 
-	return &SorOrderTestWsService{
-		c:         client,
-		ApiKey:    apiKey,
-		SecretKey: secretKey,
-		KeyType:   common.KeyTypeHmac,
-	}, nil
+	return service, nil
 }
 
 // SorOrderTestWsRequest parameters for 'sor.order.test' websocket API
@@ -102,7 +113,7 @@ func (s *SorOrderTestWsRequest) buildParams() params {
 }
 
 // Do - sends 'sor.order.test' request
-func (s *SorOrderTestWsService) Do(requestID string, request *SorOrderTestWsRequest) error {
+func (s *SorOrderTestWsService) Do(requestID string, request *SorOrderTestWsRequest, opts ...websocket.RequestOption) error {
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -118,7 +129,7 @@ func (s *SorOrderTestWsService) Do(requestID string, request *SorOrderTestWsRequ
 		return err
 	}
 
-	if err := s.c.Write(requestID, rawData); err != nil {
+	if err := s.c.Write(requestID, rawData, opts...); err != nil {
 		return err
 	}
 
