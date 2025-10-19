@@ -26,7 +26,7 @@ var (
 	WebsocketTimeout = time.Second * 600
 	// WebsocketPongTimeout is an interval for sending a PONG frame in response to PING frame from server
 	WebsocketPongTimeout = time.Second * 10
-	/// WebsocketPingTimeout is an interval for sending a PING frame in response to PONG frame from server
+	// WebsocketPingTimeout is an interval for waiting for a PONG response after sending a PING framer
 	WebsocketPingTimeout = time.Second * 10
 	// WebsocketKeepalive enables sending ping/pong messages to check the connection stability
 	WebsocketKeepalive = true

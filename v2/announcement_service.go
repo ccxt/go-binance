@@ -35,7 +35,9 @@ func (c *Client) CreateAnnouncementParam(opts ...RequestOption) (WsAnnouncementP
 		return WsAnnouncementParam{}, err
 	}
 	r := make([]byte, 16)
-	rand.Read(r)
+	if _, err := rand.Read(r); err != nil {
+		return WsAnnouncementParam{}, fmt.Errorf("failed to generate random bytes: %w", err)
+	}
 	random := hex.EncodeToString(r)
 	timestamp := time.Now().UnixMilli()
 	recvWindow := req.recvWindow
