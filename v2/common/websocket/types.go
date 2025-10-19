@@ -37,6 +37,9 @@ const (
 
 	// SPOT
 
+	// UserDataStreamSubscribeSignatureSpotWsApiMethod define method for user data stream subscription via websocket API with signature
+	UserDataStreamSubscribeSignatureSpotWsApiMethod WsApiMethodType = "userDataStream.subscribe.signature"
+
 	// OrderPlaceSpotWsApiMethod define method for creation order via websocket API
 	OrderPlaceSpotWsApiMethod WsApiMethodType = "order.place"
 

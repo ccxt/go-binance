@@ -1786,3 +1786,20 @@ func (s *websocketServiceTestSuite) assertWsAnnouncementEvent(e, a *WsAnnounceme
 	r.Equal(e.Body, a.Body, "Body")
 	r.Equal(e.Disclaimer, a.Disclaimer, "Disclaimer")
 }
+
+func (s *websocketServiceTestSuite) TestWsUserDataServeSignatureErrorWithEmptyCredentials() {
+	apiKey := ""
+	secretKey := ""
+	keyType := "HMAC"
+	timeOffset := int64(0)
+
+	handler := func(event *WsUserDataEvent) {
+	}
+
+	errHandler := func(err error) {
+	}
+
+	_, _, err := WsUserDataServeSignature(apiKey, secretKey, keyType, timeOffset, handler, errHandler)
+
+	s.r().Error(err)
+}

@@ -7,7 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/adshao/go-binance/v2/common/websocket"
+	"github.com/google/uuid"
+	gorilla "github.com/gorilla/websocket"
 )
 
 var (
@@ -642,6 +644,7 @@ type WsOCOOrder struct {
 type WsUserDataHandler func(event *WsUserDataEvent)
 
 // WsUserDataServe serve user data handler with listen key
+// Deprecated: Listen key management is deprecated. Use WsUserDataServeSignature instead.
 func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
 	endpoint := fmt.Sprintf("%s/%s", getWsEndpoint(), listenKey)
 	cfg := newWsConfig(endpoint)
@@ -690,6 +693,178 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 		handler(event)
 	}
 	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsUserDataServeSignature serves user data handler using signature-based subscription via WebSocket API.
+// This is the recommended method as listen key management has been deprecated by Binance.
+// It connects to the WebSocket API endpoint and subscribes to user data stream using signature authentication.
+func WsUserDataServeSignature(apiKey, secretKey string, keyType string, timeOffset int64, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	cfg := newWsConfig(getWsApiEndpoint())
+
+	doneC = make(chan struct{})
+	stopC = make(chan struct{})
+
+	conn, err := WsGetReadWriteConnection(cfg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Subscribe to user data stream using signature
+	reqData := websocket.NewRequestData(
+		uuid.New().String(),
+		apiKey,
+		secretKey,
+		timeOffset,
+		keyType,
+	)
+	subscribeRequest, err := websocket.CreateRequest(
+		reqData,
+		websocket.UserDataStreamSubscribeSignatureSpotWsApiMethod,
+		map[string]interface{}{},
+	)
+	if err != nil {
+		conn.Close()
+		return nil, nil, err
+	}
+
+	// Send subscription request
+	err = conn.WriteMessage(gorilla.TextMessage, subscribeRequest)
+	if err != nil {
+		conn.Close()
+		return nil, nil, err
+	}
+
+	go func() {
+		defer close(doneC)
+		defer conn.Close()
+
+		for {
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				select {
+				case <-stopC:
+					return
+				default:
+					errHandler(err)
+					return
+				}
+			}
+
+			// Check if this is a subscription response
+			j, err := newJSON(message)
+			if err != nil {
+				select {
+				case <-stopC:
+					continue
+				default:
+					errHandler(err)
+					continue
+				}
+			}
+
+			// Skip subscription confirmation messages
+			if j.Get("id").MustString() != "" && j.Get("status").MustInt() == 200 {
+				continue
+			}
+
+			// Some WS API pushes wrap the payload inside an envelope like "event", "result" or "data".
+			// Determine the actual event payload to unmarshal from.
+			payload := message
+			// Try unwrap { event: {...} }
+			if ev, ok := j.CheckGet("event"); ok {
+				if m, mErr := ev.Map(); mErr == nil {
+					if raw, encErr := json.Marshal(m); encErr == nil {
+						payload = raw
+					}
+				}
+			}
+			// Try unwrap { result: {...} }
+			if res, ok := j.CheckGet("result"); ok {
+				if m, mErr := res.Map(); mErr == nil {
+					if raw, encErr := json.Marshal(m); encErr == nil {
+						payload = raw
+					}
+				}
+			}
+			// Try unwrap { data: {...} } (combined-like envelope)
+			if string(payload) == string(message) {
+				if data, ok := j.CheckGet("data"); ok {
+					if m, mErr := data.Map(); mErr == nil {
+						if raw, encErr := json.Marshal(m); encErr == nil {
+							payload = raw
+						}
+					}
+				}
+			}
+
+			// Parse user data event from the resolved payload
+			event := new(WsUserDataEvent)
+			if err = json.Unmarshal(payload, event); err != nil {
+				select {
+				case <-stopC:
+					continue
+				default:
+					errHandler(err)
+					continue
+				}
+			}
+
+			// Determine event type from payload
+			jj, _ := newJSON(payload)
+			evtType := UserDataEventType(jj.Get("e").MustString())
+			// ensure top-level fields are populated even if struct sub-unmarshal doesn't set them
+			event.Event = evtType
+			event.Time = jj.Get("E").MustInt64()
+
+			switch evtType {
+			case UserDataEventTypeOutboundAccountPosition:
+				if err = json.Unmarshal(payload, &event.AccountUpdate); err != nil {
+					select {
+					case <-stopC:
+						continue
+					default:
+						errHandler(err)
+						continue
+					}
+				}
+			case UserDataEventTypeBalanceUpdate:
+				if err = json.Unmarshal(payload, &event.BalanceUpdate); err != nil {
+					select {
+					case <-stopC:
+						continue
+					default:
+						errHandler(err)
+						continue
+					}
+				}
+			case UserDataEventTypeExecutionReport:
+				if err = json.Unmarshal(payload, &event.OrderUpdate); err != nil {
+					select {
+					case <-stopC:
+						continue
+					default:
+						errHandler(err)
+						continue
+					}
+				}
+			case UserDataEventTypeListStatus:
+				if err = json.Unmarshal(payload, &event.OCOUpdate); err != nil {
+					select {
+					case <-stopC:
+						continue
+					default:
+						errHandler(err)
+						continue
+					}
+				}
+			default:
+				// Unknown event; still forward to handler so callers can log/inspect
+			}
+			handler(event)
+		}
+	}()
+
+	return doneC, stopC, nil
 }
 
 // WsMarketStatHandler handle websocket that push single market statistics for 24hr
@@ -903,7 +1078,7 @@ func WsAllBookTickerServe(handler WsBookTickerHandler, errHandler ErrHandler) (d
 }
 
 // WsApiInitReadWriteConn create and serve connection
-func WsApiInitReadWriteConn() (*websocket.Conn, error) {
+func WsApiInitReadWriteConn() (*gorilla.Conn, error) {
 	cfg := newWsConfig(getWsApiEndpoint())
 	conn, err := WsGetReadWriteConnection(cfg)
 	if err != nil {

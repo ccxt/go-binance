@@ -311,14 +311,48 @@ if err != nil {
 
 #### User Data
 
+**⚠️ Deprecated:** The listen key method (`WsUserDataServe`) is deprecated. Use `WsUserDataServeSignature` instead.
+
+**Recommended Method (Websocket API):**
+
 ```golang
-wsHandler := func(message []byte) {
-    fmt.Println(string(message))
+import (
+    "fmt"
+    "os"
+    "os/signal"
+    "syscall"
+    "github.com/adshao/go-binance/v2"
+)
+
+// Handler for user data events
+userDataHandler := func(event *binance.WsUserDataEvent) {
+    fmt.Printf("Event: %s, Time: %d\n", event.Event, event.Time)
+    
+    switch event.Event {
+    case binance.UserDataEventTypeOutboundAccountPosition:
+        fmt.Printf("Account Update: %+v\n", event.AccountUpdate)
+    case binance.UserDataEventTypeBalanceUpdate:
+        fmt.Printf("Balance Update: %+v\n", event.BalanceUpdate)
+    case binance.UserDataEventTypeExecutionReport:
+        fmt.Printf("Order Update: %+v\n", event.OrderUpdate)
+    case binance.UserDataEventTypeListStatus:
+        fmt.Printf("OCO Update: %+v\n", event.OCOUpdate)
+    }
 }
+
 errHandler := func(err error) {
     fmt.Println(err)
 }
-doneC, _, err := binance.WsUserDataServe(listenKey, wsHandler, errHandler)
+
+// Connect using signature-based authentication (recommended)
+doneC, stopC, err := binance.WsUserDataServeSignature(
+    apiKey,           // Your API key
+    secretKey,        // Your secret key
+    keyType,          // "HMAC", "RSA", or "ED25519" (empty string for HMAC)
+    timeOffset,       // Time offset in milliseconds (usually 0)
+    userDataHandler,  // Event handler
+    errHandler,       // Error handler
+)
 if err != nil {
     fmt.Println(err)
     return
