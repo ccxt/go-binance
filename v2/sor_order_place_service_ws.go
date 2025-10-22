@@ -18,23 +18,33 @@ type SorOrderPlaceWsService struct {
 }
 
 // NewSorOrderPlaceWsService init SorOrderPlaceWsService
-func NewSorOrderPlaceWsService(apiKey, secretKey string) (*SorOrderPlaceWsService, error) {
-	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := websocket.NewClient(conn)
-	if err != nil {
-		return nil, err
-	}
-
-	return &SorOrderPlaceWsService{
-		c:         client,
+func NewSorOrderPlaceWsService(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*SorOrderPlaceWsService, error) {
+	service := &SorOrderPlaceWsService{
 		ApiKey:    apiKey,
 		SecretKey: secretKey,
 		KeyType:   common.KeyTypeHmac,
-	}, nil
+	}
+
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+	} else {
+		conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
+		if err != nil {
+			return nil, err
+		}
+		client, err := websocket.NewClient(conn)
+		if err != nil {
+			return nil, err
+		}
+		service.c = client
+	}
+
+	return service, nil
 }
 
 // SorOrderPlaceWsRequest parameters for 'sor.order.place' websocket API
@@ -104,7 +114,7 @@ func (s *SorOrderPlaceWsRequest) buildParams() params {
 }
 
 // Do - sends 'sor.order.place' request
-func (s *SorOrderPlaceWsService) Do(requestID string, request *SorOrderPlaceWsRequest) error {
+func (s *SorOrderPlaceWsService) Do(requestID string, request *SorOrderPlaceWsRequest, opts ...websocket.RequestOption) error {
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -120,7 +130,7 @@ func (s *SorOrderPlaceWsService) Do(requestID string, request *SorOrderPlaceWsRe
 		return err
 	}
 
-	if err := s.c.Write(requestID, rawData); err != nil {
+	if err := s.c.Write(requestID, rawData, opts...); err != nil {
 		return err
 	}
 

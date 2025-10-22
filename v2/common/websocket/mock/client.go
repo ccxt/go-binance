@@ -35,6 +35,20 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
+// Close mocks base method.
+func (m *MockClient) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockClientMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockClient)(nil).Close))
+}
+
 // GetReadChannel mocks base method.
 func (m *MockClient) GetReadChannel() <-chan []byte {
 	m.ctrl.T.Helper()
@@ -90,17 +104,22 @@ func (mr *MockClientMockRecorder) Wait(timeout interface{}) *gomock.Call {
 }
 
 // Write mocks base method.
-func (m *MockClient) Write(id string, data []byte) error {
+func (m *MockClient) Write(id string, data []byte, opts ...websocket.RequestOption) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Write", id, data)
+	varargs := []interface{}{id, data}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Write", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Write indicates an expected call of Write.
-func (mr *MockClientMockRecorder) Write(id, data interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) Write(id, data interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockClient)(nil).Write), id, data)
+	varargs := append([]interface{}{id, data}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockClient)(nil).Write), varargs...)
 }
 
 // WriteSync mocks base method.
@@ -110,13 +129,6 @@ func (m *MockClient) WriteSync(id string, data []byte, timeout time.Duration) ([
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
-}
-
-func (m *MockClient) Close() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Close")
-	ret0, _ := ret[0].(error)
-	return ret0
 }
 
 // WriteSync indicates an expected call of WriteSync.
@@ -146,6 +158,20 @@ func NewMockConnection(ctrl *gomock.Controller) *MockConnection {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockConnection) EXPECT() *MockConnectionMockRecorder {
 	return m.recorder
+}
+
+// Close mocks base method.
+func (m *MockConnection) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockConnectionMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockConnection)(nil).Close))
 }
 
 // ReadMessage mocks base method.

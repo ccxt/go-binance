@@ -19,28 +19,46 @@ type WsAccountService struct {
 }
 
 func NewWsAccountService(apiKey, secretKey string, recvWindow ...int64) (*WsAccountService, error) {
-	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
-	if err != nil {
-		return nil, err
+	opts := []websocket.WebSocketServiceOption{}
+	if len(recvWindow) > 0 {
+		opts = append(opts, websocket.WithRecvWindow(recvWindow[0]))
 	}
+	return NewWsAccountServiceWithOptions(apiKey, secretKey, opts...)
+}
 
-	client, err := websocket.NewClient(conn)
-	if err != nil {
-		return nil, err
+func NewWsAccountServiceWithOptions(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*WsAccountService, error) {
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
 	}
 
 	window := int64(5000)
-	if len(recvWindow) > 0 {
-		window = recvWindow[0]
+	if createOpts.RecvWindow > 0 {
+		window = createOpts.RecvWindow
 	}
 
-	return &WsAccountService{
-		c:          client,
+	service := &WsAccountService{
 		ApiKey:     apiKey,
 		SecretKey:  secretKey,
 		KeyType:    common.KeyTypeHmac,
 		RecvWindow: window,
-	}, nil
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+	} else {
+		conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
+		if err != nil {
+			return nil, err
+		}
+		client, err := websocket.NewClient(conn)
+		if err != nil {
+			return nil, err
+		}
+		service.c = client
+	}
+
+	return service, nil
 }
 
 type WsAccountV2InfoResponse struct {
