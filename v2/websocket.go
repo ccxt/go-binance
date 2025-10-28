@@ -3,6 +3,7 @@ package binance
 import (
 	"net/http"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -90,7 +91,7 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 func keepAlive(c *websocket.Conn, timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
 
-	lastResponse := time.Now()
+	lastResponse := time.Now().UnixNano()
 
 	c.SetPingHandler(func(pingData string) error {
 		// Respond with Pong using the server's PING payload
@@ -103,7 +104,7 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 			return err
 		}
 
-		lastResponse = time.Now()
+		atomic.StoreInt64(&lastResponse, time.Now().UnixNano())
 
 		return nil
 	})
@@ -112,7 +113,8 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 		defer ticker.Stop()
 		for {
 			<-ticker.C
-			if time.Since(lastResponse) > timeout {
+			last := atomic.LoadInt64(&lastResponse)
+			if time.Since(time.Unix(0, last)) > timeout {
 				c.Close()
 				return
 			}
