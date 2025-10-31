@@ -124,7 +124,7 @@ func (s *ListPriceChangeStatsService) Symbols(symbols []string) *ListPriceChange
 }
 
 // Symbols set symbols
-func (s *ListPricesService) Symbols(symbols []string) *ListPricesService {
+func (s *ListPricesService) Symbols(symbols ...string) *ListPricesService {
 	s.symbols = symbols
 	return s
 }
