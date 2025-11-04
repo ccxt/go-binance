@@ -30,6 +30,7 @@ type CreateOrderService struct {
 	callbackRate            *string
 	priceProtect            *string
 	newOrderRespType        NewOrderRespType
+	priceMatch              *PriceMatchType
 	closePosition           *string
 	selfTradePreventionMode *SelfTradePreventionMode
 	goodTillDate            int64
@@ -81,6 +82,12 @@ func (s *CreateOrderService) ReduceOnly(reduceOnly bool) *CreateOrderService {
 // Price set price
 func (s *CreateOrderService) Price(price string) *CreateOrderService {
 	s.price = &price
+	return s
+}
+
+// PriceMatch set priceMatch
+func (s *CreateOrderService) PriceMatch(priceMatch PriceMatchType) *CreateOrderService {
+	s.priceMatch = &priceMatch
 	return s
 }
 
@@ -172,6 +179,9 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.price != nil {
 		m["price"] = *s.price
+	}
+	if s.priceMatch != nil {
+		m["priceMatch"] = *s.priceMatch
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
