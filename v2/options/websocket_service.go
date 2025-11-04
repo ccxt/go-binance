@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -27,6 +28,7 @@ var (
 	UseTestnet = false
 
 	ProxyUrl = ""
+	Header   = make(http.Header)
 )
 
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
