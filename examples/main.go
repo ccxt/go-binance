@@ -27,6 +27,7 @@ func main() {
 	// FuturesOrder()
 	// DeliveryOrder()
 	// WalletBalance()
-	WatchMiniMarketsStat()
+	// WatchMiniMarketsStat()
 	// RunOrderListExamples()
+	MultiplexedFuturesWebSocketExample()
 }

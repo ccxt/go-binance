@@ -18,23 +18,33 @@ type OrderListCancelWsService struct {
 }
 
 // NewOrderListCancelWsService init OrderListCancelWsService
-func NewOrderListCancelWsService(apiKey, secretKey string) (*OrderListCancelWsService, error) {
-	conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := websocket.NewClient(conn)
-	if err != nil {
-		return nil, err
-	}
-
-	return &OrderListCancelWsService{
-		c:         client,
+func NewOrderListCancelWsService(apiKey, secretKey string, opts ...websocket.WebSocketServiceOption) (*OrderListCancelWsService, error) {
+	service := &OrderListCancelWsService{
 		ApiKey:    apiKey,
 		SecretKey: secretKey,
 		KeyType:   common.KeyTypeHmac,
-	}, nil
+	}
+
+	createOpts := &websocket.WebSocketServiceCreateOption{}
+	for _, opt := range opts {
+		opt(createOpts)
+	}
+
+	if createOpts.Client != nil {
+		service.c = createOpts.Client
+	} else {
+		conn, err := websocket.NewConnection(WsApiInitReadWriteConn, WebsocketKeepalive, WebsocketTimeoutReadWriteConnection)
+		if err != nil {
+			return nil, err
+		}
+		client, err := websocket.NewClient(conn)
+		if err != nil {
+			return nil, err
+		}
+		service.c = client
+	}
+
+	return service, nil
 }
 
 // OrderListCancelWsRequest parameters for 'orderList.cancel' websocket API
@@ -76,7 +86,7 @@ func (s *OrderListCancelWsRequest) buildParams() params {
 }
 
 // Do - sends 'orderList.cancel' request
-func (s *OrderListCancelWsService) Do(requestID string, request *OrderListCancelWsRequest) error {
+func (s *OrderListCancelWsService) Do(requestID string, request *OrderListCancelWsRequest, opts ...websocket.RequestOption) error {
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -92,7 +102,7 @@ func (s *OrderListCancelWsService) Do(requestID string, request *OrderListCancel
 		return err
 	}
 
-	if err := s.c.Write(requestID, rawData); err != nil {
+	if err := s.c.Write(requestID, rawData, opts...); err != nil {
 		return err
 	}
 
