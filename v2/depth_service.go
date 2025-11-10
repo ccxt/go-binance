@@ -14,6 +14,19 @@ type DepthService struct {
 	limit  *int
 }
 
+// buildRequest creates the API request for Depth
+func (s *DepthService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/depth",
+	}
+	r.setParam("symbol", s.symbol)
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *DepthService) Symbol(symbol string) *DepthService {
 	s.symbol = symbol
@@ -28,14 +41,7 @@ func (s *DepthService) Limit(limit int) *DepthService {
 
 // Do send request
 func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *DepthResponse, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/depth",
-	}
-	r.setParam("symbol", s.symbol)
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
@@ -64,6 +70,27 @@ func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *Dept
 			Quantity: item.GetIndex(1).MustString(),
 		}
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 200 - DepthResponse
+func (s *DepthService) DoSBE(ctx context.Context, opts ...RequestOption) (res *DepthResponse, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = &DepthResponse{}
+	if err := sbeDecoder.DecodeResponse(data, res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 

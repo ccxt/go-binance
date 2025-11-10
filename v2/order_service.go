@@ -484,6 +484,23 @@ type GetOrderService struct {
 	origClientOrderID *string
 }
 
+// buildRequest creates the API request for GetOrder
+func (s *GetOrderService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/order",
+		secType:  secTypeSigned,
+	}
+	r.setParam("symbol", s.symbol)
+	if s.orderID != nil {
+		r.setParam("orderId", *s.orderID)
+	}
+	if s.origClientOrderID != nil {
+		r.setParam("origClientOrderId", *s.origClientOrderID)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *GetOrderService) Symbol(symbol string) *GetOrderService {
 	s.symbol = symbol
@@ -504,18 +521,7 @@ func (s *GetOrderService) OrigClientOrderID(origClientOrderID string) *GetOrderS
 
 // Do send request
 func (s *GetOrderService) Do(ctx context.Context, opts ...RequestOption) (res *Order, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/order",
-		secType:  secTypeSigned,
-	}
-	r.setParam("symbol", s.symbol)
-	if s.orderID != nil {
-		r.setParam("orderId", *s.orderID)
-	}
-	if s.origClientOrderID != nil {
-		r.setParam("origClientOrderId", *s.origClientOrderID)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
@@ -561,6 +567,29 @@ type ListOrdersService struct {
 	limit     *int
 }
 
+// buildRequest creates the API request for ListOrders
+func (s *ListOrdersService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/allOrders",
+		secType:  secTypeSigned,
+	}
+	r.setParam("symbol", s.symbol)
+	if s.orderID != nil {
+		r.setParam("orderId", *s.orderID)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *ListOrdersService) Symbol(symbol string) *ListOrdersService {
 	s.symbol = symbol
@@ -593,24 +622,7 @@ func (s *ListOrdersService) Limit(limit int) *ListOrdersService {
 
 // Do send request
 func (s *ListOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*Order, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/allOrders",
-		secType:  secTypeSigned,
-	}
-	r.setParam("symbol", s.symbol)
-	if s.orderID != nil {
-		r.setParam("orderId", *s.orderID)
-	}
-	if s.startTime != nil {
-		r.setParam("startTime", *s.startTime)
-	}
-	if s.endTime != nil {
-		r.setParam("endTime", *s.endTime)
-	}
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*Order{}, err
@@ -630,6 +642,26 @@ type CancelOrderService struct {
 	orderID           *int64
 	origClientOrderID *string
 	newClientOrderID  *string
+}
+
+// buildRequest creates the API request for CancelOrder
+func (s *CancelOrderService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodDelete,
+		endpoint: "/api/v3/order",
+		secType:  secTypeSigned,
+	}
+	r.setFormParam("symbol", s.symbol)
+	if s.orderID != nil {
+		r.setFormParam("orderId", *s.orderID)
+	}
+	if s.origClientOrderID != nil {
+		r.setFormParam("origClientOrderId", *s.origClientOrderID)
+	}
+	if s.newClientOrderID != nil {
+		r.setFormParam("newClientOrderId", *s.newClientOrderID)
+	}
+	return r
 }
 
 // Symbol set symbol
@@ -658,21 +690,7 @@ func (s *CancelOrderService) NewClientOrderID(newClientOrderID string) *CancelOr
 
 // Do send request
 func (s *CancelOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CancelOrderResponse, err error) {
-	r := &request{
-		method:   http.MethodDelete,
-		endpoint: "/api/v3/order",
-		secType:  secTypeSigned,
-	}
-	r.setFormParam("symbol", s.symbol)
-	if s.orderID != nil {
-		r.setFormParam("orderId", *s.orderID)
-	}
-	if s.origClientOrderID != nil {
-		r.setFormParam("origClientOrderId", *s.origClientOrderID)
-	}
-	if s.newClientOrderID != nil {
-		r.setFormParam("newClientOrderId", *s.newClientOrderID)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
@@ -753,6 +771,17 @@ type CancelOpenOrdersService struct {
 	symbol string
 }
 
+// buildRequest creates the API request for CancelOpenOrders
+func (s *CancelOpenOrdersService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodDelete,
+		endpoint: "/api/v3/openOrders",
+		secType:  secTypeSigned,
+	}
+	r.setParam("symbol", s.symbol)
+	return r
+}
+
 // Symbol set symbol
 func (s *CancelOpenOrdersService) Symbol(symbol string) *CancelOpenOrdersService {
 	s.symbol = symbol
@@ -761,12 +790,7 @@ func (s *CancelOpenOrdersService) Symbol(symbol string) *CancelOpenOrdersService
 
 // Do send request
 func (s *CancelOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (res *CancelOpenOrdersResponse, err error) {
-	r := &request{
-		method:   http.MethodDelete,
-		endpoint: "/api/v3/openOrders",
-		secType:  secTypeSigned,
-	}
-	r.setParam("symbol", s.symbol)
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return &CancelOpenOrdersResponse{}, err
@@ -1052,4 +1076,109 @@ type CancelReplaceOrderResponse struct {
 	NewOrderResult   string               `json:"newOrderResult"`
 	CancelResponse   *CancelOrderResponse `json:"cancelResponse,omitempty"`
 	NewOrderResponse *CreateOrderResponse `json:"newOrderResponse,omitempty"`
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 300/301/302 depending on newOrderRespType
+func (s *CreateOrderService) DoSBE(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	// Use existing createOrder helper
+	data, err := s.createOrder(ctx, "/api/v3/order", opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = &CreateOrderResponse{}
+	if err := sbeDecoder.DecodeResponse(data, res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 304 - OrderResponse
+func (s *GetOrderService) DoSBE(ctx context.Context, opts ...RequestOption) (res *Order, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = &Order{}
+	if err := sbeDecoder.DecodeResponse(data, res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 305 - CancelOrderResponse
+func (s *CancelOrderService) DoSBE(ctx context.Context, opts ...RequestOption) (res *CancelOrderResponse, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = &CancelOrderResponse{}
+	if err := sbeDecoder.DecodeResponse(data, res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 306 - CancelOpenOrdersResponse (returns array of cancelled orders)
+func (s *CancelOpenOrdersService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*CancelOrderResponse, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*CancelOrderResponse, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 308 - OrdersResponse (list orders)
+func (s *ListOrdersService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*Order, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*Order, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
