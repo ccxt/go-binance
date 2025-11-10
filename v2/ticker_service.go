@@ -14,6 +14,18 @@ type ListBookTickersService struct {
 	symbol *string
 }
 
+// buildRequest creates the API request for ListBookTickers
+func (s *ListBookTickersService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/ticker/bookTicker",
+	}
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *ListBookTickersService) Symbol(symbol string) *ListBookTickersService {
 	s.symbol = &symbol
@@ -22,13 +34,7 @@ func (s *ListBookTickersService) Symbol(symbol string) *ListBookTickersService {
 
 // Do send request
 func (s *ListBookTickersService) Do(ctx context.Context, opts ...RequestOption) (res []*BookTicker, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/ticker/bookTicker",
-	}
-	if s.symbol != nil {
-		r.setParam("symbol", *s.symbol)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	data = common.ToJSONList(data)
 	if err != nil {
@@ -58,14 +64,8 @@ type ListPricesService struct {
 	symbols []string
 }
 
-// Symbol set symbol
-func (s *ListPricesService) Symbol(symbol string) *ListPricesService {
-	s.symbol = &symbol
-	return s
-}
-
-// Do send request
-func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res []*SymbolPrice, err error) {
+// buildRequest creates the API request for ListPrices
+func (s *ListPricesService) buildRequest() *request {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/ticker/price",
@@ -76,6 +76,18 @@ func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res 
 		s, _ := json.Marshal(s.symbols)
 		r.setParam("symbols", string(s))
 	}
+	return r
+}
+
+// Symbol set symbol
+func (s *ListPricesService) Symbol(symbol string) *ListPricesService {
+	s.symbol = &symbol
+	return s
+}
+
+// Do send request
+func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res []*SymbolPrice, err error) {
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*SymbolPrice{}, err
@@ -102,6 +114,20 @@ type ListPriceChangeStatsService struct {
 	symbols []string
 }
 
+// buildRequest creates the API request for ListPriceChangeStats
+func (s *ListPriceChangeStatsService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/ticker/24hr",
+	}
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
+	} else if s.symbols != nil {
+		r.setParam("symbols", s.symbols)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *ListPriceChangeStatsService) Symbol(symbol string) *ListPriceChangeStatsService {
 	s.symbol = &symbol
@@ -122,17 +148,7 @@ func (s *ListPricesService) Symbols(symbols []string) *ListPricesService {
 
 // Do send request
 func (s *ListPriceChangeStatsService) Do(ctx context.Context, opts ...RequestOption) (res []*PriceChangeStats, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/ticker/24hr",
-	}
-
-	if s.symbol != nil {
-		r.setParam("symbol", *s.symbol)
-	} else if s.symbols != nil {
-		r.setParam("symbols", s.symbols)
-	}
-
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return res, err
@@ -177,6 +193,16 @@ type AveragePriceService struct {
 	symbol string
 }
 
+// buildRequest creates the API request for AveragePrice
+func (s *AveragePriceService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/avgPrice",
+	}
+	r.setParam("symbol", s.symbol)
+	return r
+}
+
 // Symbol set symbol
 func (s *AveragePriceService) Symbol(symbol string) *AveragePriceService {
 	s.symbol = symbol
@@ -185,11 +211,7 @@ func (s *AveragePriceService) Symbol(symbol string) *AveragePriceService {
 
 // Do send request
 func (s *AveragePriceService) Do(ctx context.Context, opts ...RequestOption) (res *AvgPrice, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/avgPrice",
-	}
-	r.setParam("symbol", s.symbol)
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return res, err
@@ -213,6 +235,24 @@ type ListSymbolTickerService struct {
 	symbol     *string
 	symbols    []string
 	windowSize *string
+}
+
+// buildRequest creates the API request for ListSymbolTicker
+func (s *ListSymbolTickerService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/ticker",
+	}
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
+	} else if s.symbols != nil {
+		s, _ := json.Marshal(s.symbols)
+		r.setParam("symbols", string(s))
+	}
+	if s.windowSize != nil {
+		r.setParam("windowSize", *s.windowSize)
+	}
+	return r
 }
 
 type SymbolTicker struct {
@@ -262,21 +302,7 @@ func (s *ListSymbolTickerService) WindowSize(windowSize string) *ListSymbolTicke
 }
 
 func (s *ListSymbolTickerService) Do(ctx context.Context, opts ...RequestOption) (res []*SymbolTicker, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/ticker",
-	}
-	if s.symbol != nil {
-		r.setParam("symbol", *s.symbol)
-	} else if s.symbols != nil {
-		s, _ := json.Marshal(s.symbols)
-		r.setParam("symbols", string(s))
-	}
-
-	if s.windowSize != nil {
-		r.setParam("windowSize", *s.windowSize)
-	}
-
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	data = common.ToJSONList(data)
 	if err != nil {
@@ -287,5 +313,105 @@ func (s *ListSymbolTickerService) Do(ctx context.Context, opts ...RequestOption)
 	if err != nil {
 		return []*SymbolTicker{}, err
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+func (s *ListBookTickersService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*BookTicker, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*BookTicker, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+func (s *ListPricesService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*SymbolPrice, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*SymbolPrice, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+func (s *ListPriceChangeStatsService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*PriceChangeStats, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*PriceChangeStats, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+func (s *AveragePriceService) DoSBE(ctx context.Context, opts ...RequestOption) (res *AvgPrice, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = &AvgPrice{}
+	if err := sbeDecoder.DecodeResponse(data, res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+func (s *ListSymbolTickerService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*SymbolTicker, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*SymbolTicker, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
