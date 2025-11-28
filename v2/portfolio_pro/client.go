@@ -232,3 +232,7 @@ func (c *Client) NewRedeemBFUSDService() *RedeemBFUSDService {
 func (c *Client) NewGetAccountService() *GetAccountService {
 	return &GetAccountService{c: c}
 }
+
+func (c *Client) NewGetAccountBalanceService() *GetAccountBalanceService {
+	return &GetAccountBalanceService{c: c}
+}

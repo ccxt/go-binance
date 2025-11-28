@@ -57,3 +57,30 @@ func (s *accountServiceTestSuite) assertAccountEqual(e, a *Account) {
 	r.Equal(e.AccountStatus, a.AccountStatus, "AccountStatus")
 	r.Equal(e.AccountType, a.AccountType, "AccountType")
 }
+
+func (s *accountServiceTestSuite) TestGetAccountBalance() {
+	data := []byte(`[
+		{
+			"asset": "USDT",
+			"totalWalletBalance": "122607.35137903"
+		}
+	]`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	s.assertReq(func(r *request) {
+		e := newSignedRequest()
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewGetAccountBalanceService().Do(newContext())
+	s.r().NoError(err)
+	s.assertAccountBalanceEqual(res[0], &AccountBalance{
+		Asset:              "USDT",
+		TotalWalletBalance: "122607.35137903",
+	})
+}
+
+func (s *accountServiceTestSuite) assertAccountBalanceEqual(e, a *AccountBalance) {
+	r := s.r()
+	r.Equal(e.Asset, a.Asset, "Asset")
+	r.Equal(e.TotalWalletBalance, a.TotalWalletBalance, "TotalWalletBalance")
+}
