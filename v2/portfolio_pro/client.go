@@ -228,3 +228,7 @@ func (c *Client) NewMintBFUSDService() *MintBFUSDService {
 func (c *Client) NewRedeemBFUSDService() *RedeemBFUSDService {
 	return &RedeemBFUSDService{c: c}
 }
+
+func (c *Client) NewGetAccountService() *GetAccountService {
+	return &GetAccountService{c: c}
+}
