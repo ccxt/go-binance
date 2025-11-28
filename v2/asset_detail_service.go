@@ -166,12 +166,8 @@ func (s *GetUserAssetService) Do(ctx context.Context) (res []UserAssetRecord, er
 	return
 }
 
-// Funding Wallet (USER_DATA)
-const (
-	fundingWalletEndpoint = "/sapi/v1/asset/get-funding-asset"
-)
-
-// FundingWalletService funding wallet
+// GetFundingAssetService funding wallet
+// See https://developers.binance.com/docs/wallet/asset/funding-wallet
 type GetFundingAssetService struct {
 	c                *Client
 	asset            *string
@@ -203,7 +199,7 @@ type FundingAsset struct {
 func (s *GetFundingAssetService) Do(ctx context.Context) (res []FundingAsset, err error) {
 	r := &request{
 		method:   http.MethodPost,
-		endpoint: fundingWalletEndpoint,
+		endpoint: "/sapi/v1/asset/get-funding-asset",
 		secType:  secTypeSigned,
 	}
 	if s.asset != nil {
