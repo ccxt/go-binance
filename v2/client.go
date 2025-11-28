@@ -832,6 +832,10 @@ func (c *Client) NewWalletBalanceService() *WalletBalanceService {
 	return &WalletBalanceService{c: c}
 }
 
+func (c *Client) NewGetFundingAssetService() *GetFundingAssetService {
+	return &GetFundingAssetService{c: c}
+}
+
 // NewAveragePriceService init average price service
 func (c *Client) NewAveragePriceService() *AveragePriceService {
 	return &AveragePriceService{c: c}
