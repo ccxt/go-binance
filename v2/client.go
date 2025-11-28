@@ -723,6 +723,11 @@ func (c *Client) NewGetAccountService() *GetAccountService {
 	return &GetAccountService{c: c}
 }
 
+// NewGetSapiAccountInfoService init getting sapi account info service
+func (c *Client) NewGetSapiAccountInfoService() *GetSapiAccountInfoService {
+	return &GetSapiAccountInfoService{c: c}
+}
+
 // NewGetCommissionRatesService init getting commission rates service
 func (c *Client) NewGetCommissionRatesService() *GetCommissionRatesService {
 	return &GetCommissionRatesService{c: c}
