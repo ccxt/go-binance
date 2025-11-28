@@ -44,6 +44,7 @@ func (s *withdrawServiceTestSuite) TestGetAssetDetail() {
 	s.r().Equal(res["CTR"].DepositStatus, false, "depositStatus")
 	s.r().Equal(res["SKY"].DepositStatus, true, "depositStatus")
 }
+
 func (s *assetDetailServiceTestSuite) TestGetAllCoinsInfo() {
 	data := []byte(`
 	[
@@ -219,11 +220,11 @@ func (s *assetDetailServiceTestSuite) TestGetFundingAsset() {
 	res, err := s.client.NewGetFundingAssetService().Do(newContext())
 	s.r().NoError(err)
 	s.assertFundingAssetEqual(FundingAsset{
-		Asset: "BTC",
-		Free:  "1",
-		Locked: "0",
-		Freeze: "0",
-		Withdrawing: "0",
+		Asset:        "BTC",
+		Free:         "1",
+		Locked:       "0",
+		Freeze:       "0",
+		Withdrawing:  "0",
 		BtcValuation: "0",
 	}, res[0])
 }

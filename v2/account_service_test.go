@@ -164,13 +164,13 @@ func (s *accountServiceTestSuite) TestGetAccountSnapshot() {
 		Code: 200,
 		Msg:  "",
 		Snapshot: []*SnapshotVos{
-			&SnapshotVos{
+			{
 				Type:       "spot",
 				UpdateTime: 1576281599000,
 				Data: &SnapshotData{
 					TotalAssetOfBtc: "0.09942700",
 					Balances: []*SnapshotBalances{
-						&SnapshotBalances{
+						{
 							Asset:  "BTC",
 							Free:   "0.09905021",
 							Locked: "0.00000000",
@@ -251,4 +251,40 @@ func (s *accountServiceTestSuite) assertAPIKeyPermissionEqual(e, a *APIKeyPermis
 	r.Equal(e.EnableMargin, a.EnableMargin, "EnableMargin")
 	r.Equal(e.EnableSpotAndMarginTrading, a.EnableSpotAndMarginTrading, "EnableSpotAndMarginTrading")
 	r.Equal(e.TradingAuthorityExpirationTime, a.TradingAuthorityExpirationTime, "TradingAuthorityExpirationTime")
+}
+
+func (s *accountServiceTestSuite) TestGetSapiAccountInfo() {
+	data := []byte(`{
+		"vipLevel": 0,
+		"isMarginEnabled": true,
+		"isFutureEnabled": true,
+		"isOptionsEnabled": true,
+		"isPortfolioMarginRetailEnabled": true
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	s.assertReq(func(r *request) {
+		e := newSignedRequest()
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewGetSapiAccountInfoService().Do(newContext())
+	s.r().NoError(err)
+	e := &SapiAccountInfo{
+		VipLevel:                       0,
+		IsMarginEnabled:                true,
+		IsFutureEnabled:                true,
+		IsOptionsEnabled:               true,
+		IsPortfolioMarginRetailEnabled: true,
+	}
+	s.assertAccountInfoEqual(e, res)
+}
+
+func (s *accountServiceTestSuite) assertAccountInfoEqual(e, a *SapiAccountInfo) {
+	r := s.r()
+	r.Equal(e.VipLevel, a.VipLevel, "VipLevel")
+	r.Equal(e.IsMarginEnabled, a.IsMarginEnabled, "IsMarginEnabled")
+	r.Equal(e.IsFutureEnabled, a.IsFutureEnabled, "IsFutureEnabled")
+	r.Equal(e.IsOptionsEnabled, a.IsOptionsEnabled, "IsOptionsEnabled")
+	r.Equal(e.IsPortfolioMarginRetailEnabled, a.IsPortfolioMarginRetailEnabled, "IsPortfolioMarginRetailEnabled")
 }

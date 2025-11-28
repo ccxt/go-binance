@@ -234,3 +234,37 @@ type APIKeyPermission struct {
 	EnableSpotAndMarginTrading     bool   `json:"enableSpotAndMarginTrading"`
 	TradingAuthorityExpirationTime uint64 `json:"tradingAuthorityExpirationTime"`
 }
+
+// GetAccountService get account info
+// See https://developers.binance.com/docs/zh-CN/wallet/account
+type GetSapiAccountInfoService struct {
+	c *Client
+}
+
+type SapiAccountInfo struct {
+	VipLevel                       int  `json:"vipLevel"`
+	IsMarginEnabled                bool `json:"isMarginEnabled"`
+	IsFutureEnabled                bool `json:"isFutureEnabled"`
+	IsOptionsEnabled               bool `json:"isOptionsEnabled"`
+	IsPortfolioMarginRetailEnabled bool `json:"isPortfolioMarginRetailEnabled"`
+}
+
+// Do send request
+func (s *GetSapiAccountInfoService) Do(ctx context.Context, opts ...RequestOption) (res *SapiAccountInfo, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/account/info",
+		secType:  secTypeSigned,
+	}
+
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(SapiAccountInfo)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
