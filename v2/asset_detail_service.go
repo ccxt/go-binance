@@ -165,3 +165,61 @@ func (s *GetUserAssetService) Do(ctx context.Context) (res []UserAssetRecord, er
 	err = json.Unmarshal(data, &res)
 	return
 }
+
+// Funding Wallet (USER_DATA)
+const (
+	fundingWalletEndpoint = "/sapi/v1/asset/get-funding-asset"
+)
+
+// FundingWalletService funding wallet
+type GetFundingAssetService struct {
+	c                *Client
+	asset            *string
+	needBtcValuation *string
+}
+
+// Asset set asset
+func (s *GetFundingAssetService) Asset(asset string) *GetFundingAssetService {
+	s.asset = &asset
+	return s
+}
+
+// NeedBtcValuation set needBtcValuation
+func (s *GetFundingAssetService) NeedBtcValuation(needBtcValuation string) *GetFundingAssetService {
+	s.needBtcValuation = &needBtcValuation
+	return s
+}
+
+// FundingAsset define response of GetFundingAssetService
+type FundingAsset struct {
+	Asset        string `json:"asset"`
+	Free         string `json:"free"`
+	Locked       string `json:"locked"`
+	Freeze       string `json:"freeze"`
+	Withdrawing  string `json:"withdrawing"`
+	BtcValuation string `json:"btcValuation"`
+}
+
+func (s *GetFundingAssetService) Do(ctx context.Context) (res []FundingAsset, err error) {
+	r := &request{
+		method:   http.MethodPost,
+		endpoint: fundingWalletEndpoint,
+		secType:  secTypeSigned,
+	}
+	if s.asset != nil {
+		r.setParam("asset", *s.asset)
+	}
+	if s.needBtcValuation != nil {
+		r.setParam("needBtcValuation", *s.needBtcValuation)
+	}
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	res = make([]FundingAsset, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
