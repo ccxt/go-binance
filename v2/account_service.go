@@ -233,6 +233,9 @@ type APIKeyPermission struct {
 	EnableMargin                   bool   `json:"enableMargin"`
 	EnableSpotAndMarginTrading     bool   `json:"enableSpotAndMarginTrading"`
 	TradingAuthorityExpirationTime uint64 `json:"tradingAuthorityExpirationTime"`
+	EnableFixApiTrade              bool   `json:"enableFixApiTrade"`
+	EnableFixReadOnly              bool   `json:"enableFixReadOnly"`
+	EnablePortfolioMarginTrading   bool   `json:"enablePortfolioMarginTrading"`
 }
 
 // GetAccountService get account info
