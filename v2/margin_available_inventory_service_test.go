@@ -15,7 +15,7 @@ func TestMarginAvailableInventoryService(t *testing.T) {
 	suite.Run(t, new(marginAvailableInventoryServiceTestSuite))
 }
 
-func (s *marginAvailableInventoryServiceTestSuite) TestMarginInterestHistory() {
+func (s *marginAvailableInventoryServiceTestSuite) TestMarginAvailableInventory() {
 	data := []byte(`
 	{
 		"assets": {

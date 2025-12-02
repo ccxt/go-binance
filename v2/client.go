@@ -1009,7 +1009,7 @@ func (c *Client) NewMarginNextHourlyInterestRateService() *MarginNextHourlyInter
 	return &MarginNextHourlyInterestRateService{c: c}
 }
 
-// NewMarginAvailableInventoryService init margin avalible inventory service
+// NewMarginAvailableInventoryService init margin available inventory service
 func (c *Client) NewMarginAvailableInventoryService() *MarginAvailableInventoryService {
 	return &MarginAvailableInventoryService{c: c}
 }
