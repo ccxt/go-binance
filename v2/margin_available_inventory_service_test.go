@@ -32,7 +32,7 @@ func (s *marginAvailableInventoryServiceTestSuite) TestMarginAvailableInventory(
 	marginType := "MARGIN"
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setParams(params{
-			"marginType": marginType,
+			"type": marginType,
 		})
 		s.assertRequestEqual(e, r)
 	})
