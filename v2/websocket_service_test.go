@@ -9,7 +9,7 @@ import (
 
 type websocketServiceTestSuite struct {
 	baseTestSuite
-	origWsServe func(*WsConfig, WsHandler, ErrHandler) (chan struct{}, chan struct{}, error)
+	origWsServe func(*WsConfig, WsHandler, ErrHandler, ConnHandler) (chan struct{}, chan struct{}, error)
 	serveCount  int
 }
 
@@ -18,16 +18,16 @@ func TestWebsocketService(t *testing.T) {
 }
 
 func (s *websocketServiceTestSuite) SetupTest() {
-	s.origWsServe = wsServe
+	s.origWsServe = wsServeWithConnHandler
 }
 
 func (s *websocketServiceTestSuite) TearDownTest() {
-	wsServe = s.origWsServe
+	wsServeWithConnHandler = s.origWsServe
 	s.serveCount = 0
 }
 
 func (s *websocketServiceTestSuite) mockWsServe(data []byte, err error) {
-	wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, innerErr error) {
+	wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler, connHandler ConnHandler) (doneC, stopC chan struct{}, innerErr error) {
 		s.serveCount++
 		doneC = make(chan struct{})
 		stopC = make(chan struct{})
@@ -1744,6 +1744,47 @@ func (s *websocketServiceTestSuite) assertWsBookTickerEvent(e, a *WsBookTickerEv
 	r.Equal(e.BestBidQty, a.BestBidQty, "BestBidQty")
 	r.Equal(e.BestAskPrice, a.BestAskPrice, "BestAskPrice")
 	r.Equal(e.BestAskQty, a.BestAskQty, "BestAskQty")
+}
+
+// https://binance-docs.github.io/apidocs/spot/en/#all-book-tickers-stream
+func (s *websocketServiceTestSuite) TestWsAnnouncementServe() {
+	data := []byte(`{
+  "type": "DATA",
+  "topic": "com_announcement_en",
+  "data": "{\"catalogId\":161,\"catalogName\":\"Delisting\",\"publishDate\":1753257631403,\"title\":\"Notice of...\",\"body\":\"This is...\",\"disclaimer\":\"Trade on-the-go...\"}"
+}`)
+	fakeErrMsg := "fake error"
+	s.mockWsServe(data, errors.New(fakeErrMsg))
+	defer s.assertWsServe()
+
+	doneC, stopC, err := WsAnnouncementServe(WsAnnouncementParam{}, func(event *WsAnnouncementEvent) {
+		e := &WsAnnouncementEvent{
+			CatalogID:   161,
+			CatalogName: "Delisting",
+			PublishDate: 1753257631403,
+			Title:       "Notice of...",
+			Body:        "This is...",
+			Disclaimer:  "Trade on-the-go...",
+		}
+		s.assertWsAnnouncementEvent(e, event)
+	},
+		func(err error) {
+			s.r().EqualError(err, fakeErrMsg)
+		})
+
+	s.r().NoError(err)
+	stopC <- struct{}{}
+	<-doneC
+}
+
+func (s *websocketServiceTestSuite) assertWsAnnouncementEvent(e, a *WsAnnouncementEvent) {
+	r := s.r()
+	r.Equal(e.CatalogID, a.CatalogID, "CatalogID")
+	r.Equal(e.CatalogName, a.CatalogName, "CatalogName")
+	r.Equal(e.PublishDate, a.PublishDate, "PublishDate")
+	r.Equal(e.Title, a.Title, "Title")
+	r.Equal(e.Body, a.Body, "Body")
+	r.Equal(e.Disclaimer, a.Disclaimer, "Disclaimer")
 }
 
 func (s *websocketServiceTestSuite) TestWsUserDataServeSignatureErrorWithEmptyCredentials() {
