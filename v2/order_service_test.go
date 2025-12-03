@@ -121,7 +121,6 @@ func (s *orderServiceTestSuite) TestCreateOrderId() {
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).QuoteOrderQty(quoteOrderQty).
 		Price(price).Do(newContext())
 	s.r().NoError(err)
-
 }
 
 func (s *orderServiceTestSuite) TestCreateOrderFull() {
@@ -343,19 +342,19 @@ func (s *orderServiceTestSuite) TestCreateOCO() {
 		TransactionTime:   1574040868128,
 		Symbol:            "LTCBTC",
 		Orders: []*OCOOrder{
-			&OCOOrder{
+			{
 				Symbol:        "LTCBTC",
 				OrderID:       2,
 				ClientOrderID: "pO9ufTiFGg3nw2fOdgeOXa",
 			},
-			&OCOOrder{
+			{
 				Symbol:        "LTCBTC",
 				OrderID:       3,
 				ClientOrderID: "TXOvglzXuaubXAaENpaRCB",
 			},
 		},
 		OrderReports: []*OCOOrderReport{
-			&OCOOrderReport{
+			{
 				Symbol:                   "LTCBTC",
 				OrderID:                  2,
 				OrderListID:              0,
@@ -370,7 +369,7 @@ func (s *orderServiceTestSuite) TestCreateOCO() {
 				Side:                     SideTypeSell,
 				StopPrice:                "1.00000000",
 			},
-			&OCOOrderReport{
+			{
 				Symbol:                   "LTCBTC",
 				OrderID:                  3,
 				OrderListID:              0,
@@ -432,6 +431,7 @@ func (s *baseOrderTestSuite) assertOCOOrderEqual(e, a *OCOOrder) {
 	r.Equal(e.OrderID, a.OrderID, "OrderID")
 	r.Equal(e.Symbol, a.Symbol, "Symbol")
 }
+
 func (s *orderServiceTestSuite) TestListOpenOco() {
 	data := []byte(`[
 		{
@@ -493,6 +493,7 @@ func (s *orderServiceTestSuite) TestListOpenOco() {
 	}
 	s.assertOcoEqual(e, ocos[0])
 }
+
 func (s *baseOrderTestSuite) assertOcoEqual(e, a *Oco) {
 	r := s.r()
 	r.Equal(e.Symbol, a.Symbol, "Symbol")
@@ -509,6 +510,7 @@ func (s *baseOrderTestSuite) assertOcoEqual(e, a *Oco) {
 	r.Equal(e.Orders[1].ClientOrderID, a.Orders[1].ClientOrderID, "Orders[1].ClientOrderID")
 	r.Equal(e.TransactionTime, a.TransactionTime, "TransactionTime")
 }
+
 func (s *orderServiceTestSuite) TestListOpenOrders() {
 	data := []byte(`[
         {

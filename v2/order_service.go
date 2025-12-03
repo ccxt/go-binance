@@ -530,25 +530,38 @@ func (s *GetOrderService) Do(ctx context.Context, opts ...RequestOption) (res *O
 
 // Order define order info
 type Order struct {
-	Symbol                   string          `json:"symbol"`
-	OrderID                  int64           `json:"orderId"`
-	OrderListId              int64           `json:"orderListId"`
-	ClientOrderID            string          `json:"clientOrderId"`
-	Price                    string          `json:"price"`
-	OrigQuantity             string          `json:"origQty"`
-	ExecutedQuantity         string          `json:"executedQty"`
-	CummulativeQuoteQuantity string          `json:"cummulativeQuoteQty"`
-	Status                   OrderStatusType `json:"status"`
-	TimeInForce              TimeInForceType `json:"timeInForce"`
-	Type                     OrderType       `json:"type"`
-	Side                     SideType        `json:"side"`
-	StopPrice                string          `json:"stopPrice"`
-	IcebergQuantity          string          `json:"icebergQty"`
-	Time                     int64           `json:"time"`
-	UpdateTime               int64           `json:"updateTime"`
-	IsWorking                bool            `json:"isWorking"`
-	IsIsolated               bool            `json:"isIsolated"`
-	OrigQuoteOrderQuantity   string          `json:"origQuoteOrderQty"`
+	Symbol                   string                  `json:"symbol"`
+	OrderID                  int64                   `json:"orderId"`
+	OrderListId              int64                   `json:"orderListId"`
+	ClientOrderID            string                  `json:"clientOrderId"`
+	Price                    string                  `json:"price"`
+	OrigQuantity             string                  `json:"origQty"`
+	ExecutedQuantity         string                  `json:"executedQty"`
+	CummulativeQuoteQuantity string                  `json:"cummulativeQuoteQty"`
+	Status                   OrderStatusType         `json:"status"`
+	TimeInForce              TimeInForceType         `json:"timeInForce"`
+	Type                     OrderType               `json:"type"`
+	Side                     SideType                `json:"side"`
+	StopPrice                string                  `json:"stopPrice"`
+	IcebergQuantity          string                  `json:"icebergQty"`
+	Time                     int64                   `json:"time"`
+	UpdateTime               int64                   `json:"updateTime"`
+	IsWorking                bool                    `json:"isWorking"`
+	WorkingTime              int64                   `json:"workingTime"`
+	OrigQuoteOrderQuantity   string                  `json:"origQuoteOrderQty"`
+	SelfTradePreventionMode  SelfTradePreventionMode `json:"selfTradePreventionMode"`
+	PreventedMatchId         *int64                  `json:"preventedMatchId,omitempty"`
+	PreventedQuantity        *string                 `json:"preventedQuantity,omitempty"`
+	StrategyId               *int64                  `json:"strategyId,omitempty"`
+	StrategyType             *string                 `json:"strategyType,omitempty"`
+	TrailingDelta            *int64                  `json:"trailingDelta,omitempty"`
+	TrailingTime             *int64                  `json:"trailingTime,omitempty"`
+	UsedSor                  *bool                   `json:"usedSor,omitempty"`
+	WorkingFloor             *string                 `json:"workingFloor,omitempty"`
+	PegPriceType             *string                 `json:"pegPriceType,omitempty"`
+	PegOffsetType            *string                 `json:"pegOffsetType,omitempty"`
+	PegOffsetValue           *int64                  `json:"pegOffsetValue,omitempty"`
+	PeggedPrice              *string                 `json:"peggedPrice,omitempty"`
 }
 
 // ListOrdersService all account orders; active, canceled, or filled
