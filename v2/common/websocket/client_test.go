@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"testing"
 	"time"
@@ -37,12 +38,15 @@ func TestClient(t *testing.T) {
 
 func (s *clientTestSuite) TestReadWriteSync() {
 	stopCh := make(chan struct{})
+	readyCh := make(chan struct{})
 	go func() {
-		startWsTestServer(stopCh)
+		startWsTestServer(stopCh, readyCh)
 	}()
 	defer func() {
 		stopCh <- struct{}{}
 	}()
+
+	<-readyCh
 
 	conn, err := NewConnection(func() (*websocket.Conn, error) {
 		Dialer := websocket.Dialer{
@@ -231,16 +235,20 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func startWsTestServer(stopCh chan struct{}) {
-	server := &http.Server{
-		Addr: "localhost:8080",
-	}
+func startWsTestServer(stopCh chan struct{}, readyCh chan struct{}) {
+	server := &http.Server{}
 
 	http.HandleFunc("/ws", wsHandler)
 	log.Println("WebSocket server started on :8080")
 
 	go func() {
-		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		lis, err := net.Listen("tcp", "localhost:8080")
+		if err != nil {
+			log.Fatalf("WebSocket server error: %v", err)
+		}
+		close(readyCh)
+
+		if err := server.Serve(lis); !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("WebSocket server error: %v", err)
 		}
 		log.Println("Stopped serving new connections.")
