@@ -371,7 +371,6 @@ func (s *ModifyOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 	}
 	res = new(ModifyOrderResponse)
 	err = json.Unmarshal(data, res)
-
 	if err != nil {
 		return nil, err
 	}
@@ -1075,7 +1074,6 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 	r.setFormParams(m)
 
 	data, _, err := s.c.callAPI(ctx, r, opts...)
-
 	if err != nil {
 		return &CreateBatchOrdersResponse{}, err
 	}
@@ -1282,4 +1280,91 @@ func (s *ModifyBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 	}
 
 	return batchModifyOrdersResponse, nil
+}
+
+// ListOpenAlgoOrdersService list open algo orders
+type ListOpenAlgoOrdersService struct {
+	c        *Client
+	symbol   *string
+	algoType *string
+	algoId   *int64
+}
+
+// Symbol set symbol
+func (s *ListOpenAlgoOrdersService) Symbol(symbol string) *ListOpenAlgoOrdersService {
+	s.symbol = &symbol
+	return s
+}
+
+// AlgoType set algoType
+func (s *ListOpenAlgoOrdersService) AlgoType(algoType string) *ListOpenAlgoOrdersService {
+	s.algoType = &algoType
+	return s
+}
+
+// AlgoId set algoId
+func (s *ListOpenAlgoOrdersService) AlgoId(algoId int64) *ListOpenAlgoOrdersService {
+	s.algoId = &algoId
+	return s
+}
+
+type AlgoOrderResponse struct {
+	AlgoId                  int64            `json:"algoId"`
+	ClientAlgoId            string           `json:"clientAlgoId"`
+	AlgoType                string           `json:"algoType"`
+	OrderType               string           `json:"orderType"`
+	Symbol                  string           `json:"symbol"`
+	Side                    SideType         `json:"side"`
+	PositionSide            PositionSideType `json:"positionSide"`
+	TimeInForce             TimeInForceType  `json:"timeInForce"`
+	Quantity                string           `json:"quantity"`
+	AlgoStatus              string           `json:"algoStatus"`
+	ActualOrderId           string           `json:"actualOrderId"`
+	ActualPrice             string           `json:"actualPrice"`
+	TriggerPrice            string           `json:"triggerPrice"`
+	Price                   string           `json:"price"`
+	IcebergQuantity         string           `json:"icebergQuantity"`
+	TPTriggerPrice          string           `json:"tpTriggerPrice"`
+	TPPrice                 string           `json:"tpPrice"`
+	SLTriggerPrice          string           `json:"slTriggerPrice"`
+	SLPrice                 string           `json:"slPrice"`
+	TPOrderType             string           `json:"tpOrderType"`
+	SelfTradePreventionMode string           `json:"selfTradePreventionMode"`
+	WorkingType             WorkingType      `json:"workingType"`
+	PriceMatch              string           `json:"priceMatch"`
+	ClosePosition           bool             `json:"closePosition"`
+	PriceProtect            bool             `json:"priceProtect"`
+	ReduceOnly              bool             `json:"reduceOnly"`
+	CreateTime              int64            `json:"createTime"`
+	UpdateTime              int64            `json:"updateTime"`
+	TriggerTime             int64            `json:"triggerTime"`
+	GoodTillDate            int64            `json:"goodTillDate"`
+}
+
+// Do send request
+func (s *ListOpenAlgoOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*AlgoOrderResponse, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/fapi/v1/openAlgoOrders",
+		secType:  secTypeNone,
+	}
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
+	}
+	if s.algoType != nil {
+		r.setParam("algoType", *s.algoType)
+	}
+	if s.algoId != nil {
+		r.setParam("algoId", *s.algoId)
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return []*AlgoOrderResponse{}, err
+	}
+	res = make([]*AlgoOrderResponse, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return []*AlgoOrderResponse{}, err
+	}
+	return res, nil
 }

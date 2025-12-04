@@ -761,3 +761,8 @@ func (c *Client) NewGetConvertStatusService() *ConvertStatusService {
 func (c *Client) NewApiTradingStatusService() *ApiTradingStatusService {
 	return &ApiTradingStatusService{c: c}
 }
+
+// NewListOpenAlgoOrdersService init list open algo orders service
+func (c *Client) NewListOpenAlgoOrdersService() *ListOpenAlgoOrdersService {
+	return &ListOpenAlgoOrdersService{c: c}
+}
