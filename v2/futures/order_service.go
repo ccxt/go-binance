@@ -1346,7 +1346,7 @@ func (s *ListOpenAlgoOrdersService) Do(ctx context.Context, opts ...RequestOptio
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/openAlgoOrders",
-		secType:  secTypeNone,
+		secType:  secTypeSigned,
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
