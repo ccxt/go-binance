@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/adshao/go-binance/v2/common"
-
 	"github.com/stretchr/testify/suite"
 )
 
@@ -979,5 +978,120 @@ func (s *orderServiceTestSuite) TestModifyBatchOrders() {
 			},
 		},
 		res.Errors)
+}
 
+func (s *orderServiceTestSuite) TestListOpenAlgoOrders() {
+	data := []byte(`[
+		{
+			"algoId": 2148627,
+			"clientAlgoId": "MRumok0dkhrP4kCm12AHaB",
+			"algoType": "CONDITIONAL",
+			"orderType": "TAKE_PROFIT",
+			"symbol": "BNBUSDT",
+			"side": "SELL",
+			"positionSide": "BOTH",
+			"timeInForce": "GTC",
+			"quantity": "0.01",
+			"algoStatus": "NEW",
+			"actualOrderId": "",
+			"actualPrice": "0.00000",
+			"triggerPrice": "750.000",
+			"price": "750.000",
+			"icebergQuantity": null,
+			"tpTriggerPrice": "0.000",
+			"tpPrice": "0.000",
+			"slTriggerPrice": "0.000",
+			"slPrice": "0.000",
+			"tpOrderType": "",
+			"selfTradePreventionMode": "NONE",
+			"workingType": "CONTRACT_PRICE",
+			"priceMatch": "NONE",
+			"closePosition": false,
+			"priceProtect": false,
+			"reduceOnly": false,
+			"createTime": 1750514941540,
+			"updateTime": 1750514941540,
+			"triggerTime": 0,
+			"goodTillDate": 0
+		}
+	]`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	s.assertReq(func(r *request) {
+		e := newRequest().setParams(params{
+			"symbol": "BNBUSDT",
+		})
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewListOpenAlgoOrdersService().Symbol("BNBUSDT").Do(context.Background())
+	s.r().NoError(err)
+	e := &AlgoOrderResponse{
+		AlgoId:                  2148627,
+		Symbol:                  "BNBUSDT",
+		Side:                    SideTypeSell,
+		PositionSide:            PositionSideTypeBoth,
+		ClientAlgoId:            "MRumok0dkhrP4kCm12AHaB",
+		AlgoType:                "CONDITIONAL",
+		OrderType:               "TAKE_PROFIT",
+		AlgoStatus:              "NEW",
+		ActualOrderId:           "",
+		ActualPrice:             "0.00000",
+		TriggerPrice:            "750.000",
+		TimeInForce:             TimeInForceTypeGTC,
+		Quantity:                "0.01",
+		Price:                   "750.000",
+		IcebergQuantity:         "",
+		TPTriggerPrice:          "0.000",
+		TPPrice:                 "0.000",
+		SLTriggerPrice:          "0.000",
+		SLPrice:                 "0.000",
+		TPOrderType:             "",
+		SelfTradePreventionMode: "NONE",
+		WorkingType:             "CONTRACT_PRICE",
+		PriceMatch:              "NONE",
+		ClosePosition:           false,
+		PriceProtect:            false,
+		ReduceOnly:              false,
+		CreateTime:              1750514941540,
+		UpdateTime:              1750514941540,
+		TriggerTime:             0,
+	}
+	s.assertAlgoOrderResponseEqual(e, res[0])
+}
+
+func (s *orderServiceTestSuite) assertAlgoOrderResponseEqual(e, a *AlgoOrderResponse) {
+	r := s.r()
+	r.Equal(e.AlgoId, a.AlgoId, "AlgoId")
+	r.Equal(e.Symbol, a.Symbol, "Symbol")
+	r.Equal(e.Side, a.Side, "Side")
+	r.Equal(e.PositionSide, a.PositionSide, "PositionSide")
+	r.Equal(e.ClientAlgoId, a.ClientAlgoId, "ClientAlgoId")
+	r.Equal(e.AlgoType, a.AlgoType, "AlgoType")
+	r.Equal(e.OrderType, a.OrderType, "OrderType")
+	r.Equal(e.Symbol, a.Symbol, "Symbol")
+	r.Equal(e.Side, a.Side, "Side")
+	r.Equal(e.PositionSide, a.PositionSide, "PositionSide")
+	r.Equal(e.TimeInForce, a.TimeInForce, "TimeInForce")
+	r.Equal(e.Quantity, a.Quantity, "Quantity")
+	r.Equal(e.AlgoStatus, a.AlgoStatus, "AlgoStatus")
+	r.Equal(e.ActualOrderId, a.ActualOrderId, "ActualOrderId")
+	r.Equal(e.ActualPrice, a.ActualPrice, "ActualPrice")
+	r.Equal(e.TriggerPrice, a.TriggerPrice, "TriggerPrice")
+	r.Equal(e.Price, a.Price, "Price")
+	r.Equal(e.IcebergQuantity, a.IcebergQuantity, "IcebergQuantity")
+	r.Equal(e.TPTriggerPrice, a.TPTriggerPrice, "TPTriggerPrice")
+	r.Equal(e.TPPrice, a.TPPrice, "TPPrice")
+	r.Equal(e.SLTriggerPrice, a.SLTriggerPrice, "SLTriggerPrice")
+	r.Equal(e.SLPrice, a.SLPrice, "SLPrice")
+	r.Equal(e.TPOrderType, a.TPOrderType, "TPOrderType")
+	r.Equal(e.SelfTradePreventionMode, a.SelfTradePreventionMode, "SelfTradePreventionMode")
+	r.Equal(e.WorkingType, a.WorkingType, "WorkingType")
+	r.Equal(e.PriceMatch, a.PriceMatch, "PriceMatch")
+	r.Equal(e.ClosePosition, a.ClosePosition, "ClosePosition")
+	r.Equal(e.PriceProtect, a.PriceProtect, "PriceProtect")
+	r.Equal(e.ReduceOnly, a.ReduceOnly, "ReduceOnly")
+	r.Equal(e.CreateTime, a.CreateTime, "CreateTime")
+	r.Equal(e.UpdateTime, a.UpdateTime, "UpdateTime")
+	r.Equal(e.TriggerTime, a.TriggerTime, "TriggerTime")
+	r.Equal(e.GoodTillDate, a.GoodTillDate, "GoodTillDate")
 }
