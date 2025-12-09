@@ -768,3 +768,33 @@ func (c *Client) NewGetConvertStatusService() *ConvertStatusService {
 func (c *Client) NewApiTradingStatusService() *ApiTradingStatusService {
 	return &ApiTradingStatusService{c: c}
 }
+
+// NewCreateAlgoOrderService init create algo order service
+func (c *Client) NewCreateAlgoOrderService() *CreateAlgoOrderService {
+	return newCreateAlgoOrderService(c)
+}
+
+// NewCancelAlgoOrderService init cancel algo order service
+func (c *Client) NewCancelAlgoOrderService() *CancelAlgoOrderService {
+	return &CancelAlgoOrderService{c: c}
+}
+
+// NewCancelAllAlgoOpenOrdersService init cancel all algo open orders service
+func (c *Client) NewCancelAllAlgoOpenOrdersService() *CancelAllAlgoOpenOrdersService {
+	return &CancelAllAlgoOpenOrdersService{c: c}
+}
+
+// NewGetAlgoOrderService init get algo order service
+func (c *Client) NewGetAlgoOrderService() *GetAlgoOrderService {
+	return &GetAlgoOrderService{c: c}
+}
+
+// NewListOpenAlgoOrdersService init list open algo orders service
+func (c *Client) NewListOpenAlgoOrdersService() *ListOpenAlgoOrdersService {
+	return &ListOpenAlgoOrdersService{c: c}
+}
+
+// NewGetAllAlgoOrdersService init get all algo orders service
+func (c *Client) NewListAllAlgoOrdersService() *ListAllAlgoOrdersService {
+	return &ListAllAlgoOrdersService{c: c}
+}
