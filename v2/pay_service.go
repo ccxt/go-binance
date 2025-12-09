@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// PayTransactionService retrieve the fiat deposit/withdraw history
+// PayTradeHistoryService retrieves the pay transaction history
 type PayTradeHistoryService struct {
 	c              *Client
 	startTimestamp *int64
