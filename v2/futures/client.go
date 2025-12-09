@@ -91,14 +91,9 @@ const (
 	PositionSideTypeLong  PositionSideType = "LONG"
 	PositionSideTypeShort PositionSideType = "SHORT"
 
-	OrderTypeLimit              OrderType = "LIMIT"
-	OrderTypeMarket             OrderType = "MARKET"
-	OrderTypeStop               OrderType = "STOP"
-	OrderTypeStopMarket         OrderType = "STOP_MARKET"
-	OrderTypeTakeProfit         OrderType = "TAKE_PROFIT"
-	OrderTypeTakeProfitMarket   OrderType = "TAKE_PROFIT_MARKET"
-	OrderTypeTrailingStopMarket OrderType = "TRAILING_STOP_MARKET"
-	OrderTypeLiquidation        OrderType = "LIQUIDATION"
+	OrderTypeLimit       OrderType = "LIMIT"
+	OrderTypeMarket      OrderType = "MARKET"
+	OrderTypeLiquidation OrderType = "LIQUIDATION"
 
 	TimeInForceTypeGTC    TimeInForceType = "GTC"     // Good Till Cancel
 	TimeInForceTypeGTD    TimeInForceType = "GTD"     // Good Till Date
