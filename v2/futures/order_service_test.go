@@ -663,7 +663,7 @@ func (s *orderServiceTestSuite) TestCancelOrder() {
 		StopPrice:        "8300",
 		Symbol:           symbol,
 		TimeInForce:      TimeInForceTypeGTC,
-		Type:             OrderTypeTakeProfit,
+		Type:             OrderTypeLimit,
 		UpdateTime:       1571110484038,
 		WorkingType:      WorkingTypeContractPrice,
 		ActivatePrice:    "10000",
