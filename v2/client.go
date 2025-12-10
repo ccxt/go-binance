@@ -600,6 +600,11 @@ func (c *Client) NewRecentTradesService() *RecentTradesService {
 	return &RecentTradesService{c: c}
 }
 
+// NewRecentTradesV3Service init recent trades v3 service
+func (c *Client) NewRecentTradesV3Service() *RecentTradesV3Service {
+	return &RecentTradesV3Service{c: c}
+}
+
 // NewKlinesService init klines service
 func (c *Client) NewKlinesService() *KlinesService {
 	return &KlinesService{c: c}

@@ -294,3 +294,44 @@ func (s *RecentTradesService) Do(ctx context.Context, opts ...RequestOption) (re
 	}
 	return res, nil
 }
+
+// RecentTradesV3Service list recent trades v3
+type RecentTradesV3Service struct {
+	c      *Client
+	symbol string
+	limit  *int
+}
+
+// Symbol set symbol
+func (s *RecentTradesV3Service) Symbol(symbol string) *RecentTradesV3Service {
+	s.symbol = symbol
+	return s
+}
+
+// Limit set limit
+func (s *RecentTradesV3Service) Limit(limit int) *RecentTradesV3Service {
+	s.limit = &limit
+	return s
+}
+
+// Do send request
+func (s *RecentTradesV3Service) Do(ctx context.Context, opts ...RequestOption) (res []*Trade, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/trades",
+	}
+	r.setParam("symbol", s.symbol)
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return []*Trade{}, err
+	}
+	res = make([]*Trade, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return []*Trade{}, err
+	}
+	return res, nil
+}

@@ -233,3 +233,44 @@ func (s *tradeServiceTestSuite) assertTradeEqual(e, a *Trade) {
 	r.Equal(e.IsBuyerMaker, a.IsBuyerMaker, "IsBuyerMaker")
 	r.Equal(e.IsBestMatch, a.IsBestMatch, "IsBestMatch")
 }
+
+func (s *tradeServiceTestSuite) TestRecentTradesV3() {
+	data := []byte(`[
+		{
+			"id": 28457,
+			"price": "4.00000100",
+			"qty": "12.00000000",
+			"quoteQty": "48.000012",
+			"time": 1499865549590,
+			"isBuyerMaker": true,
+			"isBestMatch": true
+		}
+	]`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+
+	symbol := "LTCBTC"
+	limit := 1
+	s.assertReq(func(r *request) {
+		e := newRequest().setParams(params{
+			"symbol": symbol,
+			"limit":  limit,
+		})
+		s.assertRequestEqual(e, r)
+	})
+
+	trades, err := s.client.NewRecentTradesV3Service().Symbol(symbol).Limit(limit).Do(newContext())
+	r := s.r()
+	r.NoError(err)
+	r.Len(trades, 1)
+	e := &Trade{
+		ID:            28457,
+		Price:         "4.00000100",
+		Quantity:      "12.00000000",
+		QuoteQuantity: "48.000012",
+		Time:          1499865549590,
+		IsBuyerMaker:  true,
+		IsBestMatch:   true,
+	}
+	s.assertTradeEqual(e, trades[0])
+}
