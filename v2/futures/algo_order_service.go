@@ -17,10 +17,10 @@ const (
 type AlgoOrderType string
 
 const (
+	AlgoOrderTypeStop               AlgoOrderType = "STOP"
 	AlgoOrderTypeStopMarket         AlgoOrderType = "STOP_MARKET"
 	AlgoOrderTypeTakeProfitMarket   AlgoOrderType = "TAKE_PROFIT_MARKET"
-	AlgoOrderTypeTrailingStop       AlgoOrderType = "STOP"
-	AlgoOrderTypeTrailingTakeProfit AlgoOrderType = "TAKE_PROFIT"
+	AlgoOrderTypeTakeProfit         AlgoOrderType = "TAKE_PROFIT"
 	AlgoOrderTypeTrailingStopMarket AlgoOrderType = "TRAILING_STOP_MARKET"
 )
 

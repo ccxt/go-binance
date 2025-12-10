@@ -56,7 +56,7 @@ func (s *algoOrderServiceTestSuite) TestCreateAlgoOrderService() {
 		AlgoType(OrderAlgoTypeConditional).
 		Symbol("BNBUSDT").
 		Side(SideTypeSell).
-		Type(AlgoOrderTypeTrailingTakeProfit).
+		Type(AlgoOrderTypeTakeProfit).
 		Quantity("0.01").
 		Price("750.000").
 		TriggerPrice("750.000").
@@ -68,7 +68,7 @@ func (s *algoOrderServiceTestSuite) TestCreateAlgoOrderService() {
 		AlgoId:                  2146760,
 		ClientAlgoId:            "6B2I9XVcJpCjqPAJ4YoFX7",
 		AlgoType:                OrderAlgoTypeConditional,
-		OrderType:               AlgoOrderTypeTrailingTakeProfit,
+		OrderType:               AlgoOrderTypeTakeProfit,
 		Symbol:                  "BNBUSDT",
 		Side:                    SideTypeSell,
 		PositionSide:            PositionSideTypeBoth,
@@ -111,7 +111,7 @@ func (s *algoOrderServiceTestSuite) TestCreateAlgoOrderServiceError() {
 		AlgoType(OrderAlgoTypeConditional).
 		Symbol("INVALID_SYMBOL").
 		Side(SideTypeSell).
-		Type(AlgoOrderTypeTrailingTakeProfit).
+		Type(AlgoOrderTypeTakeProfit).
 		Quantity("0.01").
 		Price("750.000").
 		TriggerPrice("750.000").
@@ -270,7 +270,7 @@ func (s *algoOrderServiceTestSuite) TestGetAlgoOrderService() {
 		AlgoId:                  2146760,
 		ClientAlgoId:            "6B2I9XVcJpCjqPAJ4YoFX7",
 		AlgoType:                OrderAlgoTypeConditional,
-		OrderType:               AlgoOrderTypeTrailingTakeProfit,
+		OrderType:               AlgoOrderTypeTakeProfit,
 		Symbol:                  "BNBUSDT",
 		Side:                    SideTypeSell,
 		PositionSide:            PositionSideTypeBoth,
@@ -413,7 +413,7 @@ func (s *algoOrderServiceTestSuite) TestGetOpenAlgoOrdersService() {
 		AlgoId:                  2146760,
 		ClientAlgoId:            "6B2I9XVcJpCjqPAJ4YoFX7",
 		AlgoType:                OrderAlgoTypeConditional,
-		OrderType:               AlgoOrderTypeTrailingTakeProfit,
+		OrderType:               AlgoOrderTypeTakeProfit,
 		Symbol:                  "BNBUSDT",
 		Side:                    SideTypeSell,
 		PositionSide:            PositionSideTypeBoth,
@@ -521,7 +521,7 @@ func (s *algoOrderServiceTestSuite) TestGetAllAlgoOrdersService() {
 		AlgoId:                  2146760,
 		ClientAlgoId:            "6B2I9XVcJpCjqPAJ4YoFX7",
 		AlgoType:                OrderAlgoTypeConditional,
-		OrderType:               AlgoOrderTypeTrailingTakeProfit,
+		OrderType:               AlgoOrderTypeTakeProfit,
 		Symbol:                  "BNBUSDT",
 		Side:                    SideTypeSell,
 		PositionSide:            PositionSideTypeBoth,

@@ -171,6 +171,7 @@ const (
 	UserDataEventTypeAccountConfigUpdate           UserDataEventType = "ACCOUNT_CONFIG_UPDATE"
 	UserDataEventTypeTradeLite                     UserDataEventType = "TRADE_LITE"
 	UserDataEventTypeConditionalOrderTriggerReject UserDataEventType = "CONDITIONAL_ORDER_TRIGGER_REJECT"
+	UserDataEventTypeAlgoUpdate                    UserDataEventType = "ALGO_UPDATE"
 
 	UserDataEventReasonTypeDeposit             UserDataEventReasonType = "DEPOSIT"
 	UserDataEventReasonTypeWithdraw            UserDataEventReasonType = "WITHDRAW"
