@@ -935,6 +935,11 @@ func (c *Client) NewUMFeeBurnService() *UMFeeBurnService {
 	return &UMFeeBurnService{c: c}
 }
 
+// NewGetMarginOrderService creates a new GetMarginOrderService
+func (c *Client) NewGetMarginOrderService() *GetMarginOrderService {
+	return &GetMarginOrderService{c: c}
+}
+
 // NewGetMarginOpenOrdersService creates a new GetMarginOpenOrdersService
 func (c *Client) NewGetMarginOpenOrdersService() *GetMarginOpenOrdersService {
 	return &GetMarginOpenOrdersService{c: c}
