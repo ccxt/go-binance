@@ -2029,7 +2029,7 @@ func (s *websocketServiceTestSuite) TestWsUserDataServeAlgoUpdate() {
 				PositionSide:     "BOTH",
 				TimeInForce:      "GTC",
 				Quantity:         "0.01",
-				AlgoStatus:       "CANCELED",
+				AlgoStatus:       AlgoOrderStatusTypeCanceled,
 				OrderID:          "",
 				AvgPrice:         "0.00000",
 				ExecutedQuantity: "0.00000",
