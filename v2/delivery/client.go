@@ -67,6 +67,7 @@ type UserDataEventReasonType string
 var (
 	BaseApiMainUrl    = "https://dapi.binance.com"
 	BaseApiTestnetUrl = "https://testnet.binancefuture.com"
+	BaseApiDemoURL    = "https://demo-dapi.binance.com"
 )
 
 // Global enums
@@ -179,6 +180,9 @@ func newJSON(data []byte) (j *simplejson.Json, err error) {
 func getApiEndpoint() string {
 	if UseTestnet {
 		return BaseApiTestnetUrl
+	}
+	if UseDemo {
+		return BaseAPIDemoURL
 	}
 	return BaseApiMainUrl
 }
