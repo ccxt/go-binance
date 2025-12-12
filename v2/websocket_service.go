@@ -747,6 +747,14 @@ func WsUserDataServeSignature(apiKey, secretKey string, keyType string, timeOffs
 		defer close(doneC)
 		defer conn.Close()
 
+		go func() {
+			select {
+			case <-stopC:
+			case <-doneC:
+			}
+			conn.Close()
+		}()
+
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
