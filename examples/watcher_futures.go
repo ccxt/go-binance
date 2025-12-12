@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
-	"context"
 
 	"github.com/adshao/go-binance/v2"
 	"github.com/adshao/go-binance/v2/futures"
@@ -13,7 +13,7 @@ import (
 func WatchFuturesUserDataStream() {
 	futures.UseDemo = true
 	apiKey := ""
-    secret := ""
+	secret := ""
 	client := binance.NewFuturesClient(apiKey, secret)
 
 	listenKey, err := client.NewStartUserStreamService().Do(context.Background())
@@ -22,14 +22,14 @@ func WatchFuturesUserDataStream() {
 	}
 
 	userDataHandler := func(event *futures.WsUserDataEvent) {
-    fmt.Printf("Event: %s, Time: %d\n", event.Event, event.Time)
-    
-    switch event.Event {
-	case futures.UserDataEventTypeAlgoUpdate:
-		fmt.Printf("ALGO update: %+v\n", event.AlgoUpdate)
-	case futures.UserDataEventTypeTradeLite:
-		fmt.Printf("Trade lite: %+v\n", event)
-	}
+		fmt.Printf("Event: %s, Time: %d\n", event.Event, event.Time)
+
+		switch event.Event {
+		case futures.UserDataEventTypeAlgoUpdate:
+			fmt.Printf("ALGO update: %+v\n", event.AlgoUpdate)
+		case futures.UserDataEventTypeTradeLite:
+			fmt.Printf("Trade lite: %+v\n", event)
+		}
 	}
 
 	errHandler := func(err error) {

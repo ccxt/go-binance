@@ -13,7 +13,7 @@ type Config struct {
 	APIKey     string
 	SecretKey  string
 	UseTestnet bool
-	UseDemo bool
+	UseDemo    bool
 }
 
 // Global configuration instance
@@ -21,7 +21,7 @@ var AppConfig = &Config{
 	APIKey:     getEnvOrDefault("BINANCE_API_KEY", ""),
 	SecretKey:  getEnvOrDefault("BINANCE_SECRET_KEY", ""),
 	UseTestnet: getEnvOrDefault("BINANCE_USE_TESTNET", "true") == "true",
-	UseDemo: getEnvOrDefault("BINANCE_USE_DEMO", "true") == "true",
+	UseDemo:    getEnvOrDefault("BINANCE_USE_DEMO", "true") == "true",
 }
 
 // getEnvOrDefault returns the environment variable value or a default if not set
