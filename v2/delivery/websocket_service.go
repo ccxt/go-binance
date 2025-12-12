@@ -13,6 +13,7 @@ import (
 var (
 	BaseWsMainUrl    = "wss://dstream.binance.com/ws"
 	BaseWsTestnetUrl = "wss://dstream.binancefuture.com/ws"
+	BaseWsDemoURL    = "wss://dstream.binancefuture.com/ws"
 )
 
 var (
@@ -24,13 +25,18 @@ var (
 	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
-	ProxyUrl   = ""
+	// UseDemo switch all the API endpoints from production to the demo
+	UseDemo  = false
+	ProxyUrl = ""
 )
 
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getWsEndpoint() string {
 	if UseTestnet {
 		return BaseWsTestnetUrl
+	}
+	if UseDemo {
+		return BaseWsDemoURL
 	}
 	return BaseWsMainUrl
 }

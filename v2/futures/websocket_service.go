@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/websocket"
 )
 
@@ -15,10 +14,13 @@ import (
 var (
 	BaseWsMainUrl          = "wss://fstream.binance.com/ws"
 	BaseWsTestnetUrl       = "wss://stream.binancefuture.com/ws"
+	BaseWsDemoURL          = "wss://fstream.binancefuture.com/ws"
 	BaseCombinedMainURL    = "wss://fstream.binance.com/stream?streams="
 	BaseCombinedTestnetURL = "wss://stream.binancefuture.com/stream?streams="
+	BaseCombinedDemoURL    = "wss://fstream.binancefuture.com/stream?streams=" // TODO: test it
 	BaseWsApiMainURL       = "wss://ws-fapi.binance.com/ws-fapi/v1"
 	BaseWsApiTestnetURL    = "wss://testnet.binancefuture.com/ws-fapi/v1"
+	BaseWsApiDemoURL       = "wss://testnet.binancefuture.com/ws-fapi/v1"
 )
 
 var (
@@ -30,6 +32,8 @@ var (
 	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
+	// UseDemo switch all the WS streams from production to the demo
+	UseDemo = false
 	// WebsocketTimeoutReadWriteConnection is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
 	// using for websocket API (read/write)
 	WebsocketTimeoutReadWriteConnection = time.Second * 10
@@ -52,6 +56,9 @@ func getWsEndpoint() string {
 	if UseTestnet {
 		return BaseWsTestnetUrl
 	}
+	if UseDemo {
+		return BaseWsDemoURL
+	}
 	return BaseWsMainUrl
 }
 
@@ -59,6 +66,9 @@ func getWsEndpoint() string {
 func getCombinedEndpoint() string {
 	if UseTestnet {
 		return BaseCombinedTestnetURL
+	}
+	if UseDemo {
+		return BaseCombinedDemoURL
 	}
 	return BaseCombinedMainURL
 }
@@ -1071,7 +1081,7 @@ type WsUserDataEvent struct {
 }
 
 type WsUserDataAlgoUpdate struct {
-	AlgoUpdate WsAlgoUpdate
+	AlgoUpdate WsAlgoUpdate `json:"o"`
 }
 
 type WsAlgoUpdate struct {
@@ -1102,42 +1112,6 @@ type WsAlgoUpdate struct {
 	FailedReason     string           `json:"rm"`   // algo order failed reason
 }
 
-func (w *WsAlgoUpdate) fromSimpleJson(j *simplejson.Json) (err error) {
-	w.ClientAlgoID = j.Get("caid").MustString()
-	w.AlgoType = OrderAlgoType(j.Get("at").MustString())
-	w.OrderType = AlgoOrderType(j.Get("o").MustString())
-	w.Symbol = j.Get("s").MustString()
-	w.Side = SideType(j.Get("S").MustString())
-	w.PositionSide = PositionSideType(j.Get("ps").MustString())
-	w.TimeInForce = TimeInForceType(j.Get("f").MustString())
-	w.Quantity = j.Get("q").MustString()
-	w.AlgoStatus = j.Get("X").MustString()
-	w.OrderID = j.Get("ai").MustString()
-	w.AvgPrice = j.Get("ap").MustString()
-	w.ExecutedQuantity = j.Get("aq").MustString()
-	w.ActualOrderType = j.Get("act").MustString()
-	w.TriggerPrice = j.Get("tp").MustString()
-	w.OrderPrice = j.Get("p").MustString()
-	w.STPMode = j.Get("V").MustString()
-	w.WorkingType = WorkingType(j.Get("wt").MustString())
-	w.PriceMatchMode = j.Get("pm").MustString()
-	w.FailedReason = j.Get("rm").MustString()
-
-	w.CloseAll = j.Get("cp").MustBool()
-	w.PriceProtection = j.Get("pP").MustBool()
-	w.ReduceOnly = j.Get("R").MustBool()
-
-	w.AlgoID = j.Get("aid").MustInt64()
-	w.TriggerTime = j.Get("tt").MustInt64()
-	w.GoodTillTime = j.Get("gtd").MustInt64()
-
-	return nil
-}
-
-func (w *WsUserDataAlgoUpdate) fromSimpleJson(j *simplejson.Json) (err error) {
-	return w.AlgoUpdate.fromSimpleJson(j.Get("o"))
-}
-
 type WsUserDataAccountConfigUpdate struct {
 	AccountConfigUpdate WsAccountConfigUpdate `json:"ac"`
 }
@@ -1158,7 +1132,7 @@ type WsUserDataOrderTradeUpdate struct {
 type WsUserDataTradeLite struct {
 	Symbol          string   `json:"s"`
 	OriginalQty     string   `json:"q"`
-	OriginalPrice   string   //`json:"p"`
+	OriginalPrice   string   `json:"p"`
 	IsMaker         bool     `json:"m"`
 	ClientOrderID   string   `json:"c"`
 	Side            SideType `json:"S"`
@@ -1170,24 +1144,6 @@ type WsUserDataTradeLite struct {
 
 type WsUserDataConditionalOrderTriggerReject struct {
 	ConditionalOrderTriggerReject WsConditionalOrderTriggerReject `json:"or"`
-}
-
-func (w *WsUserDataTradeLite) fromSimpleJson(j *simplejson.Json) (err error) {
-	w.Symbol = j.Get("s").MustString()
-	w.OriginalQty = j.Get("q").MustString()
-	w.OriginalPrice = j.Get("p").MustString()
-	w.IsMaker = j.Get("m").MustBool()
-	w.ClientOrderID = j.Get("c").MustString()
-	w.Side = SideType(j.Get("S").MustString())
-	w.LastFilledPrice = j.Get("L").MustString()
-	w.LastFilledQty = j.Get("l").MustString()
-	w.TradeID = j.Get("t").MustInt64()
-	w.OrderID = j.Get("i").MustInt64()
-	return nil
-}
-
-type simpleJsonUnmarshal interface {
-	fromSimpleJson(j *simplejson.Json) (err error)
 }
 
 func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
@@ -1208,12 +1164,8 @@ func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 		UserDataEventTypeOrderTradeUpdate:              &e.WsUserDataOrderTradeUpdate,
 		UserDataEventTypeAccountConfigUpdate:           &e.WsUserDataAccountConfigUpdate,
 		UserDataEventTypeConditionalOrderTriggerReject: &e.WsUserDataConditionalOrderTriggerReject,
-	}
-
-	// use simple json unmarshal for event types, The standard library is case insensitive.
-	simpleJsonTypes := map[UserDataEventType]simpleJsonUnmarshal{
-		UserDataEventTypeTradeLite:  &e.WsUserDataTradeLite,
-		UserDataEventTypeAlgoUpdate: &e.WsUserDataAlgoUpdate,
+		UserDataEventTypeTradeLite:                     &e.WsUserDataTradeLite,
+		UserDataEventTypeAlgoUpdate:                    &e.WsUserDataAlgoUpdate,
 	}
 
 	// ignore event types, No additional data
@@ -1223,8 +1175,6 @@ func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 
 	if v, ok := eventMaps[e.Event]; ok {
 		return json.Unmarshal(data, v)
-	} else if v, ok := simpleJsonTypes[e.Event]; ok {
-		return v.fromSimpleJson(j)
 	} else if _, ok := ignoreEventTypes[e.Event]; ok {
 		return nil
 	}
@@ -1346,6 +1296,8 @@ func getWsApiEndpoint() string {
 	if UseTestnet {
 		return BaseWsApiTestnetURL
 	}
-
+	if UseDemo {
+		return BaseWsApiDemoURL
+	}
 	return BaseWsApiMainURL
 }

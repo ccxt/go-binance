@@ -12,8 +12,10 @@ import (
 const (
 	baseWsMainUrl          = "wss://nbstream.binance.com/eoptions/ws"
 	baseWsTestnetUrl       = "" // unknown now
+	baseWsDemoUrl          = "" // unknown now
 	baseCombinedMainURL    = "wss://nbstream.binance.com/eoptions/stream?streams="
 	baseCombinedTestnetURL = "" // unknown now
+	baseCombinedDemoURL    = "" // unknown now
 )
 
 var (
@@ -25,6 +27,8 @@ var (
 	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
+	// UseDemo switch all the WS streams from production to the demo
+	UseDemo = false
 
 	ProxyUrl = ""
 )
@@ -33,6 +37,9 @@ var (
 func getWsEndpoint() string {
 	if UseTestnet {
 		return baseWsTestnetUrl
+	}
+	if UseDemo {
+		return baseWsDemoUrl
 	}
 	return baseWsMainUrl
 }
@@ -52,6 +59,9 @@ func SetWsProxyUrl(url string) {
 func getCombinedEndpoint() string {
 	if UseTestnet {
 		return baseCombinedTestnetURL
+	}
+	if UseDemo {
+		return baseCombinedDemoUrl
 	}
 	return baseCombinedMainURL
 }

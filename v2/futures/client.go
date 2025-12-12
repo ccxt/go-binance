@@ -80,6 +80,7 @@ type SelfTradePreventionMode string
 var (
 	BaseApiMainUrl    = "https://fapi.binance.com"
 	BaseApiTestnetUrl = "https://testnet.binancefuture.com"
+	BaseApiDemoURL    = "https://testnet.binancefuture.com"
 )
 
 // Global enums
@@ -217,6 +218,9 @@ func newJSON(data []byte) (j *simplejson.Json, err error) {
 func getApiEndpoint() string {
 	if UseTestnet {
 		return BaseApiTestnetUrl
+	}
+	if UseDemo {
+		return BaseApiDemoURL
 	}
 	return BaseApiMainUrl
 }

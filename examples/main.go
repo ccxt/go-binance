@@ -14,10 +14,14 @@ func main() {
 	}
 
 	// Setup testnet
-	AppConfig.SetupTestnet()
+	// AppConfig.SetupTestnet()
+
+	// Setup demo
+	// AppConfig.SetupDemo()
 
 	fmt.Println("=== Binance API Examples ===")
 	fmt.Printf("Using testnet: %v\n", AppConfig.UseTestnet)
+	fmt.Printf("Using demo: %v\n", AppConfig.UseDemo)
 	fmt.Println()
 
 	// Run examples
@@ -27,6 +31,7 @@ func main() {
 	// FuturesOrder()
 	// DeliveryOrder()
 	// WalletBalance()
-	WatchMiniMarketsStat()
+	// WatchMiniMarketsStat()
 	// RunOrderListExamples()
+	WatchFuturesUserDataStream()
 }
