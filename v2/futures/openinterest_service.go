@@ -124,4 +124,5 @@ type OpenInterestStatistic struct {
 	SumOpenInterest      string `json:"sumOpenInterest"`
 	SumOpenInterestValue string `json:"sumOpenInterestValue"`
 	Timestamp            int64  `json:"timestamp"`
+	CMCCirculatingSupply string `json:"CMCCirculatingSupply"`
 }
