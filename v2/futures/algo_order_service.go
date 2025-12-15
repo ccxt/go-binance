@@ -7,13 +7,26 @@ import (
 	"net/http"
 )
 
-// CreateAlgoOrderService creates a new service for creating algo orders.
+// AlgoOrderStatusType defines algorithmic order status type.
+type AlgoOrderStatusType string
+
+const (
+	AlgoOrderStatusTypeNew AlgoOrderStatusType = "NEW"
+	// AlgoOrderStatusTypePartiallyFilled AlgoOrderStatusType = "PARTIALLY_FILLED"
+	// AlgoOrderStatusTypeFilled          AlgoOrderStatusType = "FILLED"
+	AlgoOrderStatusTypeCanceled AlgoOrderStatusType = "CANCELED"
+	AlgoOrderStatusTypeRejected AlgoOrderStatusType = "REJECTED"
+	AlgoOrderStatusTypeExpired  AlgoOrderStatusType = "EXPIRED"
+)
+
+// OrderAlgoType defines the algorithmic order type.
 type OrderAlgoType string
 
 const (
 	OrderAlgoTypeConditional OrderAlgoType = "CONDITIONAL"
 )
 
+// AlgoOrderType defines the type of algorithmic order.
 type AlgoOrderType string
 
 const (
@@ -24,6 +37,7 @@ const (
 	AlgoOrderTypeTrailingStopMarket AlgoOrderType = "TRAILING_STOP_MARKET"
 )
 
+// CreateAlgoOrderService creates a new algorithmic order.
 type CreateAlgoOrderService struct {
 	c                       *Client
 	algoType                OrderAlgoType // required
@@ -49,6 +63,7 @@ type CreateAlgoOrderService struct {
 	param map[string]any
 }
 
+// newCreateAlgoOrderService creates a new CreateAlgoOrderService instance.
 func newCreateAlgoOrderService(c *Client) *CreateAlgoOrderService {
 	return &CreateAlgoOrderService{
 		c:        c,
@@ -58,72 +73,85 @@ func newCreateAlgoOrderService(c *Client) *CreateAlgoOrderService {
 		},
 	}
 }
+
+// AlgoType sets the algorithmic order type.
 func (s *CreateAlgoOrderService) AlgoType(algoType OrderAlgoType) *CreateAlgoOrderService {
 	s.algoType = algoType
 	s.param["algoType"] = algoType
 	return s
 }
 
+// Symbol sets the trading symbol.
 func (s *CreateAlgoOrderService) Symbol(symbol string) *CreateAlgoOrderService {
 	s.symbol = symbol
 	s.param["symbol"] = symbol
 	return s
 }
 
+// Side sets the order side.
 func (s *CreateAlgoOrderService) Side(side SideType) *CreateAlgoOrderService {
 	s.side = side
 	s.param["side"] = side
 	return s
 }
 
+// Type sets the algorithmic order type.
 func (s *CreateAlgoOrderService) Type(_type AlgoOrderType) *CreateAlgoOrderService {
 	s._type = _type
 	s.param["type"] = _type
 	return s
 }
 
+// PositionSide sets the position side.
 func (s *CreateAlgoOrderService) PositionSide(positionSide PositionSideType) *CreateAlgoOrderService {
 	s.positionSide = &positionSide
 	s.param["positionSide"] = positionSide
 	return s
 }
 
+// TimeInForce sets the time in force type.
 func (s *CreateAlgoOrderService) TimeInForce(timeInForceType TimeInForceType) *CreateAlgoOrderService {
 	s.timeInForceType = &timeInForceType
 	s.param["timeInForce"] = timeInForceType
 	return s
 }
 
+// Quantity sets the order quantity.
 func (s *CreateAlgoOrderService) Quantity(quantity string) *CreateAlgoOrderService {
 	s.quantity = &quantity
 	s.param["quantity"] = quantity
 	return s
 }
 
+// Price sets the order price.
 func (s *CreateAlgoOrderService) Price(price string) *CreateAlgoOrderService {
 	s.price = &price
 	s.param["price"] = price
 	return s
 }
 
+// TriggerPrice sets the trigger price.
 func (s *CreateAlgoOrderService) TriggerPrice(triggerPrice string) *CreateAlgoOrderService {
 	s.triggerPrice = &triggerPrice
 	s.param["triggerPrice"] = triggerPrice
 	return s
 }
 
+// WorkingType sets the working type.
 func (s *CreateAlgoOrderService) WorkingType(workingType WorkingType) *CreateAlgoOrderService {
 	s.workingType = &workingType
 	s.param["workingType"] = workingType
 	return s
 }
 
+// PriceMatch sets the price match type.
 func (s *CreateAlgoOrderService) PriceMatch(priceMatch PriceMatchType) *CreateAlgoOrderService {
 	s.priceMatch = &priceMatch
 	s.param["priceMatch"] = priceMatch
 	return s
 }
 
+// ClosePosition sets whether to close the position.
 func (s *CreateAlgoOrderService) ClosePosition(closePosition bool) *CreateAlgoOrderService {
 	s.closePosition = &closePosition
 	if closePosition {
@@ -134,6 +162,7 @@ func (s *CreateAlgoOrderService) ClosePosition(closePosition bool) *CreateAlgoOr
 	return s
 }
 
+// PriceProtect sets whether to enable price protection.
 func (s *CreateAlgoOrderService) PriceProtect(priceProtect bool) *CreateAlgoOrderService {
 	s.priceProtect = &priceProtect
 	if priceProtect {
@@ -144,6 +173,7 @@ func (s *CreateAlgoOrderService) PriceProtect(priceProtect bool) *CreateAlgoOrde
 	return s
 }
 
+// ReduceOnly sets whether the order is reduce-only.
 func (s *CreateAlgoOrderService) ReduceOnly(reduceOnly bool) *CreateAlgoOrderService {
 	s.reduceOnly = &reduceOnly
 	if reduceOnly {
@@ -154,6 +184,7 @@ func (s *CreateAlgoOrderService) ReduceOnly(reduceOnly bool) *CreateAlgoOrderSer
 	return s
 }
 
+// ActivationPrice sets the activation price for trailing stop orders.
 func (s *CreateAlgoOrderService) ActivationPrice(activationPrice string) *CreateAlgoOrderService {
 	s.activationPrice = &activationPrice
 	if activationPrice != "" {
@@ -162,6 +193,7 @@ func (s *CreateAlgoOrderService) ActivationPrice(activationPrice string) *Create
 	return s
 }
 
+// CallbackRate sets the callback rate for trailing stop orders.
 func (s *CreateAlgoOrderService) CallbackRate(callbackRate string) *CreateAlgoOrderService {
 	s.callbackRate = &callbackRate
 	if callbackRate != "" {
@@ -170,6 +202,7 @@ func (s *CreateAlgoOrderService) CallbackRate(callbackRate string) *CreateAlgoOr
 	return s
 }
 
+// ClientAlgoId sets the client-defined algorithmic order ID.
 func (s *CreateAlgoOrderService) ClientAlgoId(clientAlgoId string) *CreateAlgoOrderService {
 	s.clientAlgoId = &clientAlgoId
 	if clientAlgoId != "" {
@@ -178,6 +211,7 @@ func (s *CreateAlgoOrderService) ClientAlgoId(clientAlgoId string) *CreateAlgoOr
 	return s
 }
 
+// SelfTradePreventionMode sets the self-trade prevention mode.
 func (s *CreateAlgoOrderService) SelfTradePreventionMode(selfTradePreventionMode SelfTradePreventionMode) *CreateAlgoOrderService {
 	s.selfTradePreventionMode = &selfTradePreventionMode
 	if selfTradePreventionMode != "" {
@@ -186,6 +220,7 @@ func (s *CreateAlgoOrderService) SelfTradePreventionMode(selfTradePreventionMode
 	return s
 }
 
+// GoodTillDate sets the good till date for the order.
 func (s *CreateAlgoOrderService) GoodTillDate(goodTillDate int64) *CreateAlgoOrderService {
 	s.goodTillDate = &goodTillDate
 	if goodTillDate != 0 {
@@ -194,6 +229,7 @@ func (s *CreateAlgoOrderService) GoodTillDate(goodTillDate int64) *CreateAlgoOrd
 	return s
 }
 
+// CreateAlgoOrderResp represents the response from creating an algorithmic order.
 type CreateAlgoOrderResp struct {
 	AlgoId                  int64                   `json:"algoId"`
 	ClientAlgoId            string                  `json:"clientAlgoId"`
@@ -204,7 +240,7 @@ type CreateAlgoOrderResp struct {
 	PositionSide            PositionSideType        `json:"positionSide"`
 	TimeInForce             TimeInForceType         `json:"timeInForce"`
 	Quantity                string                  `json:"quantity"`
-	AlgoStatus              string                  `json:"algoStatus"`
+	AlgoStatus              AlgoOrderStatusType     `json:"algoStatus"`
 	TriggerPrice            string                  `json:"triggerPrice"`
 	Price                   string                  `json:"price"`
 	IcebergQuantity         *int64                  `json:"icebergQuantity,omitempty"`
@@ -222,6 +258,7 @@ type CreateAlgoOrderResp struct {
 	GoodTillDate            int64                   `json:"goodTillDate"`
 }
 
+// Do sends the request to create an algorithmic order.
 func (s *CreateAlgoOrderService) Do(ctx context.Context, opts ...RequestOption) (*CreateAlgoOrderResp, error) {
 	r := &request{
 		method:   http.MethodPost,
@@ -241,23 +278,26 @@ func (s *CreateAlgoOrderService) Do(ctx context.Context, opts ...RequestOption) 
 	return res, nil
 }
 
-// CancelAlgoOrder cancels an algo order.
+// CancelAlgoOrderService cancels an algorithmic order.
 type CancelAlgoOrderService struct {
 	c            *Client
 	algoID       int64
 	clientAlgoID *string
 }
 
+// AlgoID sets the algorithmic order ID.
 func (s *CancelAlgoOrderService) AlgoID(algoID int64) *CancelAlgoOrderService {
 	s.algoID = algoID
 	return s
 }
 
+// ClientAlgoID sets the client-defined algorithmic order ID.
 func (s *CancelAlgoOrderService) ClientAlgoID(clientAlgoID string) *CancelAlgoOrderService {
 	s.clientAlgoID = &clientAlgoID
 	return s
 }
 
+// CancelAlgoOrderResp represents the response from canceling an algorithmic order.
 type CancelAlgoOrderResp struct {
 	AlgoId       int    `json:"algoId"`
 	ClientAlgoId string `json:"clientAlgoId"`
@@ -265,6 +305,7 @@ type CancelAlgoOrderResp struct {
 	Message      string `json:"msg"`
 }
 
+// Do sends the request to cancel an algorithmic order.
 func (s *CancelAlgoOrderService) Do(ctx context.Context, opts ...RequestOption) (*CancelAlgoOrderResp, error) {
 	r := &request{
 		method:   http.MethodDelete,
@@ -291,21 +332,25 @@ func (s *CancelAlgoOrderService) Do(ctx context.Context, opts ...RequestOption) 
 	return res, nil
 }
 
+// CancelAllAlgoOpenOrdersService cancels all open algorithmic orders.
 type CancelAllAlgoOpenOrdersService struct {
 	c      *Client
 	symbol string
 }
 
+// Symbol sets the trading symbol.
 func (s *CancelAllAlgoOpenOrdersService) Symbol(symbol string) *CancelAllAlgoOpenOrdersService {
 	s.symbol = symbol
 	return s
 }
 
+// CancelAllAlgoOpenOrdersResp represents the response from canceling all open algorithmic orders.
 type CancelAllAlgoOpenOrdersResp struct {
 	Code    int    `json:"code"`
 	Message string `json:"msg"`
 }
 
+// Do sends the request to cancel all open algorithmic orders.
 func (s *CancelAllAlgoOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) error {
 	r := &request{
 		method:   http.MethodDelete,
@@ -330,26 +375,26 @@ func (s *CancelAllAlgoOpenOrdersService) Do(ctx context.Context, opts ...Request
 	return nil
 }
 
-// GetAlgoOrderService get algo order service
+// GetAlgoOrderService gets an algorithmic order.
 type GetAlgoOrderService struct {
 	c            *Client
 	algoId       *int64
 	clientAlgoId *string
 }
 
-// AlgoID set algo order ID
+// AlgoID sets the algorithmic order ID.
 func (s *GetAlgoOrderService) AlgoID(algoId int64) *GetAlgoOrderService {
 	s.algoId = &algoId
 	return s
 }
 
-// ClientAlgoID set client algo order ID
+// ClientAlgoID sets the client-defined algorithmic order ID.
 func (s *GetAlgoOrderService) ClientAlgoID(clientAlgoId string) *GetAlgoOrderService {
 	s.clientAlgoId = &clientAlgoId
 	return s
 }
 
-// GetAlgoOrderResp get algo order response
+// GetAlgoOrderResp represents the response from getting an algorithmic order.
 type GetAlgoOrderResp struct {
 	AlgoId                  int64                   `json:"algoId"`
 	ClientAlgoId            string                  `json:"clientAlgoId"`
@@ -360,7 +405,7 @@ type GetAlgoOrderResp struct {
 	PositionSide            PositionSideType        `json:"positionSide"`
 	TimeInForce             TimeInForceType         `json:"timeInForce"`
 	Quantity                string                  `json:"quantity"`
-	AlgoStatus              string                  `json:"algoStatus"`
+	AlgoStatus              AlgoOrderStatusType     `json:"algoStatus"`
 	ActualOrderId           string                  `json:"actualOrderId"`
 	ActualPrice             string                  `json:"actualPrice"`
 	TriggerPrice            string                  `json:"triggerPrice"`
@@ -383,7 +428,7 @@ type GetAlgoOrderResp struct {
 	GoodTillDate            int64                   `json:"goodTillDate"`
 }
 
-// Do send get algo order request
+// Do sends the request to get an algorithmic order.
 func (s *GetAlgoOrderService) Do(ctx context.Context, opts ...RequestOption) (*GetAlgoOrderResp, error) {
 	r := &request{
 		method:   http.MethodGet,
@@ -408,7 +453,7 @@ func (s *GetAlgoOrderService) Do(ctx context.Context, opts ...RequestOption) (*G
 	return res, nil
 }
 
-// GetOpenAlgoOrdersService get current all open algo orders service
+// ListOpenAlgoOrdersService lists all open algorithmic orders.
 type ListOpenAlgoOrdersService struct {
 	c        *Client
 	algoType *OrderAlgoType
@@ -416,25 +461,25 @@ type ListOpenAlgoOrdersService struct {
 	algoId   *int64
 }
 
-// AlgoType set algo order type
+// AlgoType sets the algorithmic order type.
 func (s *ListOpenAlgoOrdersService) AlgoType(algoType OrderAlgoType) *ListOpenAlgoOrdersService {
 	s.algoType = &algoType
 	return s
 }
 
-// Symbol set symbol
+// Symbol sets the trading symbol.
 func (s *ListOpenAlgoOrdersService) Symbol(symbol string) *ListOpenAlgoOrdersService {
 	s.symbol = &symbol
 	return s
 }
 
-// AlgoID set algo order ID
+// AlgoID sets the algorithmic order ID.
 func (s *ListOpenAlgoOrdersService) AlgoID(algoId int64) *ListOpenAlgoOrdersService {
 	s.algoId = &algoId
 	return s
 }
 
-// Do send get current all open algo orders request
+// Do sends the request to list all open algorithmic orders.
 func (s *ListOpenAlgoOrdersService) Do(ctx context.Context, opts ...RequestOption) ([]GetAlgoOrderResp, error) {
 	r := &request{
 		method:   http.MethodGet,
@@ -462,7 +507,7 @@ func (s *ListOpenAlgoOrdersService) Do(ctx context.Context, opts ...RequestOptio
 	return res, nil
 }
 
-// ListAllAlgoOrdersService get all algo orders service
+// ListAllAlgoOrdersService lists all historical algorithmic orders.
 type ListAllAlgoOrdersService struct {
 	c         *Client
 	symbol    string // required
@@ -473,42 +518,43 @@ type ListAllAlgoOrdersService struct {
 	limit     *int
 }
 
+// Symbol sets the trading symbol.
 func (s *ListAllAlgoOrdersService) Symbol(symbol string) *ListAllAlgoOrdersService {
 	s.symbol = symbol
 	return s
 }
 
-// AlgoID set algo order ID
+// AlgoID sets the algorithmic order ID.
 func (s *ListAllAlgoOrdersService) AlgoID(algoId int64) *ListAllAlgoOrdersService {
 	s.algoId = &algoId
 	return s
 }
 
-// StartTime set start time
+// StartTime sets the start time for filtering.
 func (s *ListAllAlgoOrdersService) StartTime(startTime int64) *ListAllAlgoOrdersService {
 	s.startTime = &startTime
 	return s
 }
 
-// EndTime set end time
+// EndTime sets the end time for filtering.
 func (s *ListAllAlgoOrdersService) EndTime(endTime int64) *ListAllAlgoOrdersService {
 	s.endTime = &endTime
 	return s
 }
 
-// Page set page
+// Page sets the page number for pagination.
 func (s *ListAllAlgoOrdersService) Page(page int) *ListAllAlgoOrdersService {
 	s.page = &page
 	return s
 }
 
-// Limit set limit
+// Limit sets the number of items per page.
 func (s *ListAllAlgoOrdersService) Limit(limit int) *ListAllAlgoOrdersService {
 	s.limit = &limit
 	return s
 }
 
-// Do send get all algo orders request
+// Do sends the request to list all historical algorithmic orders.
 func (s *ListAllAlgoOrdersService) Do(ctx context.Context, opts ...RequestOption) ([]GetAlgoOrderResp, error) {
 	r := &request{
 		method:   http.MethodGet,

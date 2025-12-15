@@ -852,19 +852,19 @@ func WsCombinedDiffDepthServe(symbols []string, handler WsDepthHandler, errHandl
 		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
 		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
 		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]interface{}))
+		bidsLen := len(data["b"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]interface{})[i].([]interface{})
+			item := data["b"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["a"].([]interface{}))
+		asksLen := len(data["a"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]interface{})[i].([]interface{})
+			item := data["a"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -1085,31 +1085,31 @@ type WsUserDataAlgoUpdate struct {
 }
 
 type WsAlgoUpdate struct {
-	ClientAlgoID     string           `json:"caid"` // Client Algo Id
-	AlgoID           int64            `json:"aid"`  // Algo Id
-	AlgoType         OrderAlgoType    `json:"at"`   // Algo Type
-	OrderType        AlgoOrderType    `json:"o"`    // Order Type
-	Symbol           string           `json:"s"`    // Symbol
-	Side             SideType         `json:"S"`    // Side
-	PositionSide     PositionSideType `json:"ps"`   // Position Side
-	TimeInForce      TimeInForceType  `json:"f"`    // Time in force
-	Quantity         string           `json:"q"`    // quantity
-	AlgoStatus       string           `json:"X"`    // Algo status
-	OrderID          string           `json:"ai"`   // order id
-	AvgPrice         string           `json:"ap"`   // avg fill price in matching engine, only display when order is triggered and placed in matching engine
-	ExecutedQuantity string           `json:"aq"`   // executed quantity in matching engine, only display when order is triggered and placed in matching engine
-	ActualOrderType  string           `json:"act"`  // actual order type in matching engine, only display when order is triggered and placed in matching engine
-	TriggerPrice     string           `json:"tp"`   // Trigger price
-	OrderPrice       string           `json:"p"`    // Order Price
-	STPMode          string           `json:"V"`    // STP mode
-	WorkingType      WorkingType      `json:"wt"`   // Working type
-	PriceMatchMode   string           `json:"pm"`   // Price match mode
-	CloseAll         bool             `json:"cp"`   // If Close-All
-	PriceProtection  bool             `json:"pP"`   // If price protection is turned on
-	ReduceOnly       bool             `json:"R"`    // Is this reduce only
-	TriggerTime      int64            `json:"tt"`   // Trigger time
-	GoodTillTime     int64            `json:"gtd"`  // good till time for GTD time in force
-	FailedReason     string           `json:"rm"`   // algo order failed reason
+	ClientAlgoID     string              `json:"caid"` // Client Algo Id
+	AlgoID           int64               `json:"aid"`  // Algo Id
+	AlgoType         OrderAlgoType       `json:"at"`   // Algo Type
+	OrderType        AlgoOrderType       `json:"o"`    // Order Type
+	Symbol           string              `json:"s"`    // Symbol
+	Side             SideType            `json:"S"`    // Side
+	PositionSide     PositionSideType    `json:"ps"`   // Position Side
+	TimeInForce      TimeInForceType     `json:"f"`    // Time in force
+	Quantity         string              `json:"q"`    // quantity
+	AlgoStatus       AlgoOrderStatusType `json:"X"`    // Algo status
+	OrderID          string              `json:"ai"`   // order id
+	AvgPrice         string              `json:"ap"`   // avg fill price in matching engine, only display when order is triggered and placed in matching engine
+	ExecutedQuantity string              `json:"aq"`   // executed quantity in matching engine, only display when order is triggered and placed in matching engine
+	ActualOrderType  string              `json:"act"`  // actual order type in matching engine, only display when order is triggered and placed in matching engine
+	TriggerPrice     string              `json:"tp"`   // Trigger price
+	OrderPrice       string              `json:"p"`    // Order Price
+	STPMode          string              `json:"V"`    // STP mode
+	WorkingType      WorkingType         `json:"wt"`   // Working type
+	PriceMatchMode   string              `json:"pm"`   // Price match mode
+	CloseAll         bool                `json:"cp"`   // If Close-All
+	PriceProtection  bool                `json:"pP"`   // If price protection is turned on
+	ReduceOnly       bool                `json:"R"`    // Is this reduce only
+	TriggerTime      int64               `json:"tt"`   // Trigger time
+	GoodTillTime     int64               `json:"gtd"`  // good till time for GTD time in force
+	FailedReason     string              `json:"rm"`   // algo order failed reason
 }
 
 type WsUserDataAccountConfigUpdate struct {
