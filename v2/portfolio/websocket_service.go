@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/bitly/go-simplejson"
 )
 
 // Endpoints
@@ -87,7 +85,7 @@ type WsUserDataOrderTradeUpdate struct {
 type WsUserDataTradeLite struct {
 	Symbol          string   `json:"s"`
 	OriginalQty     string   `json:"q"`
-	OriginalPrice   string   //`json:"p"`
+	OriginalPrice   string   `json:"p"`
 	IsMaker         bool     `json:"m"`
 	ClientOrderID   string   `json:"c"`
 	Side            SideType `json:"S"`
@@ -95,20 +93,6 @@ type WsUserDataTradeLite struct {
 	LastFilledQty   string   `json:"l"`
 	TradeID         int64    `json:"t"`
 	OrderID         int64    `json:"i"`
-}
-
-func (w *WsUserDataTradeLite) fromSimpleJson(j *simplejson.Json) (err error) {
-	w.Symbol = j.Get("s").MustString()
-	w.OriginalQty = j.Get("q").MustString()
-	w.OriginalPrice = j.Get("p").MustString()
-	w.IsMaker = j.Get("m").MustBool()
-	w.ClientOrderID = j.Get("c").MustString()
-	w.Side = SideType(j.Get("S").MustString())
-	w.LastFilledPrice = j.Get("L").MustString()
-	w.LastFilledQty = j.Get("l").MustString()
-	w.TradeID = j.Get("t").MustInt64()
-	w.OrderID = j.Get("i").MustInt64()
-	return nil
 }
 
 func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
@@ -127,11 +111,10 @@ func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 		UserDataEventTypeAccountUpdate:       &e.WsUserDataAccountUpdate,
 		UserDataEventTypeOrderTradeUpdate:    &e.WsUserDataOrderTradeUpdate,
 		UserDataEventTypeAccountConfigUpdate: &e.WsUserDataAccountConfigUpdate,
+		UserDataEventTypeTradeLite:           &e.WsUserDataTradeLite,
 	}
 
 	switch e.Event {
-	case UserDataEventTypeTradeLite:
-		return e.WsUserDataTradeLite.fromSimpleJson(j)
 	case UserDataEventTypeListenKeyExpired:
 		// noting
 	default:
