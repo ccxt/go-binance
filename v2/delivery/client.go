@@ -182,7 +182,7 @@ func getApiEndpoint() string {
 		return BaseApiTestnetUrl
 	}
 	if UseDemo {
-		return BaseAPIDemoURL
+		return BaseApiDemoURL
 	}
 	return BaseApiMainUrl
 }

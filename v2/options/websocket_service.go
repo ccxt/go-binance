@@ -61,7 +61,7 @@ func getCombinedEndpoint() string {
 		return baseCombinedTestnetURL
 	}
 	if UseDemo {
-		return baseCombinedDemoUrl
+		return baseCombinedDemoURL
 	}
 	return baseCombinedMainURL
 }
