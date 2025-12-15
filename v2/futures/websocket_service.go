@@ -17,7 +17,7 @@ var (
 	BaseWsDemoURL          = "wss://fstream.binancefuture.com/ws"
 	BaseCombinedMainURL    = "wss://fstream.binance.com/stream?streams="
 	BaseCombinedTestnetURL = "wss://stream.binancefuture.com/stream?streams="
-	BaseCombinedDemoURL    = "wss://fstream.binancefuture.com/stream?streams=" // TODO: test it
+	BaseCombinedDemoURL    = "wss://fstream.binancefuture.com/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-fapi.binance.com/ws-fapi/v1"
 	BaseWsApiTestnetURL    = "wss://testnet.binancefuture.com/ws-fapi/v1"
 	BaseWsApiDemoURL       = "wss://testnet.binancefuture.com/ws-fapi/v1"
