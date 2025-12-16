@@ -18,7 +18,7 @@ import (
 type testApiRequest struct {
 	Id     string                 `json:"id"`
 	Method string                 `json:"method"`
-	Params map[string]interface{} `json:"params"`
+	Params map[string]any `json:"params"`
 }
 
 func (s *clientTestSuite) SetupTest() {
@@ -81,7 +81,7 @@ func (s *clientTestSuite) TestReadWriteSync() {
 				req := testApiRequest{
 					Id:     requestID,
 					Method: "some-method",
-					Params: map[string]interface{}{},
+					Params: map[string]any{},
 				}
 				reqRaw, err := json.Marshal(req)
 				s.Require().NoError(err)
@@ -101,7 +101,7 @@ func (s *clientTestSuite) TestReadWriteSync() {
 				req := testApiRequest{
 					Id:     "some-other-request-id",
 					Method: "some-method",
-					Params: map[string]interface{}{},
+					Params: map[string]any{},
 				}
 				reqRaw, err := json.Marshal(req)
 				s.Require().NoError(err)
@@ -112,7 +112,7 @@ func (s *clientTestSuite) TestReadWriteSync() {
 				req = testApiRequest{
 					Id:     requestID,
 					Method: "some-method",
-					Params: map[string]interface{}{},
+					Params: map[string]any{},
 				}
 				reqRaw, err = json.Marshal(req)
 				s.Require().NoError(err)
@@ -132,7 +132,7 @@ func (s *clientTestSuite) TestReadWriteSync() {
 				req := testApiRequest{
 					Id:     requestID,
 					Method: "some-method",
-					Params: map[string]interface{}{
+					Params: map[string]any{
 						"timeout": "true",
 					},
 				}
@@ -154,7 +154,7 @@ func (s *clientTestSuite) TestReadWriteSync() {
 				req := testApiRequest{
 					Id:     requestID,
 					Method: "some-method",
-					Params: map[string]interface{}{},
+					Params: map[string]any{},
 				}
 				reqRaw, err := json.Marshal(req)
 				s.Require().NoError(err)

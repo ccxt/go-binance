@@ -683,7 +683,7 @@ type WsUserDataEvent struct {
 func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 	var tmp struct {
 		Event               UserDataEventType  `json:"e"`
-		Time                interface{}        `json:"E"`
+		Time                any        `json:"E"`
 		Alias               string             `json:"i"`
 		CrossWalletBalance  string             `json:"cw"`
 		MarginCallPositions []WsPosition       `json:"p"`

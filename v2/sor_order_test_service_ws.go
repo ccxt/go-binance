@@ -59,7 +59,7 @@ func NewSorOrderTestWsRequest() *SorOrderTestWsRequest {
 	return &SorOrderTestWsRequest{}
 }
 
-func (s *SorOrderTestWsRequest) GetParams() map[string]interface{} {
+func (s *SorOrderTestWsRequest) GetParams() map[string]any {
 	return s.buildParams()
 }
 

@@ -62,7 +62,7 @@ func (s *baseOrderTestSuite) assertOrdersEqual(e, a []*Order) {
 	}
 }
 
-func (s *baseOrderTestSuite) assertOrderAndAPIErrorListEqual(e, a []interface{}) {
+func (s *baseOrderTestSuite) assertOrderAndAPIErrorListEqual(e, a []any) {
 	for i := range e {
 		switch ee := e[i].(type) {
 		case Order:
@@ -265,9 +265,9 @@ func (s *orderServiceTestSuite) TestCreateBatchOrders() {
 		},
 	}
 	s.assertReq(func(r *request) {
-		packup := [](map[string]interface{}){}
+		packup := [](map[string]any){}
 		for _, cos := range orderLists {
-			t := map[string]interface{}{
+			t := map[string]any{
 				"symbol":           cos.symbol,
 				"side":             string(cos.side),
 				"type":             string(cos.orderType),
@@ -307,7 +307,7 @@ func (s *orderServiceTestSuite) TestCreateBatchOrders() {
 	r.NoError(err)
 	r.Len(returnOrders, 3)
 
-	orders := []interface{}{
+	orders := []any{
 		Order{
 			OrderId:       4710989013445263360,
 			Symbol:        "DOGE-240607-0.158-C",
@@ -585,7 +585,7 @@ func (s *orderServiceTestSuite) TestCancelBatchOrders() {
 	r := s.r()
 	r.NoError(err)
 
-	e := []interface{}{
+	e := []any{
 		Order{
 			OrderId:       4710989013445263361,
 			Symbol:        "DOGE-240607-0.158-C",

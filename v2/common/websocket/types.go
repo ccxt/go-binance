@@ -17,7 +17,7 @@ type WsApiMethodType string
 type WsApiRequest struct {
 	Id     string                 `json:"id"`
 	Method WsApiMethodType        `json:"method"`
-	Params map[string]interface{} `json:"params"`
+	Params map[string]any `json:"params"`
 }
 
 var (
@@ -112,7 +112,7 @@ type RequestData struct {
 }
 
 // CreateRequest creates signed ws request
-func CreateRequest(reqData RequestData, method WsApiMethodType, params map[string]interface{}) ([]byte, error) {
+func CreateRequest(reqData RequestData, method WsApiMethodType, params map[string]any) ([]byte, error) {
 	if reqData.requestID == "" {
 		return nil, ErrorRequestIDNotSet
 	}
@@ -153,7 +153,7 @@ func CreateRequest(reqData RequestData, method WsApiMethodType, params map[strin
 }
 
 // encode encodes the parameters to a URL encoded string
-func encodeParams(p map[string]interface{}) string {
+func encodeParams(p map[string]any) string {
 	queryValues := url.Values{}
 	for key, value := range p {
 		queryValues.Add(key, fmt.Sprintf("%v", value))

@@ -38,7 +38,7 @@ type ExchangeInfo struct {
 	Timezone        string        `json:"timezone"`
 	ServerTime      int64         `json:"serverTime"`
 	RateLimits      []RateLimit   `json:"rateLimits"`
-	ExchangeFilters []interface{} `json:"exchangeFilters"`
+	ExchangeFilters []any `json:"exchangeFilters"`
 	Symbols         []Symbol      `json:"symbols"`
 }
 
@@ -70,7 +70,7 @@ type Symbol struct {
 	TriggerProtect        string                   `json:"triggerProtect"`
 	OrderType             []OrderType              `json:"orderType"`
 	TimeInForce           []TimeInForceType        `json:"timeInForce"`
-	Filters               []map[string]interface{} `json:"filters"`
+	Filters               []map[string]any `json:"filters"`
 	QuoteAsset            string                   `json:"quoteAsset"`
 	MarginAsset           string                   `json:"marginAsset"`
 	BaseAsset             string                   `json:"baseAsset"`

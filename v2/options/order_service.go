@@ -438,7 +438,7 @@ func (s *CancelBatchOrdersService) ClientOrderIds(clientOrderIds []string) *Canc
 }
 
 // return: [Order, APIError]
-func (s *CancelBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []interface{}, err error) {
+func (s *CancelBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []any, err error) {
 	r := &request{
 		method:   http.MethodDelete,
 		endpoint: "/eapi/v1/batchOrders",
@@ -467,14 +467,14 @@ func (s *CancelBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 	rawMessages := make([]*json.RawMessage, 0)
 	err = json.Unmarshal(data, &rawMessages)
 	if err != nil {
-		return []interface{}{}, err
+		return []any{}, err
 	}
 
-	res = make([]interface{}, 0)
+	res = make([]any, 0)
 	for _, j := range rawMessages {
 		e := new(common.APIError)
 		if err := json.Unmarshal(*j, e); err != nil {
-			return []interface{}{}, err
+			return []any{}, err
 		}
 		if e.IsValid() {
 			res = append(res, *e)
@@ -482,7 +482,7 @@ func (s *CancelBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 		}
 		o := new(Order)
 		if err := json.Unmarshal(*j, o); err != nil {
-			return []interface{}{}, err
+			return []any{}, err
 		}
 		o.RateLimitOrder10s = rlos
 		o.RateLimitOrder1m = rlom
@@ -502,7 +502,7 @@ func (s *CreateBatchOrdersService) OrderList(orders []*CreateOrderService) *Crea
 }
 
 // return: [Order, APIError]
-func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []interface{}, err error) {
+func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []any, err error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: "/eapi/v1/batchOrders",
@@ -513,7 +513,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 	for _, order := range s.orders {
 		if order.newOrderRespType != "" && order.newOrderRespType != NewOrderRespTypeACK &&
 			order.newOrderRespType != NewOrderRespTypeRESULT {
-			return []interface{}{}, fmt.Errorf("no expected newOrderRespType value=%v", order.newOrderRespType)
+			return []any{}, fmt.Errorf("no expected newOrderRespType value=%v", order.newOrderRespType)
 		}
 		m := params{
 			"symbol":   order.symbol,
@@ -547,7 +547,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 
 	b, err := json.Marshal(orders)
 	if err != nil {
-		return []interface{}{}, err
+		return []any{}, err
 	}
 	m := params{
 		"orders": string(b),
@@ -557,20 +557,20 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []interface{}{}, err
+		return []any{}, err
 	}
 
 	rawMessages := make([]*json.RawMessage, 0)
 	err = json.Unmarshal(data, &rawMessages)
 	if err != nil {
-		return []interface{}{}, err
+		return []any{}, err
 	}
 
-	res = make([]interface{}, 0)
+	res = make([]any, 0)
 	for _, j := range rawMessages {
 		e := new(common.APIError)
 		if err := json.Unmarshal(*j, e); err != nil {
-			return []interface{}{}, err
+			return []any{}, err
 		}
 		if e.IsValid() {
 			res = append(res, *e)
@@ -578,7 +578,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 		}
 		o := new(Order)
 		if err := json.Unmarshal(*j, o); err != nil {
-			return []interface{}{}, err
+			return []any{}, err
 		}
 		res = append(res, *o)
 	}

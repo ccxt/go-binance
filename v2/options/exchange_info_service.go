@@ -68,7 +68,7 @@ type OptionAsset struct {
 type OptionSymbol struct {
 	ContractId           int64                    `json:"contractId"`
 	ExpiryDate           int64                    `json:"expiryDate"`
-	Filters              []map[string]interface{} `json:"filters"`
+	Filters              []map[string]any `json:"filters"`
 	Id                   int64                    `json:"id"`
 	Symbol               string                   `json:"symbol"`
 	Side                 string                   `json:"side"`

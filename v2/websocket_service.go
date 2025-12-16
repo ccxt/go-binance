@@ -729,7 +729,7 @@ func WsUserDataServeSignature(apiKey, secretKey string, keyType string, timeOffs
 	subscribeRequest, err := websocket.CreateRequest(
 		reqData,
 		websocket.UserDataStreamSubscribeSignatureSpotWsApiMethod,
-		map[string]interface{}{},
+		map[string]any{},
 	)
 	if err != nil {
 		conn.Close()

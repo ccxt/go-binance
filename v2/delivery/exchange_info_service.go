@@ -38,7 +38,7 @@ type ExchangeInfo struct {
 	Timezone        string        `json:"timezone"`
 	ServerTime      int64         `json:"serverTime"`
 	RateLimits      []RateLimit   `json:"rateLimits"`
-	ExchangeFilters []interface{} `json:"exchangeFilters"`
+	ExchangeFilters []any `json:"exchangeFilters"`
 	Symbols         []Symbol      `json:"symbols"`
 }
 
@@ -54,7 +54,7 @@ type RateLimit struct {
 type Symbol struct {
 	OrderType             []OrderType              `json:"OrderType"`
 	TimeInForce           []TimeInForceType        `json:"timeInForce"`
-	Filters               []map[string]interface{} `json:"filters"`
+	Filters               []map[string]any `json:"filters"`
 	Symbol                string                   `json:"symbol"`
 	Pair                  string                   `json:"pair"`
 	ContractType          string                   `json:"contractType"`
@@ -74,7 +74,7 @@ type Symbol struct {
 	EqualQtyPrecision     int                      `json:"equalQtyPrecision"`
 	TriggerProtect        string                   `json:"triggerProtect"`
 	UnderlyingType        string                   `json:"underlyingType"`
-	UnderlyingSubType     []interface{}            `json:"underlyingSubType"`
+	UnderlyingSubType     []any            `json:"underlyingSubType"`
 }
 
 // LotSizeFilter define lot size filter of symbol

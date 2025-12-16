@@ -120,7 +120,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 			{RateLimitType: "REQUEST_WEIGHT", Interval: "MINUTE", IntervalNum: 1, Limit: 6000},
 			{RateLimitType: "ORDERS", Interval: "MINUTE", IntervalNum: 1, Limit: 6000},
 		},
-		ExchangeFilters: []interface{}{},
+		ExchangeFilters: []any{},
 		Symbols: []Symbol{
 			{
 				Symbol:                "BTCUSD_200925",
@@ -142,10 +142,10 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 				MaintMarginPercent:    "2.5000",
 				RequiredMarginPercent: "5.0000",
 				UnderlyingType:        "COIN",
-				UnderlyingSubType:     []interface{}{},
+				UnderlyingSubType:     []any{},
 				OrderType:             []OrderType{OrderTypeLimit, OrderTypeMarket, OrderTypeStop, OrderTypeTakeProfit, OrderTypeTrailingStopMarket},
 				TimeInForce:           []TimeInForceType{TimeInForceTypeGTC, TimeInForceTypeIOC, TimeInForceTypeFOK, TimeInForceTypeGTX},
-				Filters: []map[string]interface{}{
+				Filters: []map[string]any{
 					{"filterType": "PRICE_FILTER", "minPrice": "0.1", "maxPrice": "100000", "tickSize": "0.1"},
 					{"filterType": "LOT_SIZE", "minQty": "1", "maxQty": "100000", "stepSize": "1"},
 					{"filterType": "MARKET_LOT_SIZE", "maxQty": "100000", "minQty": "1", "stepSize": "1"},

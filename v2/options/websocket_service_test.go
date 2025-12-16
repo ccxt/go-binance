@@ -860,7 +860,7 @@ func (s *websocketServiceTestSuite) TestCombinedServe1() {
 	s.mockWsServe(data, errors.New(fakeErrMsg))
 	defer s.assertWsServe()
 
-	doneC, stopC, err := WsCombinedServe([]string{"ETH-240927-5500-P@depth10"}, map[string]interface{}{"depth": (func(event *WsDepthEvent) {
+	doneC, stopC, err := WsCombinedServe([]string{"ETH-240927-5500-P@depth10"}, map[string]any{"depth": (func(event *WsDepthEvent) {
 		e := &WsDepthEvent{
 			Event:            "depth",
 			Time:             1716890957050,
@@ -988,7 +988,7 @@ func (s *websocketServiceTestSuite) TestCombinedServe2() {
 	s.mockWsServe(data, errors.New(fakeErrMsg))
 	defer s.assertWsServe()
 
-	doneC, stopC, err := WsCombinedServe([]string{"ETH-240927-5500-P@ticker"}, map[string]interface{}{"ticker": (func(event []*WsTickerEvent) {
+	doneC, stopC, err := WsCombinedServe([]string{"ETH-240927-5500-P@ticker"}, map[string]any{"ticker": (func(event []*WsTickerEvent) {
 		e := []*WsTickerEvent{
 			{
 				Event:              "24hrTicker",

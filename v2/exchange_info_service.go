@@ -83,7 +83,7 @@ type ExchangeInfo struct {
 	Timezone        string        `json:"timezone"`
 	ServerTime      int64         `json:"serverTime"`
 	RateLimits      []RateLimit   `json:"rateLimits"`
-	ExchangeFilters []interface{} `json:"exchangeFilters"`
+	ExchangeFilters []any `json:"exchangeFilters"`
 	Symbols         []Symbol      `json:"symbols"`
 }
 
@@ -112,7 +112,7 @@ type Symbol struct {
 	QuoteOrderQtyMarketAllowed bool                     `json:"quoteOrderQtyMarketAllowed"`
 	IsSpotTradingAllowed       bool                     `json:"isSpotTradingAllowed"`
 	IsMarginTradingAllowed     bool                     `json:"isMarginTradingAllowed"`
-	Filters                    []map[string]interface{} `json:"filters"`
+	Filters                    []map[string]any `json:"filters"`
 	Permissions                []string                 `json:"permissions"`
 	PermissionSets             [][]string               `json:"permissionSets"`
 }

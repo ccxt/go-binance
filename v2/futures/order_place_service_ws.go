@@ -180,7 +180,7 @@ type CreateOrderWsResponse struct {
 	Error *common.APIError `json:"error,omitempty"`
 }
 
-func (r *OrderPlaceWsRequest) GetParams() map[string]interface{} {
+func (r *OrderPlaceWsRequest) GetParams() map[string]any {
 	return r.buildParams()
 }
 
