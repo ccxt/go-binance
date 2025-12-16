@@ -15,9 +15,9 @@ type WsApiMethodType string
 
 // WsApiRequest define common websocket API request
 type WsApiRequest struct {
-	Id     string                 `json:"id"`
-	Method WsApiMethodType        `json:"method"`
-	Params map[string]any `json:"params"`
+	Id     string          `json:"id"`
+	Method WsApiMethodType `json:"method"`
+	Params map[string]any  `json:"params"`
 }
 
 var (

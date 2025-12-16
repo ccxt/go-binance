@@ -66,26 +66,26 @@ type OptionAsset struct {
 
 // Option Symbol
 type OptionSymbol struct {
-	ContractId           int64                    `json:"contractId"`
-	ExpiryDate           int64                    `json:"expiryDate"`
+	ContractId           int64            `json:"contractId"`
+	ExpiryDate           int64            `json:"expiryDate"`
 	Filters              []map[string]any `json:"filters"`
-	Id                   int64                    `json:"id"`
-	Symbol               string                   `json:"symbol"`
-	Side                 string                   `json:"side"`
-	StrikePrice          string                   `json:"strikePrice"`
-	Underlying           string                   `json:"underlying"`
-	Unit                 int64                    `json:"unit"`
-	MakerFeeRate         string                   `json:"makerFeeRate"`
-	TakerFeeRate         string                   `json:"takerFeeRate"`
-	MinQty               string                   `json:"minQty"`
-	MaxQty               string                   `json:"maxQty"`
-	InitialMargin        string                   `json:"initialMargin"`
-	MaintenanceMargin    string                   `json:"maintenanceMargin"`
-	MinInitialMargin     string                   `json:"minInitialMargin"`
-	MinMaintenanceMargin string                   `json:"minMaintenanceMargin"`
-	PriceScale           int                      `json:"priceScale"`
-	QuantityScale        int                      `json:"quantityScale"`
-	QuoteAsset           string                   `json:"quoteAsset"`
+	Id                   int64            `json:"id"`
+	Symbol               string           `json:"symbol"`
+	Side                 string           `json:"side"`
+	StrikePrice          string           `json:"strikePrice"`
+	Underlying           string           `json:"underlying"`
+	Unit                 int64            `json:"unit"`
+	MakerFeeRate         string           `json:"makerFeeRate"`
+	TakerFeeRate         string           `json:"takerFeeRate"`
+	MinQty               string           `json:"minQty"`
+	MaxQty               string           `json:"maxQty"`
+	InitialMargin        string           `json:"initialMargin"`
+	MaintenanceMargin    string           `json:"maintenanceMargin"`
+	MinInitialMargin     string           `json:"minInitialMargin"`
+	MinMaintenanceMargin string           `json:"minMaintenanceMargin"`
+	PriceScale           int              `json:"priceScale"`
+	QuantityScale        int              `json:"quantityScale"`
+	QuoteAsset           string           `json:"quoteAsset"`
 }
 
 // LotSizeFilter define lot size filter of symbol

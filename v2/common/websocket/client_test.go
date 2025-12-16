@@ -16,8 +16,8 @@ import (
 )
 
 type testApiRequest struct {
-	Id     string                 `json:"id"`
-	Method string                 `json:"method"`
+	Id     string         `json:"id"`
+	Method string         `json:"method"`
 	Params map[string]any `json:"params"`
 }
 

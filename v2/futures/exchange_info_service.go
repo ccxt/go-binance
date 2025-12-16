@@ -35,11 +35,11 @@ func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (re
 
 // ExchangeInfo exchange info
 type ExchangeInfo struct {
-	Timezone        string        `json:"timezone"`
-	ServerTime      int64         `json:"serverTime"`
-	RateLimits      []RateLimit   `json:"rateLimits"`
-	ExchangeFilters []any `json:"exchangeFilters"`
-	Symbols         []Symbol      `json:"symbols"`
+	Timezone        string      `json:"timezone"`
+	ServerTime      int64       `json:"serverTime"`
+	RateLimits      []RateLimit `json:"rateLimits"`
+	ExchangeFilters []any       `json:"exchangeFilters"`
+	Symbols         []Symbol    `json:"symbols"`
 }
 
 // RateLimit struct
@@ -52,30 +52,30 @@ type RateLimit struct {
 
 // Symbol market symbol
 type Symbol struct {
-	Symbol                string                   `json:"symbol"`
-	Pair                  string                   `json:"pair"`
-	ContractType          ContractType             `json:"contractType"`
-	DeliveryDate          int64                    `json:"deliveryDate"`
-	OnboardDate           int64                    `json:"onboardDate"`
-	Status                string                   `json:"status"`
-	MaintMarginPercent    string                   `json:"maintMarginPercent"`
-	RequiredMarginPercent string                   `json:"requiredMarginPercent"`
-	PricePrecision        int                      `json:"pricePrecision"`
-	QuantityPrecision     int                      `json:"quantityPrecision"`
-	BaseAssetPrecision    int                      `json:"baseAssetPrecision"`
-	QuotePrecision        int                      `json:"quotePrecision"`
-	UnderlyingType        string                   `json:"underlyingType"`
-	UnderlyingSubType     []string                 `json:"underlyingSubType"`
-	SettlePlan            int64                    `json:"settlePlan"`
-	TriggerProtect        string                   `json:"triggerProtect"`
-	OrderType             []OrderType              `json:"orderType"`
-	TimeInForce           []TimeInForceType        `json:"timeInForce"`
-	Filters               []map[string]any `json:"filters"`
-	QuoteAsset            string                   `json:"quoteAsset"`
-	MarginAsset           string                   `json:"marginAsset"`
-	BaseAsset             string                   `json:"baseAsset"`
-	LiquidationFee        string                   `json:"liquidationFee"`
-	MarketTakeBound       string                   `json:"marketTakeBound"`
+	Symbol                string            `json:"symbol"`
+	Pair                  string            `json:"pair"`
+	ContractType          ContractType      `json:"contractType"`
+	DeliveryDate          int64             `json:"deliveryDate"`
+	OnboardDate           int64             `json:"onboardDate"`
+	Status                string            `json:"status"`
+	MaintMarginPercent    string            `json:"maintMarginPercent"`
+	RequiredMarginPercent string            `json:"requiredMarginPercent"`
+	PricePrecision        int               `json:"pricePrecision"`
+	QuantityPrecision     int               `json:"quantityPrecision"`
+	BaseAssetPrecision    int               `json:"baseAssetPrecision"`
+	QuotePrecision        int               `json:"quotePrecision"`
+	UnderlyingType        string            `json:"underlyingType"`
+	UnderlyingSubType     []string          `json:"underlyingSubType"`
+	SettlePlan            int64             `json:"settlePlan"`
+	TriggerProtect        string            `json:"triggerProtect"`
+	OrderType             []OrderType       `json:"orderType"`
+	TimeInForce           []TimeInForceType `json:"timeInForce"`
+	Filters               []map[string]any  `json:"filters"`
+	QuoteAsset            string            `json:"quoteAsset"`
+	MarginAsset           string            `json:"marginAsset"`
+	BaseAsset             string            `json:"baseAsset"`
+	LiquidationFee        string            `json:"liquidationFee"`
+	MarketTakeBound       string            `json:"marketTakeBound"`
 }
 
 // LotSizeFilter define lot size filter of symbol
