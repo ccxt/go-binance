@@ -16,10 +16,13 @@ var (
 	// Endpoints
 	BaseWsMainURL          = "wss://stream.binance.com:9443/ws"
 	BaseWsTestnetURL       = "wss://stream.testnet.binance.vision/ws"
+	BaseWsDemoURL          = "wss://demo-stream.binance.com/ws"
 	BaseCombinedMainURL    = "wss://stream.binance.com:9443/stream?streams="
 	BaseCombinedTestnetURL = "wss://stream.testnet.binance.vision/stream?streams="
+	BaseCombinedDemoURL    = "wss://demo-stream.binance.com/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-api.binance.com:443/ws-api/v3"
 	BaseWsApiTestnetURL    = "wss://ws-api.testnet.binance.vision/ws-api/v3"
+	BaseWsApiDemoURL       = "wss://demo-ws-api.binance.com/ws-api/v3"
 	BaseWsAnnouncementURL  = "wss://api.binance.com/sapi/wss"
 
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
@@ -52,6 +55,9 @@ func getWsEndpoint() string {
 	if UseTestnet {
 		return BaseWsTestnetURL
 	}
+	if UseDemo {
+		return BaseWsDemoURL
+	}
 	return BaseWsMainURL
 }
 
@@ -59,6 +65,9 @@ func getWsEndpoint() string {
 func getCombinedEndpoint() string {
 	if UseTestnet {
 		return BaseCombinedTestnetURL
+	}
+	if UseDemo {
+		return BaseCombinedDemoURL
 	}
 	return BaseCombinedMainURL
 }
@@ -720,7 +729,7 @@ func WsUserDataServeSignature(apiKey, secretKey string, keyType string, timeOffs
 	subscribeRequest, err := websocket.CreateRequest(
 		reqData,
 		websocket.UserDataStreamSubscribeSignatureSpotWsApiMethod,
-		map[string]interface{}{},
+		map[string]any{},
 	)
 	if err != nil {
 		conn.Close()
@@ -737,6 +746,14 @@ func WsUserDataServeSignature(apiKey, secretKey string, keyType string, timeOffs
 	go func() {
 		defer close(doneC)
 		defer conn.Close()
+
+		go func() {
+			select {
+			case <-stopC:
+			case <-doneC:
+			}
+			conn.Close()
+		}()
 
 		for {
 			_, message, err := conn.ReadMessage()
@@ -1122,8 +1139,8 @@ type WsAnnouncementHandler func(event *WsAnnouncementEvent)
 //	stopC - Channel that can be closed to stop the connection
 //	err - Any initial connection error
 func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	if UseTestnet {
-		return nil, nil, errors.New("testnet is not supported")
+	if UseTestnet || UseDemo {
+		return nil, nil, errors.New("testnet or demo is not supported")
 	}
 	endpoint := fmt.Sprintf("%s?random=%s&topic=%s&recvWindow=%d&timestamp=%d&signature=%s",
 		BaseWsAnnouncementURL, params.Random, params.Topic, params.RecvWindow, params.Timestamp, params.Signature,
@@ -1168,6 +1185,9 @@ func WsAnnouncementServe(params WsAnnouncementParam, handler WsAnnouncementHandl
 func getWsApiEndpoint() string {
 	if UseTestnet {
 		return BaseWsApiTestnetURL
+	}
+	if UseDemo {
+		return BaseWsApiDemoURL
 	}
 	return BaseWsApiMainURL
 }

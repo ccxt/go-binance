@@ -34,7 +34,7 @@ func ToJSONList(v []byte) []byte {
 	return v
 }
 
-func ToInt(digit interface{}) (i int, err error) {
+func ToInt(digit any) (i int, err error) {
 	if intVal, ok := digit.(int); ok {
 		return int(intVal), nil
 	}
@@ -44,7 +44,7 @@ func ToInt(digit interface{}) (i int, err error) {
 	return 0, fmt.Errorf("unexpected digit: %v", digit)
 }
 
-func ToInt64(digit interface{}) (i int64, err error) {
+func ToInt64(digit any) (i int64, err error) {
 	if intVal, ok := digit.(int); ok {
 		return int64(intVal), nil
 	}
