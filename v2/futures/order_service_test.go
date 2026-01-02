@@ -55,6 +55,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 	positionSide := PositionSideTypeBoth
 	quantity := "10"
 	price := "10000"
+	priceMatch := PriceMatchTypeNone
 	newClientOrderID := "testOrder"
 	reduceOnly := false
 	stopPrice := "0"
@@ -74,6 +75,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 			"quantity":         quantity,
 			"reduceOnly":       strconv.FormatBool(reduceOnly),
 			"price":            price,
+			"priceMatch":       priceMatch,
 			"newClientOrderId": newClientOrderID,
 			"stopPrice":        stopPrice,
 			"workingType":      workingType,
@@ -87,7 +89,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 	})
 	res, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).ClosePosition(closePosition).
-		ReduceOnly(reduceOnly).Price(price).NewClientOrderID(newClientOrderID).
+		ReduceOnly(reduceOnly).Price(price).PriceMatch(priceMatch).NewClientOrderID(newClientOrderID).
 		StopPrice(stopPrice).WorkingType(workingType).ActivationPrice(activationPrice).
 		CallbackRate(callbackRate).PositionSide(positionSide).
 		PriceProtect(priceProtect).NewOrderResponseType(newOrderResponseType).
@@ -619,7 +621,7 @@ func (s *orderServiceTestSuite) TestCancelOrder() {
 		"stopPrice": "8300",
 		"symbol": "BTCUSDT",
 		"timeInForce": "GTC",
-		"type": "TAKE_PROFIT",
+		"type": "LIMIT",
 		"updateTime": 1571110484038,
 		"workingType": "CONTRACT_PRICE",
 		"activatePrice": "10000",
@@ -661,7 +663,7 @@ func (s *orderServiceTestSuite) TestCancelOrder() {
 		StopPrice:        "8300",
 		Symbol:           symbol,
 		TimeInForce:      TimeInForceTypeGTC,
-		Type:             OrderTypeTakeProfit,
+		Type:             OrderTypeLimit,
 		UpdateTime:       1571110484038,
 		WorkingType:      WorkingTypeContractPrice,
 		ActivatePrice:    "10000",
@@ -788,7 +790,7 @@ func (s *orderServiceTestSuite) assertLiquidationEqual(e, a *LiquidationOrder) {
 func (s *orderServiceTestSuite) TestCreateBatchOrders() {
 	data := []byte(`[
 		{
-			"code": -2014, 
+			"code": -2014,
 			"msg": "API-key format invalid."
 		},
 		{
@@ -813,13 +815,13 @@ func (s *orderServiceTestSuite) TestCreateBatchOrders() {
 			"priceRate": "0.3",
 			"updateTime": 1566818724722,
 			"workingType": "CONTRACT_PRICE",
-			"priceProtect": false,            
-			"priceMatch": "NONE",             
-			"selfTradePreventionMode": "NONE", 
+			"priceProtect": false,
+			"priceMatch": "NONE",
+			"selfTradePreventionMode": "NONE",
 			"goodTillDate": 0
 		},
 		{
-			"code": -2022, 
+			"code": -2022,
 			"msg": "ReduceOnly Order is rejected."
 		}
 	]`)
@@ -907,7 +909,7 @@ func (s *orderServiceTestSuite) TestModifyBatchOrders() {
 			"updateTime": 1733500988978
 		},
 		{
-			"code": -1102, 
+			"code": -1102,
 			"msg": "Mandatory parameter 'price' was not sent, was empty/null, or malformed."
 		}
 	]`)

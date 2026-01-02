@@ -149,7 +149,7 @@ func (s *ListUserUniversalTransferService) ToSymbol(v string) *ListUserUniversal
 	return s
 }
 
-// // Do sends the request.
+// Do sends the request.
 func (s *ListUserUniversalTransferService) Do(ctx context.Context) (res *UserUniversalTransferResponse, err error) {
 	r := &request{
 		method:   http.MethodGet,

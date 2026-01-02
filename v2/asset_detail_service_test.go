@@ -195,3 +195,45 @@ func (s *assetDetailServiceTestSuite) assertUserAssetEqual(e, a UserAssetRecord)
 	r.Equal(e.Ipoable, a.Ipoable, "Ipoable")
 	r.Equal(e.BtcValuation, a.BtcValuation, "BtcValuation")
 }
+
+func (s *assetDetailServiceTestSuite) TestGetFundingAsset() {
+	data := []byte(`
+	[
+		{
+			"asset": "BTC",
+			"free": "1",
+			"locked": "0",
+			"freeze": "0",
+			"withdrawing": "0",
+			"btcValuation": "0"
+		}
+	]`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+
+	s.assertReq(func(r *request) {
+		e := newSignedRequest()
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewGetFundingAssetService().Do(newContext())
+	s.r().NoError(err)
+	s.assertFundingAssetEqual(FundingAsset{
+		Asset:        "BTC",
+		Free:         "1",
+		Locked:       "0",
+		Freeze:       "0",
+		Withdrawing:  "0",
+		BtcValuation: "0",
+	}, res[0])
+}
+
+func (s *assetDetailServiceTestSuite) assertFundingAssetEqual(e, a FundingAsset) {
+	r := s.r()
+	r.Equal(e.Asset, a.Asset, "Asset")
+	r.Equal(e.Free, a.Free, "Free")
+	r.Equal(e.Locked, a.Locked, "Locked")
+	r.Equal(e.Freeze, a.Freeze, "Freeze")
+	r.Equal(e.Withdrawing, a.Withdrawing, "Withdrawing")
+	r.Equal(e.BtcValuation, a.BtcValuation, "BtcValuation")
+}

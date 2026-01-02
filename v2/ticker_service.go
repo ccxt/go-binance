@@ -10,8 +10,9 @@ import (
 
 // ListBookTickersService list best price/qty on the order book for a symbol or symbols
 type ListBookTickersService struct {
-	c      *Client
-	symbol *string
+	c       *Client
+	symbol  *string
+	symbols []string
 }
 
 // buildRequest creates the API request for ListBookTickers
@@ -22,6 +23,8 @@ func (s *ListBookTickersService) buildRequest() *request {
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
+	} else if s.symbols != nil {
+		r.setParam("symbols", s.symbols)
 	}
 	return r
 }
@@ -29,6 +32,12 @@ func (s *ListBookTickersService) buildRequest() *request {
 // Symbol set symbol
 func (s *ListBookTickersService) Symbol(symbol string) *ListBookTickersService {
 	s.symbol = &symbol
+	return s
+}
+
+// Symbols set symbols
+func (s *ListBookTickersService) Symbols(symbols ...string) *ListBookTickersService {
+	s.symbols = symbols
 	return s
 }
 

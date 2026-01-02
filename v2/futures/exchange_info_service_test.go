@@ -151,9 +151,8 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 				UnderlyingSubType:     []string{"STORAGE"},
 				SettlePlan:            0,
 				TriggerProtect:        "0.15",
-				OrderType: []OrderType{OrderTypeLimit, OrderTypeMarket, OrderTypeStop, OrderTypeStopMarket,
-					OrderTypeTakeProfit, OrderTypeTakeProfitMarket, OrderTypeTrailingStopMarket},
-				TimeInForce: []TimeInForceType{TimeInForceTypeGTC, TimeInForceTypeIOC, TimeInForceTypeFOK, TimeInForceTypeGTX},
+				OrderType:             []OrderType{OrderTypeLimit, OrderTypeMarket, OrderType(AlgoOrderTypeStop), OrderType(AlgoOrderTypeStopMarket), OrderType(AlgoOrderTypeTakeProfit), OrderType(AlgoOrderTypeTakeProfitMarket), OrderType(AlgoOrderTypeTrailingStopMarket)},
+				TimeInForce:           []TimeInForceType{TimeInForceTypeGTC, TimeInForceTypeIOC, TimeInForceTypeFOK, TimeInForceTypeGTX},
 				Filters: []map[string]interface{}{
 					{"filterType": "PRICE_FILTER", "minPrice": "0.0001", "maxPrice": "300", "tickSize": "0.0001"},
 					{"filterType": "LOT_SIZE", "minQty": "1", "maxQty": "10000000", "stepSize": "1"},

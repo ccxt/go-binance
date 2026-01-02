@@ -796,19 +796,19 @@ func WsCombinedDepthServe(symbolLevels map[string]string, handler WsDepthHandler
 		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
 		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
 		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]interface{}))
+		bidsLen := len(data["b"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]interface{})[i].([]interface{})
+			item := data["b"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["a"].([]interface{}))
+		asksLen := len(data["a"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]interface{})[i].([]interface{})
+			item := data["a"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -842,19 +842,19 @@ func WsCombinedDiffDepthServe(symbols []string, handler WsDepthHandler, errHandl
 		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
 		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
 		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]interface{}))
+		bidsLen := len(data["b"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]interface{})[i].([]interface{})
+			item := data["b"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["a"].([]interface{}))
+		asksLen := len(data["a"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]interface{})[i].([]interface{})
+			item := data["a"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -1065,6 +1065,190 @@ type WsUserDataEvent struct {
 
 	// CONDITIONAL_ORDER_TRIGGER_REJECT
 	WsUserDataConditionalOrderTriggerReject
+
+	// ALGO_UPDATE
+	WsUserDataAlgoUpdate
+}
+
+type WsUserDataAlgoUpdate struct {
+	AlgoUpdate WsAlgoUpdate
+}
+
+type WsAlgoUpdate struct {
+	ClientAlgoID     string              `json:"caid"` // Client Algo Id
+	AlgoID           int64               `json:"aid"`  // Algo Id
+	AlgoType         OrderAlgoType       `json:"at"`   // Algo Type
+	OrderType        AlgoOrderType       `json:"o"`    // Order Type
+	Symbol           string              `json:"s"`    // Symbol
+	Side             SideType            `json:"S"`    // Side
+	PositionSide     PositionSideType    `json:"ps"`   // Position Side
+	TimeInForce      TimeInForceType     `json:"f"`    // Time in force
+	Quantity         string              `json:"q"`    // quantity
+	AlgoStatus       AlgoOrderStatusType `json:"X"`    // Algo status
+	OrderID          string              `json:"ai"`   // order id
+	AvgPrice         string              `json:"ap"`   // avg fill price in matching engine, only display when order is triggered and placed in matching engine
+	ExecutedQuantity string              `json:"aq"`   // executed quantity in matching engine, only display when order is triggered and placed in matching engine
+	ActualOrderType  string              `json:"act"`  // actual order type in matching engine, only display when order is triggered and placed in matching engine
+	TriggerPrice     string              `json:"tp"`   // Trigger price
+	OrderPrice       string              `json:"p"`    // Order Price
+	STPMode          string              `json:"V"`    // STP mode
+	WorkingType      WorkingType         `json:"wt"`   // Working type
+	PriceMatchMode   string              `json:"pm"`   // Price match mode
+	CloseAll         bool                `json:"cp"`   // If Close-All
+	PriceProtection  bool                `json:"pP"`   // If price protection is turned on
+	ReduceOnly       bool                `json:"R"`    // Is this reduce only
+	TriggerTime      int64               `json:"tt"`   // Trigger time
+	GoodTillTime     int64               `json:"gtd"`  // good till time for GTD time in force
+	FailedReason     string              `json:"rm"`   // algo order failed reason
+}
+
+func (w *WsAlgoUpdate) fromSimpleJson(j *simplejson.Json) (err error) {
+	// Helper function to safely get string values
+	getString := func(key string) (string, error) {
+		if v, ok := j.CheckGet(key); ok {
+			return v.String()
+		}
+		return "", nil
+	}
+
+	// Helper function to safely get int64 values
+	getInt64 := func(key string) (int64, error) {
+		if v, ok := j.CheckGet(key); ok {
+			return v.Int64()
+		}
+		return 0, nil
+	}
+
+	// Helper function to safely get bool values
+	getBool := func(key string) (bool, error) {
+		if v, ok := j.CheckGet(key); ok {
+			return v.Bool()
+		}
+		return false, nil
+	}
+
+	// Get string values
+	if w.ClientAlgoID, err = getString("caid"); err != nil {
+		return err
+	}
+
+	if at, err := getString("at"); err != nil {
+		return err
+	} else {
+		w.AlgoType = OrderAlgoType(at)
+	}
+
+	if ot, err := getString("o"); err != nil {
+		return err
+	} else {
+		w.OrderType = AlgoOrderType(ot)
+	}
+
+	if w.Symbol, err = getString("s"); err != nil {
+		return err
+	}
+
+	if s, err := getString("S"); err != nil {
+		return err
+	} else {
+		w.Side = SideType(s)
+	}
+
+	if ps, err := getString("ps"); err != nil {
+		return err
+	} else {
+		w.PositionSide = PositionSideType(ps)
+	}
+
+	if f, err := getString("f"); err != nil {
+		return err
+	} else {
+		w.TimeInForce = TimeInForceType(f)
+	}
+
+	if w.Quantity, err = getString("q"); err != nil {
+		return err
+	}
+
+	if x, err := getString("X"); err != nil {
+		return err
+	} else {
+		w.AlgoStatus = AlgoOrderStatusType(x)
+	}
+
+	if w.OrderID, err = getString("ai"); err != nil {
+		return err
+	}
+
+	if w.AvgPrice, err = getString("ap"); err != nil {
+		return err
+	}
+
+	if w.ExecutedQuantity, err = getString("aq"); err != nil {
+		return err
+	}
+
+	if w.ActualOrderType, err = getString("act"); err != nil {
+		return err
+	}
+
+	if w.TriggerPrice, err = getString("tp"); err != nil {
+		return err
+	}
+
+	if w.OrderPrice, err = getString("p"); err != nil {
+		return err
+	}
+
+	if w.STPMode, err = getString("V"); err != nil {
+		return err
+	}
+
+	if wt, err := getString("wt"); err != nil {
+		return err
+	} else {
+		w.WorkingType = WorkingType(wt)
+	}
+
+	if w.PriceMatchMode, err = getString("pm"); err != nil {
+		return err
+	}
+
+	if w.FailedReason, err = getString("rm"); err != nil {
+		return err
+	}
+
+	// Get bool values
+	if w.CloseAll, err = getBool("cp"); err != nil {
+		return err
+	}
+
+	if w.PriceProtection, err = getBool("pP"); err != nil {
+		return err
+	}
+
+	if w.ReduceOnly, err = getBool("R"); err != nil {
+		return err
+	}
+
+	// Get int64 values
+	if w.AlgoID, err = getInt64("aid"); err != nil {
+		return err
+	}
+
+	if w.TriggerTime, err = getInt64("tt"); err != nil {
+		return err
+	}
+
+	if w.GoodTillTime, err = getInt64("gtd"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (w *WsUserDataAlgoUpdate) fromSimpleJson(j *simplejson.Json) (err error) {
+	return w.AlgoUpdate.fromSimpleJson(j.Get("o"))
 }
 
 type WsUserDataAccountConfigUpdate struct {
@@ -1102,17 +1286,80 @@ type WsUserDataConditionalOrderTriggerReject struct {
 }
 
 func (w *WsUserDataTradeLite) fromSimpleJson(j *simplejson.Json) (err error) {
-	w.Symbol = j.Get("s").MustString()
-	w.OriginalQty = j.Get("q").MustString()
-	w.OriginalPrice = j.Get("p").MustString()
-	w.IsMaker = j.Get("m").MustBool()
-	w.ClientOrderID = j.Get("c").MustString()
-	w.Side = SideType(j.Get("S").MustString())
-	w.LastFilledPrice = j.Get("L").MustString()
-	w.LastFilledQty = j.Get("l").MustString()
-	w.TradeID = j.Get("t").MustInt64()
-	w.OrderID = j.Get("i").MustInt64()
+	// Helper function to safely get string values
+	getString := func(key string) (string, error) {
+		if v, ok := j.CheckGet(key); ok {
+			return v.String()
+		}
+		return "", nil
+	}
+
+	// Helper function to safely get int64 values
+	getInt64 := func(key string) (int64, error) {
+		if v, ok := j.CheckGet(key); ok {
+			return v.Int64()
+		}
+		return 0, nil
+	}
+
+	// Helper function to safely get bool values
+	getBool := func(key string) (bool, error) {
+		if v, ok := j.CheckGet(key); ok {
+			return v.Bool()
+		}
+		return false, nil
+	}
+
+	// Get string values
+	if w.Symbol, err = getString("s"); err != nil {
+		return err
+	}
+
+	if w.OriginalQty, err = getString("q"); err != nil {
+		return err
+	}
+
+	if w.OriginalPrice, err = getString("p"); err != nil {
+		return err
+	}
+
+	// Get bool values
+	if w.IsMaker, err = getBool("m"); err != nil {
+		return err
+	}
+
+	if w.ClientOrderID, err = getString("c"); err != nil {
+		return err
+	}
+
+	if s, err := getString("S"); err != nil {
+		return err
+	} else {
+		w.Side = SideType(s)
+	}
+
+	if w.LastFilledPrice, err = getString("L"); err != nil {
+		return err
+	}
+
+	if w.LastFilledQty, err = getString("l"); err != nil {
+		return err
+	}
+
+	// Get int64 values
+	if w.TradeID, err = getInt64("t"); err != nil {
+		return err
+	}
+
+	if w.OrderID, err = getInt64("i"); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+type simpleJsonUnmarshal interface {
+	fromSimpleJson(j *simplejson.Json) (err error)
 }
 
 func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
@@ -1126,6 +1373,7 @@ func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 		e.TransactionTime = v.MustInt64()
 	}
 
+	// use standard json unmarshal for event types
 	eventMaps := map[UserDataEventType]any{
 		UserDataEventTypeMarginCall:                    &e.WsUserDataMarginCall,
 		UserDataEventTypeAccountUpdate:                 &e.WsUserDataAccountUpdate,
@@ -1134,21 +1382,26 @@ func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 		UserDataEventTypeConditionalOrderTriggerReject: &e.WsUserDataConditionalOrderTriggerReject,
 	}
 
-	switch e.Event {
-	case UserDataEventTypeTradeLite:
-		return e.WsUserDataTradeLite.fromSimpleJson(j)
-	case UserDataEventTypeListenKeyExpired:
-		// noting
-	default:
-		if v, ok := eventMaps[e.Event]; ok {
-			if err := json.Unmarshal(data, v); err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("unexpected event type: %v", e.Event)
-		}
+	// use simple json unmarshal for event types, The standard library is case insensitive.
+	simpleJsonTypes := map[UserDataEventType]simpleJsonUnmarshal{
+		UserDataEventTypeTradeLite:  &e.WsUserDataTradeLite,
+		UserDataEventTypeAlgoUpdate: &e.WsUserDataAlgoUpdate,
 	}
-	return nil
+
+	// ignore event types, No additional data
+	ignoreEventTypes := map[UserDataEventType]struct{}{
+		UserDataEventTypeListenKeyExpired: {},
+	}
+
+	if v, ok := eventMaps[e.Event]; ok {
+		return json.Unmarshal(data, v)
+	} else if v, ok := simpleJsonTypes[e.Event]; ok {
+		return v.fromSimpleJson(j)
+	} else if _, ok := ignoreEventTypes[e.Event]; ok {
+		return nil
+	}
+
+	return fmt.Errorf("unexpected event type: %v", e.Event)
 }
 
 // WsAccountUpdate define account update

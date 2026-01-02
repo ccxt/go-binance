@@ -91,14 +91,9 @@ const (
 	PositionSideTypeLong  PositionSideType = "LONG"
 	PositionSideTypeShort PositionSideType = "SHORT"
 
-	OrderTypeLimit              OrderType = "LIMIT"
-	OrderTypeMarket             OrderType = "MARKET"
-	OrderTypeStop               OrderType = "STOP"
-	OrderTypeStopMarket         OrderType = "STOP_MARKET"
-	OrderTypeTakeProfit         OrderType = "TAKE_PROFIT"
-	OrderTypeTakeProfitMarket   OrderType = "TAKE_PROFIT_MARKET"
-	OrderTypeTrailingStopMarket OrderType = "TRAILING_STOP_MARKET"
-	OrderTypeLiquidation        OrderType = "LIQUIDATION"
+	OrderTypeLimit       OrderType = "LIMIT"
+	OrderTypeMarket      OrderType = "MARKET"
+	OrderTypeLiquidation OrderType = "LIQUIDATION"
 
 	TimeInForceTypeGTC    TimeInForceType = "GTC"     // Good Till Cancel
 	TimeInForceTypeGTD    TimeInForceType = "GTD"     // Good Till Date
@@ -176,6 +171,7 @@ const (
 	UserDataEventTypeAccountConfigUpdate           UserDataEventType = "ACCOUNT_CONFIG_UPDATE"
 	UserDataEventTypeTradeLite                     UserDataEventType = "TRADE_LITE"
 	UserDataEventTypeConditionalOrderTriggerReject UserDataEventType = "CONDITIONAL_ORDER_TRIGGER_REJECT"
+	UserDataEventTypeAlgoUpdate                    UserDataEventType = "ALGO_UPDATE"
 
 	UserDataEventReasonTypeDeposit             UserDataEventReasonType = "DEPOSIT"
 	UserDataEventReasonTypeWithdraw            UserDataEventReasonType = "WITHDRAW"
@@ -277,6 +273,9 @@ type Client struct {
 	Logger     *log.Logger
 	TimeOffset int64
 	do         doFunc
+
+	UsedWeight common.UsedWeight
+	OrderCount common.OrderCount
 }
 
 func (c *Client) debug(format string, v ...interface{}) {
@@ -369,6 +368,10 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	if err != nil {
 		return []byte{}, &http.Header{}, err
 	}
+
+	c.UsedWeight.UpdateByHeader(res.Header)
+	c.OrderCount.UpdateByHeader(res.Header)
+
 	data, err = io.ReadAll(res.Body)
 	if err != nil {
 		return []byte{}, &http.Header{}, err
@@ -760,4 +763,34 @@ func (c *Client) NewGetConvertStatusService() *ConvertStatusService {
 // NewApiTradingStatusService init get api trading status service
 func (c *Client) NewApiTradingStatusService() *ApiTradingStatusService {
 	return &ApiTradingStatusService{c: c}
+}
+
+// NewCreateAlgoOrderService init create algo order service
+func (c *Client) NewCreateAlgoOrderService() *CreateAlgoOrderService {
+	return newCreateAlgoOrderService(c)
+}
+
+// NewCancelAlgoOrderService init cancel algo order service
+func (c *Client) NewCancelAlgoOrderService() *CancelAlgoOrderService {
+	return &CancelAlgoOrderService{c: c}
+}
+
+// NewCancelAllAlgoOpenOrdersService init cancel all algo open orders service
+func (c *Client) NewCancelAllAlgoOpenOrdersService() *CancelAllAlgoOpenOrdersService {
+	return &CancelAllAlgoOpenOrdersService{c: c}
+}
+
+// NewGetAlgoOrderService init get algo order service
+func (c *Client) NewGetAlgoOrderService() *GetAlgoOrderService {
+	return &GetAlgoOrderService{c: c}
+}
+
+// NewListOpenAlgoOrdersService init list open algo orders service
+func (c *Client) NewListOpenAlgoOrdersService() *ListOpenAlgoOrdersService {
+	return &ListOpenAlgoOrdersService{c: c}
+}
+
+// NewGetAllAlgoOrdersService init get all algo orders service
+func (c *Client) NewListAllAlgoOrdersService() *ListAllAlgoOrdersService {
+	return &ListAllAlgoOrdersService{c: c}
 }

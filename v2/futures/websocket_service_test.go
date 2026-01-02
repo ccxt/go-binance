@@ -57,7 +57,7 @@ func (s *websocketServiceTestSuite) assertWsServe(count ...int) {
 func (s *websocketServiceTestSuite) TestAggTradeServe() {
 	data := []byte(`{
 		"e": "aggTrade",
-		"E": 123456789, 
+		"E": 123456789,
 		"s": "BTCUSDT",
 		"a": 5933014,
 		"p": "0.001",
@@ -159,7 +159,7 @@ func (s *websocketServiceTestSuite) testMarkPriceServe(rate *time.Duration, expe
 		"p": "11794.15000000",
 		"i": "11784.62659091",
 		"r": "0.00038167",
-		"T": 1562306400000  
+		"T": 1562306400000
 	  }`)
 	s.mockWsServe(data, expectedErr)
 	defer s.assertWsServe(expectedServeCnt)
@@ -235,7 +235,7 @@ func (s *websocketServiceTestSuite) testAllMarkPriceServe(rate *time.Duration, e
 		"p": "11794.15000000",
 		"i": "11784.62659091",
 		"r": "0.00038167",
-		"T": 1562306400000  
+		"T": 1562306400000
 	  }]`)
 	s.mockWsServe(data, expectedErr)
 	defer s.assertWsServe(expectedServeCnt)
@@ -389,7 +389,7 @@ func (s *websocketServiceTestSuite) TestCombinedMarkPriceServeWithInvalidRate() 
 		case 3 * time.Second:
 		case 1 * time.Second:
 		default:
-			s.testCombinedMarkPriceServe(&rate, errors.New(fmt.Sprintf("invalid rate. Symbol BTCUSDT (rate %d)", rate)), 0)
+			s.testCombinedMarkPriceServe(&rate, fmt.Errorf("invalid rate. Symbol BTCUSDT (rate %d)", rate), 0)
 			return
 		}
 	}
@@ -777,15 +777,15 @@ func (s *websocketServiceTestSuite) TestWsCombinedContinuousKlineServe() {
 
 func (s *websocketServiceTestSuite) TestMiniMarketTickerServe() {
 	data := []byte(`{
-		"e": "24hrMiniTicker", 
-		"E": 123456789,  
-		"s": "BTCUSDT", 
-		"c": "0.0025",  
-		"o": "0.0010", 
-		"h": "0.0025",  
-		"l": "0.0010", 
-		"v": "10000", 
-		"q": "18"  
+		"e": "24hrMiniTicker",
+		"E": 123456789,
+		"s": "BTCUSDT",
+		"c": "0.0025",
+		"o": "0.0010",
+		"h": "0.0025",
+		"l": "0.0010",
+		"v": "10000",
+		"q": "18"
 	  }`)
 	fakeErrMsg := "fake error"
 	s.mockWsServe(data, errors.New(fakeErrMsg))
@@ -816,15 +816,15 @@ func (s *websocketServiceTestSuite) TestMiniMarketTickerServe() {
 
 func (s *websocketServiceTestSuite) TestAllMiniMarketTickerServe() {
 	data := []byte(`[{
-		"e": "24hrMiniTicker", 
-		"E": 123456789,  
-		"s": "BTCUSDT", 
-		"c": "0.0025",  
-		"o": "0.0010", 
-		"h": "0.0025",  
-		"l": "0.0010", 
-		"v": "10000", 
-		"q": "18"  
+		"e": "24hrMiniTicker",
+		"E": 123456789,
+		"s": "BTCUSDT",
+		"c": "0.0025",
+		"o": "0.0010",
+		"h": "0.0025",
+		"l": "0.0010",
+		"v": "10000",
+		"q": "18"
 	  }]`)
 	fakeErrMsg := "fake error"
 	s.mockWsServe(data, errors.New(fakeErrMsg))
@@ -868,14 +868,14 @@ func (s *websocketServiceTestSuite) assertWsMinMarketTickerEvent(e, a *WsMiniMar
 
 func (s *websocketServiceTestSuite) TestMarketTickerServe() {
 	data := []byte(`{
-		"e": "24hrTicker", 
-		"E": 123456789, 
-		"s": "BTCUSDT", 
+		"e": "24hrTicker",
+		"E": 123456789,
+		"s": "BTCUSDT",
 		"p": "0.0015",
 		"P": "250.00",
 		"w": "0.0018",
 		"c": "0.0025",
-		"Q": "10", 
+		"Q": "10",
 		"o": "0.0010",
 		"h": "0.0025",
 		"l": "0.0010",
@@ -925,14 +925,14 @@ func (s *websocketServiceTestSuite) TestMarketTickerServe() {
 
 func (s *websocketServiceTestSuite) TestAllMarketTickerServe() {
 	data := []byte(`[{
-		"e": "24hrTicker", 
-		"E": 123456789, 
-		"s": "BTCUSDT", 
+		"e": "24hrTicker",
+		"E": 123456789,
+		"s": "BTCUSDT",
 		"p": "0.0015",
 		"P": "250.00",
 		"w": "0.0018",
 		"c": "0.0025",
-		"Q": "10", 
+		"Q": "10",
 		"o": "0.0010",
 		"h": "0.0025",
 		"l": "0.0010",
@@ -1004,7 +1004,7 @@ func (s *websocketServiceTestSuite) assertWsMarketTickerEvent(e, a *WsMarketTick
 
 func (s *websocketServiceTestSuite) TestBookTickerServe() {
 	data := []byte(`{
-		"e":"bookTicker",    
+		"e":"bookTicker",
 		"u":400900217,
 		"E": 1568014460893,
 		"T": 1568014460891,
@@ -1043,7 +1043,7 @@ func (s *websocketServiceTestSuite) TestBookTickerServe() {
 
 func (s *websocketServiceTestSuite) TestAllBookTickerServe() {
 	data := []byte(`{
-		"e":"bookTicker",    
+		"e":"bookTicker",
 		"u":400900217,
 		"E": 1568014460893,
 		"T": 1568014460891,
@@ -1095,13 +1095,13 @@ func (s *websocketServiceTestSuite) assertWsBookTickerEvent(e, a *WsBookTickerEv
 
 func (s *websocketServiceTestSuite) TestLiquidationOrderServe() {
 	data := []byte(`{
-		"e":"forceOrder", 
+		"e":"forceOrder",
 		"E":1568014460893,
 		"o":{
 			"s":"BTCUSDT",
 			"S":"SELL",
 			"o":"LIMIT",
-			"f":"IOC", 
+			"f":"IOC",
 			"q":"0.014",
 			"p":"9910",
 			"ap":"9910",
@@ -1146,13 +1146,13 @@ func (s *websocketServiceTestSuite) TestLiquidationOrderServe() {
 
 func (s *websocketServiceTestSuite) TestAllLiquidationOrderServe() {
 	data := []byte(`{
-		"e":"forceOrder", 
+		"e":"forceOrder",
 		"E":1568014460893,
 		"o":{
 			"s":"BTCUSDT",
 			"S":"SELL",
 			"o":"LIMIT",
-			"f":"IOC", 
+			"f":"IOC",
 			"q":"0.014",
 			"p":"9910",
 			"ap":"9910",
@@ -1215,8 +1215,8 @@ func (s *websocketServiceTestSuite) assertLiquidationOrderEvent(e, a *WsLiquidat
 
 func (s *websocketServiceTestSuite) testPartialDepthServe(rate *time.Duration, expectedErr error, expectedServeCnt int) {
 	data := []byte(`{
-		"e": "depthUpdate", 
-		"E": 1571889248277, 
+		"e": "depthUpdate",
+		"E": 1571889248277,
 		"T": 1571889248276,
 		"s": "BTCUSDT",
 		"U": 390497796,
@@ -1228,7 +1228,7 @@ func (s *websocketServiceTestSuite) testPartialDepthServe(rate *time.Duration, e
 			"0.002"
 		  ]
 		],
-		"a": [ 
+		"a": [
 		  [
 			"7405.96",
 			"3.340"
@@ -1528,10 +1528,10 @@ func (s *websocketServiceTestSuite) TestBLVTKlineServe() {
 			"t":1600243140000,
 			"T":1600243199999,
 			"s":"TRXDOWN",
-			"i":"1m", 
-			"f":1600243140484, 
+			"i":"1m",
+			"f":1600243140484,
 			"L":1600243159424,
-			"o":"14.56800297", 
+			"o":"14.56800297",
 			"c":"14.59766270",
 			"h":"14.63325437",
 			"l":"14.56207102",
@@ -1944,19 +1944,19 @@ func (s *websocketServiceTestSuite) TestWsUserDataServeAccountConfigUpdate() {
 
 func (s *websocketServiceTestSuite) TestWsUserDataServeTradeLite() {
 	data := []byte(`{
-		"e":"TRADE_LITE",             
-		"E":1721895408092,            
-		"T":1721895408214,                                   
-		"s":"BTCUSDT",                
-		"q":"0.001",                  
-		"p":"0",                      
-		"m":false,                    
-		"c":"z8hcUoOsqEdKMeKPSABslD", 
-		"S":"BUY",                   
-		"L":"64089.20",              
-		"l":"0.040",                 
-		"t":109100866,               
-		"i":8886774                
+		"e":"TRADE_LITE",
+		"E":1721895408092,
+		"T":1721895408214,
+		"s":"BTCUSDT",
+		"q":"0.001",
+		"p":"0",
+		"m":false,
+		"c":"z8hcUoOsqEdKMeKPSABslD",
+		"S":"BUY",
+		"L":"64089.20",
+		"l":"0.040",
+		"t":109100866,
+		"i":8886774
 	}`)
 
 	expectedEvent := &WsUserDataEvent{
@@ -1974,6 +1974,78 @@ func (s *websocketServiceTestSuite) TestWsUserDataServeTradeLite() {
 			LastFilledQty:   "0.040",
 			TradeID:         109100866,
 			OrderID:         8886774,
+		},
+	}
+
+	s.testWsUserDataServe(data, expectedEvent)
+}
+
+func (s *websocketServiceTestSuite) TestWsUserDataServeAlgoUpdate() {
+	data := []byte(`{
+  "e":"ALGO_UPDATE",
+  "E":1750515742303,
+  "T":1750515742297,
+  "o":{
+    "caid":"Q5xaq5EGKgXXa0fD7fs0Ip",
+    "aid":2148719,
+    "at":"CONDITIONAL",
+    "o":"TAKE_PROFIT",
+    "s":"BNBUSDT",
+    "S":"SELL",
+    "ps":"BOTH",
+    "f":"GTC",
+    "q":"0.01",
+    "X":"CANCELED",
+    "ai":"",
+    "ap": "0.00000",
+    "aq": "0.00000",
+    "act": "0",
+    "tp":"750",
+    "p":"750",
+    "V":"EXPIRE_MAKER",
+    "wt":"CONTRACT_PRICE",
+    "pm":"NONE",
+    "cp":false,
+    "pP":false,
+    "R":false,
+    "tt":0,
+    "gtd":0,
+    "rm": "Reduce Only reject"
+  }
+}`)
+
+	expectedEvent := &WsUserDataEvent{
+		Event:           "ALGO_UPDATE",
+		Time:            1750515742303,
+		TransactionTime: 1750515742297,
+		WsUserDataAlgoUpdate: WsUserDataAlgoUpdate{
+			AlgoUpdate: WsAlgoUpdate{
+				ClientAlgoID:     "Q5xaq5EGKgXXa0fD7fs0Ip",
+				AlgoID:           2148719,
+				AlgoType:         "CONDITIONAL",
+				OrderType:        "TAKE_PROFIT",
+				Symbol:           "BNBUSDT",
+				Side:             "SELL",
+				PositionSide:     "BOTH",
+				TimeInForce:      "GTC",
+				Quantity:         "0.01",
+				AlgoStatus:       AlgoOrderStatusTypeCanceled,
+				OrderID:          "",
+				AvgPrice:         "0.00000",
+				ExecutedQuantity: "0.00000",
+				ActualOrderType:  "0",
+				TriggerPrice:     "750",
+				OrderPrice:       "750",
+				STPMode:          "EXPIRE_MAKER",
+				WorkingType:      "CONTRACT_PRICE",
+				PriceMatchMode:   "NONE",
+				CloseAll:         false,
+				PriceProtection:  false,
+				ReduceOnly:       false,
+				TriggerTime:      0,
+				GoodTillTime:     0,
+				FailedReason:     "Reduce Only reject",
+			},
 		},
 	}
 
