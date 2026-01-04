@@ -54,7 +54,7 @@ type CreateAlgoOrderService struct {
 	closePosition           *bool
 	priceProtect            *bool
 	reduceOnly              *bool
-	activationPrice         *string
+	activatePrice           *string
 	callbackRate            *string
 	clientAlgoId            *string
 	selfTradePreventionMode *SelfTradePreventionMode
@@ -185,10 +185,15 @@ func (s *CreateAlgoOrderService) ReduceOnly(reduceOnly bool) *CreateAlgoOrderSer
 }
 
 // ActivationPrice sets the activation price for trailing stop orders.
+// deprecated, use ActivatePrice instead
 func (s *CreateAlgoOrderService) ActivationPrice(activationPrice string) *CreateAlgoOrderService {
-	s.activationPrice = &activationPrice
-	if activationPrice != "" {
-		s.param["activationPrice"] = activationPrice
+	return s.ActivatePrice(activationPrice)
+}
+
+func (s *CreateAlgoOrderService) ActivatePrice(activatePrice string) *CreateAlgoOrderService {
+	s.activatePrice = &activatePrice
+	if activatePrice != "" {
+		s.param["activatePrice"] = activatePrice
 	}
 	return s
 }
