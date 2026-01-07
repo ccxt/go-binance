@@ -51,7 +51,7 @@ func NewOrderListCancelWsRequest() *OrderListCancelWsRequest {
 	return &OrderListCancelWsRequest{}
 }
 
-func (s *OrderListCancelWsRequest) GetParams() map[string]interface{} {
+func (s *OrderListCancelWsRequest) GetParams() map[string]any {
 	return s.buildParams()
 }
 

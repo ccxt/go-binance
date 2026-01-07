@@ -146,7 +146,7 @@ func (s *WsAccountService) buildRequest(requestID string, method websocket.WsApi
 			s.KeyType,
 		),
 		method,
-		map[string]interface{}{
+		map[string]any{
 			"recvWindow": s.RecvWindow,
 		},
 	)

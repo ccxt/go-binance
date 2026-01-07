@@ -80,6 +80,7 @@ type SelfTradePreventionMode string
 var (
 	BaseApiMainUrl    = "https://fapi.binance.com"
 	BaseApiTestnetUrl = "https://testnet.binancefuture.com"
+	BaseApiDemoURL    = "https://testnet.binancefuture.com"
 )
 
 // Global enums
@@ -218,6 +219,9 @@ func getApiEndpoint() string {
 	if UseTestnet {
 		return BaseApiTestnetUrl
 	}
+	if UseDemo {
+		return BaseApiDemoURL
+	}
 	return BaseApiMainUrl
 }
 
@@ -278,7 +282,7 @@ type Client struct {
 	OrderCount common.OrderCount
 }
 
-func (c *Client) debug(format string, v ...interface{}) {
+func (c *Client) debug(format string, v ...any) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)
 	}

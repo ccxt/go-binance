@@ -28,11 +28,14 @@ function lint() {
     golint -set_exit_status ./...
 }
 
+# There is a bug if we define the same json tag in the struct.
+# Disable structtag temporarily.
+# see: https://github.com/golang/go/issues/40102
 function vet() {
     echo  "Running go vet ..."
     (
         cd v2
-        go vet ./...
+        go vet -structtag=false ./...
     )
 }
 

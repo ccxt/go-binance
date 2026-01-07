@@ -107,7 +107,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 	symbols := []string{"ETHBTC", "LTCBTC"}
 	permissions := []string{"SPOT", "MARGIN"}
 	s.assertReq(func(r *request) {
-		e := newRequest().setParams(map[string]interface{}{
+		e := newRequest().setParams(map[string]any{
 			"symbol":      symbol,
 			"symbols":     `["ETHBTC","LTCBTC"]`,
 			"permissions": `["SPOT","MARGIN"]`,
@@ -124,7 +124,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 			{RateLimitType: "ORDERS", Interval: "SECOND", IntervalNum: 10, Limit: 10},
 			{RateLimitType: "ORDERS", Interval: "DAY", IntervalNum: 1, Limit: 100000},
 		},
-		ExchangeFilters: []interface{}{},
+		ExchangeFilters: []any{},
 		Symbols: []Symbol{
 			{
 				Symbol:                 "ETHBTC",
@@ -138,7 +138,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 				OcoAllowed:             true,
 				IsSpotTradingAllowed:   true,
 				IsMarginTradingAllowed: false,
-				Filters: []map[string]interface{}{
+				Filters: []map[string]any{
 					{"filterType": "PRICE_FILTER", "minPrice": "0.00001000", "maxPrice": "922327.00000000", "tickSize": "0.00001000"},
 					{"filterType": "LOT_SIZE", "minQty": "0.00010000", "maxQty": "100000.00000000", "stepSize": "0.00010000"},
 					{"filterType": "ICEBERG_PARTS", "limit": 10},

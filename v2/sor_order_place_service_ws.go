@@ -61,7 +61,7 @@ func NewSorOrderPlaceWsRequest() *SorOrderPlaceWsRequest {
 	}
 }
 
-func (s *SorOrderPlaceWsRequest) GetParams() map[string]interface{} {
+func (s *SorOrderPlaceWsRequest) GetParams() map[string]any {
 	return s.buildParams()
 }
 

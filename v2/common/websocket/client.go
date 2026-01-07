@@ -58,7 +58,7 @@ type client struct {
 	reconnectCount              int64
 }
 
-func (c *client) debug(format string, v ...interface{}) {
+func (c *client) debug(format string, v ...any) {
 	if c.Debug {
 		c.logger.Println(fmt.Sprintf(format, v...))
 	}

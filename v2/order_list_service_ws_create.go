@@ -71,7 +71,7 @@ func NewOrderListCreateWsRequest() *OrderListCreateWsRequest {
 	return &OrderListCreateWsRequest{}
 }
 
-func (s *OrderListCreateWsRequest) GetParams() map[string]interface{} {
+func (s *OrderListCreateWsRequest) GetParams() map[string]any {
 	return s.buildParams()
 }
 

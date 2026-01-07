@@ -129,7 +129,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 			{RateLimitType: "REQUEST_WEIGHT", Interval: "MINUTE", IntervalNum: 1, Limit: 2400},
 			{RateLimitType: "ORDERS", Interval: "MINUTE", IntervalNum: 1, Limit: 1200},
 		},
-		ExchangeFilters: []interface{}{},
+		ExchangeFilters: []any{},
 		Symbols: []Symbol{
 			{
 				Symbol:                "BLZUSDT",
@@ -153,7 +153,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 				TriggerProtect:        "0.15",
 				OrderType:             []OrderType{OrderTypeLimit, OrderTypeMarket, OrderType(AlgoOrderTypeStop), OrderType(AlgoOrderTypeStopMarket), OrderType(AlgoOrderTypeTakeProfit), OrderType(AlgoOrderTypeTakeProfitMarket), OrderType(AlgoOrderTypeTrailingStopMarket)},
 				TimeInForce:           []TimeInForceType{TimeInForceTypeGTC, TimeInForceTypeIOC, TimeInForceTypeFOK, TimeInForceTypeGTX},
-				Filters: []map[string]interface{}{
+				Filters: []map[string]any{
 					{"filterType": "PRICE_FILTER", "minPrice": "0.0001", "maxPrice": "300", "tickSize": "0.0001"},
 					{"filterType": "LOT_SIZE", "minQty": "1", "maxQty": "10000000", "stepSize": "1"},
 					{"filterType": "MARKET_LOT_SIZE", "maxQty": "590119", "minQty": "1", "stepSize": "1"},

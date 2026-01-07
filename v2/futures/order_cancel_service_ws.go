@@ -38,7 +38,7 @@ func (s *OrderCancelRequest) OrigClientOrderID(origClientOrderID string) *OrderC
 	return s
 }
 
-func (r *OrderCancelRequest) GetParams() map[string]interface{} {
+func (r *OrderCancelRequest) GetParams() map[string]any {
 	return r.buildParams()
 }
 
