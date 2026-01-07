@@ -791,7 +791,9 @@ func (s *CancelMultiplesOrdersService) Do(ctx context.Context, opts ...RequestOp
 		r.setFormParam("orderIdList", orderIDListString)
 	}
 	if s.origClientOrderIDList != nil {
-		r.setFormParam("origClientOrderIdList", s.origClientOrderIDList)
+		// convert a slice of strings to a string e.g. ["my_id_1","my_id_2"], encode the double quotes. No space after comma.
+		origClientOrderIDListString := "[\"" + strings.Join(s.origClientOrderIDList, "\",\"") + "\"]"
+		r.setFormParam("origClientOrderIdList", origClientOrderIDListString)
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
