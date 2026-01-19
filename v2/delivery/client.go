@@ -67,6 +67,7 @@ type UserDataEventReasonType string
 var (
 	BaseApiMainUrl    = "https://dapi.binance.com"
 	BaseApiTestnetUrl = "https://testnet.binancefuture.com"
+	BaseApiDemoURL    = "https://demo-dapi.binance.com"
 )
 
 // Global enums
@@ -180,6 +181,9 @@ func getApiEndpoint() string {
 	if UseTestnet {
 		return BaseApiTestnetUrl
 	}
+	if UseDemo {
+		return BaseApiDemoURL
+	}
 	return BaseApiMainUrl
 }
 
@@ -239,7 +243,7 @@ type Client struct {
 	OrderCount common.OrderCount
 }
 
-func (c *Client) debug(format string, v ...interface{}) {
+func (c *Client) debug(format string, v ...any) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)
 	}

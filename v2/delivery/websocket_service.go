@@ -13,6 +13,7 @@ import (
 var (
 	BaseWsMainUrl    = "wss://dstream.binance.com/ws"
 	BaseWsTestnetUrl = "wss://dstream.binancefuture.com/ws"
+	BaseWsDemoURL    = "wss://dstream.binancefuture.com/ws"
 )
 
 var (
@@ -24,13 +25,18 @@ var (
 	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
-	ProxyUrl   = ""
+	// UseDemo switch all the API endpoints from production to the demo
+	UseDemo  = false
+	ProxyUrl = ""
 )
 
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getWsEndpoint() string {
 	if UseTestnet {
 		return BaseWsTestnetUrl
+	}
+	if UseDemo {
+		return BaseWsDemoURL
 	}
 	return BaseWsMainUrl
 }
@@ -677,7 +683,7 @@ type WsUserDataEvent struct {
 func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
 	var tmp struct {
 		Event               UserDataEventType  `json:"e"`
-		Time                interface{}        `json:"E"`
+		Time                any                `json:"E"`
 		Alias               string             `json:"i"`
 		CrossWalletBalance  string             `json:"cw"`
 		MarginCallPositions []WsPosition       `json:"p"`

@@ -126,6 +126,7 @@ type FuturesAlgoOrderStatusType string
 var (
 	BaseAPIMainURL    = "https://api.binance.com"
 	BaseAPITestnetURL = "https://testnet.binance.vision"
+	BaseAPIDemoURL    = "https://demo-api.binance.com"
 )
 
 // SelfTradePreventionMode define self trade prevention strategy
@@ -138,6 +139,9 @@ type MarginAccountBorrowRepayType string
 
 // UseTestnet switch all the API endpoints from production to the testnet
 var UseTestnet = false
+
+// UseDemo switch all the API endpoints from production to the demo
+var UseDemo = false
 
 // Global enums
 const (
@@ -361,6 +365,9 @@ func getAPIEndpoint() string {
 	if UseTestnet {
 		return BaseAPITestnetURL
 	}
+	if UseDemo {
+		return BaseAPIDemoURL
+	}
 	return BaseAPIMainURL
 }
 
@@ -436,7 +443,7 @@ type Client struct {
 	OrderCount common.OrderCount
 }
 
-func (c *Client) debug(format string, v ...interface{}) {
+func (c *Client) debug(format string, v ...any) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)
 	}

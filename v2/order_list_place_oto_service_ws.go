@@ -73,7 +73,7 @@ func NewOrderListPlaceOtoWsRequest() *OrderListPlaceOtoWsRequest {
 	}
 }
 
-func (s *OrderListPlaceOtoWsRequest) GetParams() map[string]interface{} {
+func (s *OrderListPlaceOtoWsRequest) GetParams() map[string]any {
 	return s.buildParams()
 }
 

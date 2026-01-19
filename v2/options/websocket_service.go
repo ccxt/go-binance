@@ -12,8 +12,10 @@ import (
 const (
 	baseWsMainUrl          = "wss://nbstream.binance.com/eoptions/ws"
 	baseWsTestnetUrl       = "" // unknown now
+	baseWsDemoUrl          = "" // unknown now
 	baseCombinedMainURL    = "wss://nbstream.binance.com/eoptions/stream?streams="
 	baseCombinedTestnetURL = "" // unknown now
+	baseCombinedDemoURL    = "" // unknown now
 )
 
 var (
@@ -25,6 +27,8 @@ var (
 	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
+	// UseDemo switch all the WS streams from production to the demo
+	UseDemo = false
 
 	ProxyUrl = ""
 )
@@ -33,6 +37,9 @@ var (
 func getWsEndpoint() string {
 	if UseTestnet {
 		return baseWsTestnetUrl
+	}
+	if UseDemo {
+		return baseWsDemoUrl
 	}
 	return baseWsMainUrl
 }
@@ -52,6 +59,9 @@ func SetWsProxyUrl(url string) {
 func getCombinedEndpoint() string {
 	if UseTestnet {
 		return baseCombinedTestnetURL
+	}
+	if UseDemo {
+		return baseCombinedDemoURL
 	}
 	return baseCombinedMainURL
 }
@@ -501,12 +511,12 @@ func WsDepthServe(symbol string, levels string, rate *time.Duration, handler WsD
 //
 // for example:
 //
-//	WsCombinedServe({"ETH-240927-5500-P@depth10"}, map[string]interface{}{"depth": func(*WsDepthEvent) {}}, func(error){})
+//	WsCombinedServe({"ETH-240927-5500-P@depth10"}, map[string]any{"depth": func(*WsDepthEvent) {}}, func(error){})
 //	WsCombinedServe({"ETH-240927-5500-P@depth10", "ETH-240927-5500-P@kline_1m"},
-//				    map[string]interface{}{"depth": func(*WsDepthEvent) {}, "kline": func(*WsKlineEvent){}}, func(error){})
+//				    map[string]any{"depth": func(*WsDepthEvent) {}, "kline": func(*WsKlineEvent){}}, func(error){})
 //
 // note: the symbol(underlying) of streamName should be upper.
-func WsCombinedServe(streamName []string, handler map[string]interface{}, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+func WsCombinedServe(streamName []string, handler map[string]any, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
 	if len(streamName) <= 0 || len(handler) <= 0 {
 		return nil, nil, errors.New("streamName is empty or handler is empty")
 	}
@@ -519,7 +529,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 
 	// TODO: use template after go 1.8
 	tradeKey := "trade"
-	tradeHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	tradeHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -536,7 +546,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsTradeServeHandler(jsonData, fn, errHandler)
 	}
 	indexKey := "index"
-	indexHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	indexHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -553,7 +563,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsIndexServeHandler(jsonData, fn, errHandler)
 	}
 	markPriceKey := "markPrice"
-	markPriceHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	markPriceHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -570,7 +580,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsMarkPriceServeHandler(jsonData, fn, errHandler)
 	}
 	klineKey := "kline"
-	klineHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	klineHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -587,7 +597,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsKlineServeHandler(jsonData, fn, errHandler)
 	}
 	tickerKey := "ticker"
-	tickerHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	tickerHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -609,7 +619,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsTickerExpireServeHandler(jsonData, fn, errHandler)
 	}
 	openInterestKey := "openInterest"
-	openInterestHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	openInterestHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -626,7 +636,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsOpenInterestServeHandler(jsonData, fn, errHandler)
 	}
 	optionPairKey := "option_pair"
-	optionPairHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	optionPairHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
@@ -643,7 +653,7 @@ func WsCombinedServe(streamName []string, handler map[string]interface{}, errHan
 		wsOptionPairServeHandler(jsonData, fn, errHandler)
 	}
 	depthKey := "depth"
-	depthHandler := func(key string, handler map[string]interface{}, errHandler ErrHandler, jsonData []byte, stream string) {
+	depthHandler := func(key string, handler map[string]any, errHandler ErrHandler, jsonData []byte, stream string) {
 		h, exist := handler[key]
 		if !exist {
 			errHandler(fmt.Errorf("stream=%s, not found target handler, stream=%s handler=%v", key, stream, handler))
