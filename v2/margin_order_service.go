@@ -236,21 +236,21 @@ func (s *CancelMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 		endpoint: "/sapi/v1/margin/order",
 		secType:  secTypeSigned,
 	}
-	r.setFormParam("symbol", s.symbol)
+	r.setParam("symbol", s.symbol)
 	if s.orderID != nil {
-		r.setFormParam("orderId", *s.orderID)
+		r.setParam("orderId", *s.orderID)
 	}
 	if s.origClientOrderID != nil {
-		r.setFormParam("origClientOrderId", *s.origClientOrderID)
+		r.setParam("origClientOrderId", *s.origClientOrderID)
 	}
 	if s.newClientOrderID != nil {
-		r.setFormParam("newClientOrderId", *s.newClientOrderID)
+		r.setParam("newClientOrderId", *s.newClientOrderID)
 	}
 	if s.isIsolated != nil {
 		if *s.isIsolated {
-			r.setFormParam("isIsolated", "TRUE")
+			r.setParam("isIsolated", "TRUE")
 		} else {
-			r.setFormParam("isIsolated", "FALSE")
+			r.setParam("isIsolated", "FALSE")
 		}
 	}
 
@@ -292,12 +292,12 @@ func (s *CancelAllMarginOrdersService) Do(ctx context.Context, opts ...RequestOp
 		endpoint: "/sapi/v1/margin/openOrders",
 		secType:  secTypeSigned,
 	}
-	r.setFormParam("symbol", s.symbol)
+	r.setParam("symbol", s.symbol)
 	if s.isIsolated != nil {
 		if *s.isIsolated {
-			r.setFormParam("isIsolated", "TRUE")
+			r.setParam("isIsolated", "TRUE")
 		} else {
-			r.setFormParam("isIsolated", "FALSE")
+			r.setParam("isIsolated", "FALSE")
 		}
 	}
 
@@ -835,18 +835,18 @@ func (s *CancelMarginOCOService) Do(ctx context.Context, opts ...RequestOption) 
 		endpoint: "/sapi/v1/margin/orderList",
 		secType:  secTypeSigned,
 	}
-	r.setFormParam("symbol", s.symbol)
+	r.setParam("symbol", s.symbol)
 	if s.listClientOrderID != "" {
-		r.setFormParam("listClientOrderId", s.listClientOrderID)
+		r.setParam("listClientOrderId", s.listClientOrderID)
 	}
 	if s.isIsolated != nil {
-		r.setFormParam("isIsolated", *s.isIsolated)
+		r.setParam("isIsolated", *s.isIsolated)
 	}
 	if s.orderListID != 0 {
-		r.setFormParam("orderListId", s.orderListID)
+		r.setParam("orderListId", s.orderListID)
 	}
 	if s.newClientOrderID != "" {
-		r.setFormParam("newClientOrderId", s.newClientOrderID)
+		r.setParam("newClientOrderId", s.newClientOrderID)
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
