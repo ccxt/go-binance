@@ -525,7 +525,7 @@ type CancelMarginOrderResponse struct {
 type CancelAllMarginOrdersResponse struct {
 	Symbol                   string                         `json:"symbol"`
 	OrigClientOrderID        string                         `json:"origClientOrderId"`
-	OrderID                  int64                         `json:"orderId"`
+	OrderID                  int64                          `json:"orderId"`
 	ClientOrderID            string                         `json:"clientOrderId"`
 	TransactTime             int64                          `json:"transactTime"`
 	Price                    string                         `json:"price"`
