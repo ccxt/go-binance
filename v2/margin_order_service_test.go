@@ -251,7 +251,7 @@ func (s *marginOrderServiceTestSuite) TestCancelAllOrder() {
 	e := []*CancelAllMarginOrdersResponse{
 		&CancelAllMarginOrdersResponse{
 			Symbol:                   "LTCBTC",
-			OrderID:                  "28",
+			OrderID:                  28,
 			OrigClientOrderID:        "myOrder1",
 			ClientOrderID:            "cancelMyOrder1",
 			TransactTime:             1507725176595,
