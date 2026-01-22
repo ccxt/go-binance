@@ -185,7 +185,7 @@ func (s *marginOrderServiceTestSuite) TestCancelOrder() {
 	origClientOrderID := "myOrder1"
 	newClientOrderID := "cancelMyOrder1"
 	s.assertReq(func(r *request) {
-		e := newSignedRequest().setFormParams(params{
+		e := newSignedRequest().setParams(params{
 			"symbol":            symbol,
 			"orderId":           orderID,
 			"origClientOrderId": origClientOrderID,
@@ -220,7 +220,7 @@ func (s *marginOrderServiceTestSuite) TestCancelOrder() {
 func (s *marginOrderServiceTestSuite) TestCancelAllOrder() {
 	data := []byte(`[{
 		"symbol": "LTCBTC",
-		"orderId": "28",
+		"orderId": 28,
 		"origClientOrderId": "myOrder1",
 		"clientOrderId": "cancelMyOrder1",
 		"transactTime": 1507725176595,
@@ -238,7 +238,7 @@ func (s *marginOrderServiceTestSuite) TestCancelAllOrder() {
 
 	symbol := "LTCBTC"
 	s.assertReq(func(r *request) {
-		e := newSignedRequest().setFormParams(params{
+		e := newSignedRequest().setParams(params{
 			"symbol": symbol,
 		})
 		s.assertRequestEqual(e, r)
@@ -251,7 +251,7 @@ func (s *marginOrderServiceTestSuite) TestCancelAllOrder() {
 	e := []*CancelAllMarginOrdersResponse{
 		&CancelAllMarginOrdersResponse{
 			Symbol:                   "LTCBTC",
-			OrderID:                  "28",
+			OrderID:                  28,
 			OrigClientOrderID:        "myOrder1",
 			ClientOrderID:            "cancelMyOrder1",
 			TransactTime:             1507725176595,
@@ -780,7 +780,7 @@ func (s *marginOrderServiceTestSuite) TestCancelOCO() {
 	symbol := "LTCBTC"
 	listClientOrderID := "C3wyj4WVEktd7u9aVBRXcN"
 	s.assertReq(func(r *request) {
-		e := newSignedRequest().setFormParams(params{
+		e := newSignedRequest().setParams(params{
 			"symbol":            symbol,
 			"listClientOrderId": listClientOrderID,
 		})

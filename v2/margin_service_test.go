@@ -987,7 +987,7 @@ func (s *marginTestSuite) TestCloseMarginUserStream() {
 
 	listenKey := "dummykey"
 	s.assertReq(func(r *request) {
-		s.assertRequestEqual(newRequest().setFormParam("listenKey", listenKey), r)
+		s.assertRequestEqual(newRequest().setParam("listenKey", listenKey), r)
 	})
 
 	err := s.client.NewCloseMarginUserStreamService().ListenKey(listenKey).Do(newContext())

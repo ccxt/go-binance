@@ -1137,8 +1137,8 @@ func (s *CloseIsolatedMarginUserStreamService) Do(ctx context.Context, opts ...R
 		secType:  secTypeAPIKey,
 	}
 
-	r.setFormParam("listenKey", s.listenKey)
-	r.setFormParam("symbol", s.symbol)
+	r.setParam("listenKey", s.listenKey)
+	r.setParam("symbol", s.symbol)
 
 	_, err = s.c.callAPI(ctx, r, opts...)
 	return err
@@ -1213,7 +1213,7 @@ func (s *CloseMarginUserStreamService) Do(ctx context.Context, opts ...RequestOp
 		secType:  secTypeAPIKey,
 	}
 
-	r.setFormParam("listenKey", s.listenKey)
+	r.setParam("listenKey", s.listenKey)
 
 	_, err = s.c.callAPI(ctx, r, opts...)
 	return err
