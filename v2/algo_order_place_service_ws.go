@@ -152,11 +152,11 @@ func (s *AlgoOrderPlaceWsRequest) RecvWindow(recvWindow int64) *AlgoOrderPlaceWs
 // buildParams builds params
 func (s *AlgoOrderPlaceWsRequest) buildParams() map[string]interface{} {
 	m := map[string]interface{}{
-		"algoType":        s.algoType,
-		"symbol":          s.symbol,
-		"side":            s.side,
-		"type":            s._type,
-		"triggerPrice":    s.triggerPrice,
+		"algoType":         s.algoType,
+		"symbol":           s.symbol,
+		"side":             s.side,
+		"type":             s._type,
+		"triggerPrice":     s.triggerPrice,
 		"newOrderRespType": s.newOrderRespType,
 	}
 
@@ -211,7 +211,7 @@ type CreateAlgoOrderWsResponse struct {
 func (s *AlgoOrderPlaceWsService) SyncDo(requestID string, request *AlgoOrderPlaceWsRequest) (*CreateAlgoOrderWsResponse, error) {
 	// Use custom method "algoOrder.place"
 	method := websocket.WsApiMethodType("algoOrder.place")
-	
+
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -259,5 +259,3 @@ func (s *AlgoOrderPlaceWsService) GetReadErrorChannel() <-chan error {
 func (s *AlgoOrderPlaceWsService) GetReconnectCount() int64 {
 	return s.c.GetReconnectCount()
 }
-
-

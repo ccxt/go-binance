@@ -40,9 +40,9 @@ func NewAlgoOrderCancelWsService(apiKey, secretKey string) (*AlgoOrderCancelWsSe
 
 // AlgoOrderCancelWsRequest parameters for 'algoOrder.cancel' websocket API
 type AlgoOrderCancelWsRequest struct {
-	algoId        *int64
-	clientAlgoId  *string
-	recvWindow    *int64
+	algoId       *int64
+	clientAlgoId *string
+	recvWindow   *int64
 }
 
 // NewAlgoOrderCancelWsRequest init AlgoOrderCancelWsRequest
@@ -109,7 +109,7 @@ type CancelAlgoOrderWsResponse struct {
 func (s *AlgoOrderCancelWsService) Do(requestID string, request *AlgoOrderCancelWsRequest) error {
 	// Use custom method "algoOrder.cancel"
 	method := websocket.WsApiMethodType("algoOrder.cancel")
-	
+
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -136,7 +136,7 @@ func (s *AlgoOrderCancelWsService) Do(requestID string, request *AlgoOrderCancel
 func (s *AlgoOrderCancelWsService) SyncDo(requestID string, request *AlgoOrderCancelWsRequest) (*CancelAlgoOrderWsResponse, error) {
 	// Use custom method "algoOrder.cancel"
 	method := websocket.WsApiMethodType("algoOrder.cancel")
-	
+
 	rawData, err := websocket.CreateRequest(
 		websocket.NewRequestData(
 			requestID,
@@ -184,4 +184,3 @@ func (s *AlgoOrderCancelWsService) GetReadErrorChannel() <-chan error {
 func (s *AlgoOrderCancelWsService) GetReconnectCount() int64 {
 	return s.c.GetReconnectCount()
 }
-
