@@ -12,6 +12,19 @@ type GetAccountService struct {
 	omitZeroBalances *bool
 }
 
+// buildRequest creates the API request for GetAccount
+func (s *GetAccountService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/account",
+		secType:  secTypeSigned,
+	}
+	if s.omitZeroBalances != nil {
+		r.setParam("omitZeroBalances", *s.omitZeroBalances)
+	}
+	return r
+}
+
 // OmitZeroBalances sets the omitZeroBalances parameter on the request.
 // When set to true, the API will return the non-zero balances of an account.
 func (s *GetAccountService) OmitZeroBalances(v bool) *GetAccountService {
@@ -21,15 +34,7 @@ func (s *GetAccountService) OmitZeroBalances(v bool) *GetAccountService {
 
 // Do send request
 func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res *Account, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/account",
-		secType:  secTypeSigned,
-	}
-	if s.omitZeroBalances != nil {
-		r.setParam("omitZeroBalances", *s.omitZeroBalances)
-	}
-
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
@@ -39,6 +44,27 @@ func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res 
 	if err != nil {
 		return nil, err
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 400 - AccountResponse
+func (s *GetAccountService) DoSBE(ctx context.Context, opts ...RequestOption) (res *Account, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = &Account{}
+	if err := sbeDecoder.DecodeResponse(data, res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
