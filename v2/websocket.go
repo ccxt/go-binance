@@ -66,19 +66,20 @@ var wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler E
 	c.SetReadLimit(655350)
 	doneC = make(chan struct{})
 	stopC = make(chan struct{})
+
+	// Custom connection handling, useful in active keepalive scenarios
+	if connHandler != nil {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go connHandler(ctx, c)
+	}
+
 	go func() {
 		// This function will exit either on error from
 		// websocket.Conn.ReadMessage or when the stopC channel is
 		// closed by the client.
 
 		defer close(doneC)
-
-		// Custom connection handling, useful in active keepalive scenarios
-		if connHandler != nil {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-			go connHandler(ctx, c)
-		}
 
 		// Wait for the stopC channel to be closed.  We do that in a
 		// separate goroutine because ReadMessage is a blocking
