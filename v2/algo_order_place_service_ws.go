@@ -53,6 +53,7 @@ type AlgoOrderPlaceWsRequest struct {
 	closePosition    *bool
 	reduceOnly       *bool
 	newClientOrderID *string
+	clientAlgoID     *string
 	newOrderRespType futures.NewOrderRespType
 	recvWindow       *int64
 }
@@ -132,8 +133,16 @@ func (s *AlgoOrderPlaceWsRequest) ReduceOnly(reduceOnly bool) *AlgoOrderPlaceWsR
 }
 
 // NewClientOrderID set newClientOrderID
+//
+// Deprecated: Use ClientAlgoID instead of NewClientOrderID
 func (s *AlgoOrderPlaceWsRequest) NewClientOrderID(newClientOrderID string) *AlgoOrderPlaceWsRequest {
 	s.newClientOrderID = &newClientOrderID
+	return s
+}
+
+// ClientAlgoID set clientAlgoID
+func (s *AlgoOrderPlaceWsRequest) ClientAlgoID(clientAlgoID string) *AlgoOrderPlaceWsRequest {
+	s.clientAlgoID = &clientAlgoID
 	return s
 }
 
@@ -182,7 +191,10 @@ func (s *AlgoOrderPlaceWsRequest) buildParams() map[string]interface{} {
 		m["reduceOnly"] = *s.reduceOnly
 	}
 	if s.newClientOrderID != nil {
-		m["newClientOrderId"] = *s.newClientOrderID
+		m["clientAlgoId"] = *s.newClientOrderID
+	}
+	if s.clientAlgoID != nil {
+		m["clientAlgoId"] = *s.clientAlgoID
 	}
 	if s.recvWindow != nil {
 		m["recvWindow"] = *s.recvWindow
