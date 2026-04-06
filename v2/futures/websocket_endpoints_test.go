@@ -23,21 +23,6 @@ func requireKeys(t *testing.T) {
 	}
 }
 
-// expectEvent connects a WS stream and waits up to timeout for at least one event.
-func expectEvent(t *testing.T, label string, doneC, stopC chan struct{}, err error, timeout time.Duration) {
-	t.Helper()
-	if err != nil {
-		t.Fatalf("[%s] connect error: %v", label, err)
-	}
-	defer close(stopC)
-	select {
-	case <-doneC:
-		t.Fatalf("[%s] connection closed before receiving data", label)
-	case <-time.After(timeout):
-		t.Fatalf("[%s] timeout after %s", label, timeout)
-	}
-}
-
 // --- Demo environment tests ---
 
 func TestWsEndpoints_Demo_Market_AggTrade(t *testing.T) {
