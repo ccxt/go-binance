@@ -24,24 +24,24 @@ var (
 
 	// Public endpoints (high-frequency public market data: bookTicker, depth)
 	BaseWsPublicMainUrl          = "wss://fstream.binance.com/public/ws"
-	BaseWsPublicTestnetUrl       = "wss://stream.binancefuture.com/ws"
-	BaseWsPublicDemoURL          = "wss://fstream.binancefuture.com/ws"
+	BaseWsPublicTestnetUrl       = "wss://stream.binancefuture.com/public/ws"
+	BaseWsPublicDemoURL          = "wss://fstream.binancefuture.com/public/ws"
 	BaseCombinedPublicMainURL    = "wss://fstream.binance.com/public/stream?streams="
-	BaseCombinedPublicTestnetURL = "wss://stream.binancefuture.com/stream?streams="
-	BaseCombinedPublicDemoURL    = "wss://fstream.binancefuture.com/stream?streams="
+	BaseCombinedPublicTestnetURL = "wss://stream.binancefuture.com/public/stream?streams="
+	BaseCombinedPublicDemoURL    = "wss://fstream.binancefuture.com/public/stream?streams="
 
 	// Market endpoints (regular market data: aggTrade, markPrice, kline, ticker, etc.)
 	BaseWsMarketMainUrl          = "wss://fstream.binance.com/market/ws"
-	BaseWsMarketTestnetUrl       = "wss://stream.binancefuture.com/ws"
-	BaseWsMarketDemoURL          = "wss://fstream.binancefuture.com/ws"
+	BaseWsMarketTestnetUrl       = "wss://stream.binancefuture.com/market/ws"
+	BaseWsMarketDemoURL          = "wss://fstream.binancefuture.com/market/ws"
 	BaseCombinedMarketMainURL    = "wss://fstream.binance.com/market/stream?streams="
-	BaseCombinedMarketTestnetURL = "wss://stream.binancefuture.com/stream?streams="
-	BaseCombinedMarketDemoURL    = "wss://fstream.binancefuture.com/stream?streams="
+	BaseCombinedMarketTestnetURL = "wss://stream.binancefuture.com/market/stream?streams="
+	BaseCombinedMarketDemoURL    = "wss://fstream.binancefuture.com/market/stream?streams="
 
 	// Private endpoints (user data streams)
 	BaseWsPrivateMainUrl    = "wss://fstream.binance.com/private/ws"
-	BaseWsPrivateTestnetUrl = "wss://stream.binancefuture.com/ws"
-	BaseWsPrivateDemoURL    = "wss://fstream.binancefuture.com/ws"
+	BaseWsPrivateTestnetUrl = "wss://stream.binancefuture.com/private/ws"
+	BaseWsPrivateDemoURL    = "wss://fstream.binancefuture.com/private/ws"
 )
 
 var (
@@ -1092,18 +1092,21 @@ func WsBLVTKlineServe(name string, interval string, handler WsBLVTKlineHandler, 
 
 // WsCompositeIndexEvent websocket composite index event
 type WsCompositeIndexEvent struct {
-	Event       string          `json:"e"`
-	Time        int64           `json:"E"`
-	Symbol      string          `json:"s"`
-	Price       string          `json:"p"`
-	Composition []WsComposition `json:"c"`
+	Event         string          `json:"e"`
+	Time          int64           `json:"E"`
+	Symbol        string          `json:"s"`
+	Price         string          `json:"p"`
+	BaseAssetType string          `json:"C"`
+	Composition   []WsComposition `json:"c"`
 }
 
 // WsComposition websocket composite index event composition
 type WsComposition struct {
 	BaseAsset    string `json:"b"`
+	QuoteAsset   string `json:"q"`
 	WeightQty    string `json:"w"`
 	WeighPercent string `json:"W"`
+	IndexPrice   string `json:"i"`
 }
 
 // WsCompositeIndexHandler websocket composite index handler
@@ -1116,6 +1119,99 @@ func WsCompositiveIndexServe(symbol string, handler WsCompositeIndexHandler, err
 	wsHandler := func(message []byte) {
 		event := new(WsCompositeIndexEvent)
 		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsContractInfoEvent define websocket contract info event
+type WsContractInfoEvent struct {
+	Event string               `json:"e"`
+	Time  int64                `json:"E"`
+	Data  []WsContractInfoData `json:"data"`
+}
+
+// WsContractInfoData define contract info data
+type WsContractInfoData struct {
+	Symbol        string `json:"s"`
+	Pair          string `json:"ps"`
+	ContractType  string `json:"ct"`
+	DeliveryDate  int64  `json:"dt"`
+	OnboardDate   int64  `json:"ot"`
+	ContractState string `json:"cs"`
+}
+
+// WsContractInfoHandler handle WsContractInfoEvent
+type WsContractInfoHandler func(event *WsContractInfoEvent)
+
+// WsContractInfoServe serve websocket that pushes contract info updates
+func WsContractInfoServe(handler WsContractInfoHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/!contractInfo", getWsMarketEndpoint())
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsContractInfoEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsAssetIndexEvent define websocket asset index event
+type WsAssetIndexEvent struct {
+	Event                 string `json:"e"`
+	Time                  int64  `json:"E"`
+	Symbol                string `json:"s"`
+	Index                 string `json:"i"`
+	BidBuffer             string `json:"b"`
+	AskBuffer             string `json:"a"`
+	BidRate               string `json:"B"`
+	AskRate               string `json:"A"`
+	AutoExchangeBidBuffer string `json:"q"`
+	AutoExchangeAskBuffer string `json:"g"`
+	AutoExchangeBidRate   string `json:"Q"`
+	AutoExchangeAskRate   string `json:"G"`
+}
+
+// WsAllAssetIndexEvent define all asset index event
+type WsAllAssetIndexEvent []*WsAssetIndexEvent
+
+// WsAssetIndexHandler handle WsAssetIndexEvent
+type WsAssetIndexHandler func(event *WsAssetIndexEvent)
+
+// WsAssetIndexServe serve websocket that pushes asset index for a single symbol
+func WsAssetIndexServe(symbol string, handler WsAssetIndexHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/%s@assetIndex", getWsMarketEndpoint(), strings.ToLower(symbol))
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsAssetIndexEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsAllAssetIndexHandler handle WsAllAssetIndexEvent
+type WsAllAssetIndexHandler func(event WsAllAssetIndexEvent)
+
+// WsAllAssetIndexServe serve websocket that pushes asset index for all symbols
+func WsAllAssetIndexServe(handler WsAllAssetIndexHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/!assetIndex@arr", getWsMarketEndpoint())
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		var event WsAllAssetIndexEvent
+		err := json.Unmarshal(message, &event)
 		if err != nil {
 			errHandler(err)
 			return
@@ -1343,6 +1439,61 @@ type WsUserDataHandler func(event *WsUserDataEvent)
 // WsUserDataServe serve user data handler with listen key
 func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
 	endpoint := fmt.Sprintf("%s/%s", getWsPrivateEndpoint(), listenKey)
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsUserDataEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsUserDataServeWithEvents serve user data handler with listen key and event filter using the
+// new query-param format: /private/ws?listenKey=<key>&events=EVENT1/EVENT2
+func WsUserDataServeWithEvents(listenKey string, events []string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s?listenKey=%s", getWsPrivateEndpoint(), listenKey)
+	if len(events) > 0 {
+		endpoint += "&events=" + strings.Join(events, "/")
+	}
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsUserDataEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsPrivateStreamConfig defines a listen key and its event subscriptions for the multi-key stream mode
+type WsPrivateStreamConfig struct {
+	ListenKey string
+	Events    []string
+}
+
+// WsUserDataServeMultiple serve user data handler with multiple listen keys using the stream mode:
+// /private/stream?listenKey=<key1>&events=EVENT1&listenKey=<key2>&events=EVENT2
+func WsUserDataServeMultiple(configs []WsPrivateStreamConfig, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := getWsPrivateEndpoint()
+	endpoint = strings.Replace(endpoint, "/ws", "/stream", 1)
+	params := ""
+	for _, c := range configs {
+		if params != "" {
+			params += "&"
+		}
+		params += "listenKey=" + c.ListenKey
+		if len(c.Events) > 0 {
+			params += "&events=" + strings.Join(c.Events, "/")
+		}
+	}
+	endpoint += "?" + params
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsUserDataEvent)
