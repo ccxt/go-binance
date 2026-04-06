@@ -23,18 +23,18 @@ var (
 	BaseWsApiDemoURL       = "wss://testnet.binancefuture.com/ws-fapi/v1"
 
 	// Public endpoints (high-frequency public market data: bookTicker, depth)
-	BaseWsPublicMainUrl       = "wss://fstream.binance.com/public/ws"
-	BaseWsPublicTestnetUrl    = "wss://stream.binancefuture.com/ws"
-	BaseWsPublicDemoURL       = "wss://fstream.binancefuture.com/ws"
-	BaseCombinedPublicMainURL = "wss://fstream.binance.com/public/stream?streams="
+	BaseWsPublicMainUrl          = "wss://fstream.binance.com/public/ws"
+	BaseWsPublicTestnetUrl       = "wss://stream.binancefuture.com/ws"
+	BaseWsPublicDemoURL          = "wss://fstream.binancefuture.com/ws"
+	BaseCombinedPublicMainURL    = "wss://fstream.binance.com/public/stream?streams="
 	BaseCombinedPublicTestnetURL = "wss://stream.binancefuture.com/stream?streams="
 	BaseCombinedPublicDemoURL    = "wss://fstream.binancefuture.com/stream?streams="
 
 	// Market endpoints (regular market data: aggTrade, markPrice, kline, ticker, etc.)
-	BaseWsMarketMainUrl       = "wss://fstream.binance.com/market/ws"
-	BaseWsMarketTestnetUrl    = "wss://stream.binancefuture.com/ws"
-	BaseWsMarketDemoURL       = "wss://fstream.binancefuture.com/ws"
-	BaseCombinedMarketMainURL = "wss://fstream.binance.com/market/stream?streams="
+	BaseWsMarketMainUrl          = "wss://fstream.binance.com/market/ws"
+	BaseWsMarketTestnetUrl       = "wss://stream.binancefuture.com/ws"
+	BaseWsMarketDemoURL          = "wss://fstream.binancefuture.com/ws"
+	BaseCombinedMarketMainURL    = "wss://fstream.binance.com/market/stream?streams="
 	BaseCombinedMarketTestnetURL = "wss://stream.binancefuture.com/stream?streams="
 	BaseCombinedMarketDemoURL    = "wss://fstream.binancefuture.com/stream?streams="
 
