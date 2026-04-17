@@ -123,3 +123,15 @@ func WithHeaders(header http.Header) RequestOption {
 		r.header = header.Clone()
 	}
 }
+
+// WithSBE enables Simple Binary Encoding (SBE) response format
+// schemaID and schemaVersion specify the SBE schema to use (e.g., 3, 1)
+func WithSBE(schemaID int, schemaVersion int) RequestOption {
+	return func(r *request) {
+		if r.header == nil {
+			r.header = http.Header{}
+		}
+		r.header.Set("Accept", "application/sbe")
+		r.header.Set("X-MBX-SBE", fmt.Sprintf("%d:%d", schemaID, schemaVersion))
+	}
+}
