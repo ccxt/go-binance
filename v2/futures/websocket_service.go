@@ -1438,7 +1438,7 @@ type WsUserDataHandler func(event *WsUserDataEvent)
 
 // WsUserDataServe serve user data handler with listen key
 func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s", getWsPrivateEndpoint(), listenKey)
+	endpoint := fmt.Sprintf("%s?listenKey=%s", getWsPrivateEndpoint(), listenKey)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsUserDataEvent)
