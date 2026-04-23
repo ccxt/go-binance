@@ -161,9 +161,10 @@ const (
 	MarginTypeIsolated MarginType = "ISOLATED"
 	MarginTypeCrossed  MarginType = "CROSSED"
 
-	ContractTypePerpetual      ContractType = "PERPETUAL"
-	ContractTypeCurrentQuarter ContractType = "CURRENT_QUARTER"
-	ContractTypeNextQuarter    ContractType = "NEXT_QUARTER"
+	ContractTypePerpetual        ContractType = "PERPETUAL"
+	ContractTypeCurrentQuarter   ContractType = "CURRENT_QUARTER"
+	ContractTypeNextQuarter      ContractType = "NEXT_QUARTER"
+	ContractTypeTradifiPerpetual ContractType = "TRADIFI_PERPETUAL"
 
 	UserDataEventTypeListenKeyExpired              UserDataEventType = "listenKeyExpired"
 	UserDataEventTypeMarginCall                    UserDataEventType = "MARGIN_CALL"
