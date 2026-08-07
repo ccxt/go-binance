@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -304,7 +305,7 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 		r.setParam(recvWindowKey, r.recvWindow)
 	}
 	if r.secType == secTypeSigned {
-		r.setParam(timestampKey, currentTimestamp()-c.TimeOffset)
+		r.setParam(timestampKey, currentTimestamp()-atomic.LoadInt64(&c.TimeOffset))
 	}
 	queryString := r.query.Encode()
 	body := &bytes.Buffer{}
@@ -374,13 +375,6 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		return []byte{}, &http.Header{}, err
 	}
 
-	c.UsedWeight.UpdateByHeader(res.Header)
-	c.OrderCount.UpdateByHeader(res.Header)
-
-	data, err = io.ReadAll(res.Body)
-	if err != nil {
-		return []byte{}, &http.Header{}, err
-	}
 	defer func() {
 		cerr := res.Body.Close()
 		// Only overwrite the returned error if the original error was nil and an
@@ -389,6 +383,13 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 			err = cerr
 		}
 	}()
+	c.UsedWeight.UpdateByHeader(res.Header)
+	c.OrderCount.UpdateByHeader(res.Header)
+
+	data, err = io.ReadAll(res.Body)
+	if err != nil {
+		return []byte{}, &http.Header{}, err
+	}
 	c.debug("response: %#v\n", res)
 	c.debug("response body: %s\n", string(data))
 	c.debug("response status code: %d\n", res.StatusCode)
