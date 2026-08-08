@@ -874,30 +874,30 @@ func WsCombinedDepthServe(symbolLevels map[string]string, handler WsDepthHandler
 			return
 		}
 		event := new(WsDepthEvent)
-		data := j.Get("data").MustMap()
-		event.Event = data["e"].(string)
-		event.Time, _ = data["E"].(json.Number).Int64()
-		event.TransactionTime, _ = data["T"].(json.Number).Int64()
-		event.Symbol = data["s"].(string)
-		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
-		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
-		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]any))
+		data := j.Get("data")
+		event.Event = data.Get("e").MustString()
+		event.Time = data.Get("E").MustInt64()
+		event.TransactionTime = data.Get("T").MustInt64()
+		event.Symbol = data.Get("s").MustString()
+		event.FirstUpdateID = data.Get("U").MustInt64()
+		event.LastUpdateID = data.Get("u").MustInt64()
+		event.PrevLastUpdateID = data.Get("pu").MustInt64()
+		bidsLen := len(data.Get("b").MustArray())
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]any)[i].([]any)
+			item := data.Get("b").GetIndex(i)
 			event.Bids[i] = Bid{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
-		asksLen := len(data["a"].([]any))
+		asksLen := len(data.Get("a").MustArray())
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]any)[i].([]any)
+			item := data.Get("a").GetIndex(i)
 			event.Asks[i] = Ask{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
 		handler(event)
@@ -920,30 +920,30 @@ func WsCombinedDiffDepthServe(symbols []string, handler WsDepthHandler, errHandl
 			return
 		}
 		event := new(WsDepthEvent)
-		data := j.Get("data").MustMap()
-		event.Event = data["e"].(string)
-		event.Time, _ = data["E"].(json.Number).Int64()
-		event.TransactionTime, _ = data["T"].(json.Number).Int64()
-		event.Symbol = data["s"].(string)
-		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
-		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
-		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]any))
+		data := j.Get("data")
+		event.Event = data.Get("e").MustString()
+		event.Time = data.Get("E").MustInt64()
+		event.TransactionTime = data.Get("T").MustInt64()
+		event.Symbol = data.Get("s").MustString()
+		event.FirstUpdateID = data.Get("U").MustInt64()
+		event.LastUpdateID = data.Get("u").MustInt64()
+		event.PrevLastUpdateID = data.Get("pu").MustInt64()
+		bidsLen := len(data.Get("b").MustArray())
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]any)[i].([]any)
+			item := data.Get("b").GetIndex(i)
 			event.Bids[i] = Bid{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
-		asksLen := len(data["a"].([]any))
+		asksLen := len(data.Get("a").MustArray())
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]any)[i].([]any)
+			item := data.Get("a").GetIndex(i)
 			event.Asks[i] = Ask{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
 		handler(event)

@@ -148,25 +148,24 @@ func WsCombinedPartialDepthServe(symbolLevels map[string]string, handler WsParti
 		stream := j.Get("stream").MustString()
 		symbol := strings.Split(stream, "@")[0]
 		event.Symbol = strings.ToUpper(symbol)
-		data := j.Get("data").MustMap()
-		event.LastUpdateID, _ = data["lastUpdateId"].(json.Number).Int64()
-		bidsLen := len(data["bids"].([]any))
+		data := j.Get("data")
+		event.LastUpdateID = data.Get("lastUpdateId").MustInt64()
+		bidsLen := len(data.Get("bids").MustArray())
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["bids"].([]any)[i].([]any)
+			item := data.Get("bids").GetIndex(i)
 			event.Bids[i] = Bid{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
-		asksLen := len(data["asks"].([]any))
+		asksLen := len(data.Get("asks").MustArray())
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-
-			item := data["asks"].([]any)[i].([]any)
+			item := data.Get("asks").GetIndex(i)
 			event.Asks[i] = Ask{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
 		handler(event)
@@ -269,27 +268,26 @@ func wsCombinedDepthServe(endpoint string, handler WsDepthHandler, errHandler Er
 		stream := j.Get("stream").MustString()
 		symbol := strings.Split(stream, "@")[0]
 		event.Symbol = strings.ToUpper(symbol)
-		data := j.Get("data").MustMap()
-		event.Time, _ = data["E"].(json.Number).Int64()
-		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
-		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]any))
+		data := j.Get("data")
+		event.Time = data.Get("E").MustInt64()
+		event.LastUpdateID = data.Get("u").MustInt64()
+		event.FirstUpdateID = data.Get("U").MustInt64()
+		bidsLen := len(data.Get("b").MustArray())
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]any)[i].([]any)
+			item := data.Get("b").GetIndex(i)
 			event.Bids[i] = Bid{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
-		asksLen := len(data["a"].([]any))
+		asksLen := len(data.Get("a").MustArray())
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-
-			item := data["a"].([]any)[i].([]any)
+			item := data.Get("a").GetIndex(i)
 			event.Asks[i] = Ask{
-				Price:    item[0].(string),
-				Quantity: item[1].(string),
+				Price:    item.GetIndex(0).MustString(),
+				Quantity: item.GetIndex(1).MustString(),
 			}
 		}
 		handler(event)

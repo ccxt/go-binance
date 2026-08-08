@@ -3,6 +3,7 @@ package portfolio
 import (
 	"net/http"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -86,7 +87,8 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 func keepAlive(c *websocket.Conn, timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
 
-	lastResponse := time.Now()
+	var lastResponse int64
+	atomic.StoreInt64(&lastResponse, time.Now().Unix())
 
 	c.SetPingHandler(func(pingData string) error {
 		// Respond with Pong using the server's PING payload
@@ -99,7 +101,7 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 			return err
 		}
 
-		lastResponse = time.Now()
+		atomic.StoreInt64(&lastResponse, time.Now().Unix())
 
 		return nil
 	})
@@ -108,7 +110,7 @@ func keepAlive(c *websocket.Conn, timeout time.Duration) {
 		defer ticker.Stop()
 		for {
 			<-ticker.C
-			if time.Since(lastResponse) > timeout {
+			if time.Since(time.Unix(atomic.LoadInt64(&lastResponse), 0)) > timeout {
 				c.Close()
 				return
 			}
