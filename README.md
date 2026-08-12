@@ -519,7 +519,7 @@ func main() {
 
 ## Star history
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ccxt/go-binance&type=Date)](https://star-history.com/#ccxt/go-binance&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=ccxt/go-binance&type=Date)](https://star-history.dera.page/#ccxt/go-binance&Date)
 
 ## Check out some of the other packages
 
