@@ -15,12 +15,15 @@ import (
 var (
 	// Endpoints
 	BaseWsMainURL          = "wss://stream.binance.com:9443/ws"
+	BaseUSWsMainURL        = "wss://stream.binance.us:9443/ws"
 	BaseWsTestnetURL       = "wss://stream.testnet.binance.vision/ws"
 	BaseWsDemoURL          = "wss://demo-stream.binance.com/ws"
 	BaseCombinedMainURL    = "wss://stream.binance.com:9443/stream?streams="
+	BaseUSCombinedMainURL  = "wss://stream.binance.us:9443/stream?streams="
 	BaseCombinedTestnetURL = "wss://stream.testnet.binance.vision/stream?streams="
 	BaseCombinedDemoURL    = "wss://demo-stream.binance.com/stream?streams="
 	BaseWsApiMainURL       = "wss://ws-api.binance.com:443/ws-api/v3"
+	BaseUSWsApiMainURL     = "wss://ws-api.binance.us:443/ws-api/v3"
 	BaseWsApiTestnetURL    = "wss://ws-api.testnet.binance.vision/ws-api/v3"
 	BaseWsApiDemoURL       = "wss://demo-ws-api.binance.com/ws-api/v3"
 	BaseWsAnnouncementURL  = "wss://api.binance.com/sapi/wss"
@@ -58,6 +61,9 @@ func getWsEndpoint() string {
 	if UseDemo {
 		return BaseWsDemoURL
 	}
+	if UseUSDomain {
+		return BaseUSWsMainURL
+	}
 	return BaseWsMainURL
 }
 
@@ -68,6 +74,9 @@ func getCombinedEndpoint() string {
 	}
 	if UseDemo {
 		return BaseCombinedDemoURL
+	}
+	if UseUSDomain {
+		return BaseUSCombinedMainURL
 	}
 	return BaseCombinedMainURL
 }
@@ -1199,6 +1208,9 @@ func getWsApiEndpoint() string {
 	}
 	if UseDemo {
 		return BaseWsApiDemoURL
+	}
+	if UseUSDomain {
+		return BaseUSWsApiMainURL
 	}
 	return BaseWsApiMainURL
 }
