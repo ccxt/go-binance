@@ -17,6 +17,32 @@ type ListTradesService struct {
 	orderId   *int64
 }
 
+// buildRequest creates the API request for ListTrades
+func (s *ListTradesService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/myTrades",
+		secType:  secTypeSigned,
+	}
+	r.setParam("symbol", s.symbol)
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.fromID != nil {
+		r.setParam("fromId", *s.fromID)
+	}
+	if s.orderId != nil {
+		r.setParam("orderId", *s.orderId)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *ListTradesService) Symbol(symbol string) *ListTradesService {
 	s.symbol = symbol
@@ -55,27 +81,7 @@ func (s *ListTradesService) OrderId(OrderId int64) *ListTradesService {
 
 // Do send request
 func (s *ListTradesService) Do(ctx context.Context, opts ...RequestOption) (res []*TradeV3, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/myTrades",
-		secType:  secTypeSigned,
-	}
-	r.setParam("symbol", s.symbol)
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
-	if s.startTime != nil {
-		r.setParam("startTime", *s.startTime)
-	}
-	if s.endTime != nil {
-		r.setParam("endTime", *s.endTime)
-	}
-	if s.fromID != nil {
-		r.setParam("fromId", *s.fromID)
-	}
-	if s.orderId != nil {
-		r.setParam("orderId", *s.orderId)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*TradeV3{}, err
@@ -85,6 +91,27 @@ func (s *ListTradesService) Do(ctx context.Context, opts ...RequestOption) (res 
 	if err != nil {
 		return []*TradeV3{}, err
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 401 - AccountTradesResponse (my trades)
+func (s *ListTradesService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*TradeV3, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*TradeV3, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
@@ -181,6 +208,28 @@ type AggTradesService struct {
 	limit     *int
 }
 
+// buildRequest creates the API request for AggTrades
+func (s *AggTradesService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/aggTrades",
+	}
+	r.setParam("symbol", s.symbol)
+	if s.fromID != nil {
+		r.setParam("fromId", *s.fromID)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *AggTradesService) Symbol(symbol string) *AggTradesService {
 	s.symbol = symbol
@@ -213,23 +262,7 @@ func (s *AggTradesService) Limit(limit int) *AggTradesService {
 
 // Do send request
 func (s *AggTradesService) Do(ctx context.Context, opts ...RequestOption) (res []*AggTrade, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/aggTrades",
-	}
-	r.setParam("symbol", s.symbol)
-	if s.fromID != nil {
-		r.setParam("fromId", *s.fromID)
-	}
-	if s.startTime != nil {
-		r.setParam("startTime", *s.startTime)
-	}
-	if s.endTime != nil {
-		r.setParam("endTime", *s.endTime)
-	}
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*AggTrade{}, err
@@ -239,6 +272,27 @@ func (s *AggTradesService) Do(ctx context.Context, opts ...RequestOption) (res [
 	if err != nil {
 		return []*AggTrade{}, err
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 202 - AggTradesResponse
+func (s *AggTradesService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*AggTrade, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*AggTrade, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
@@ -261,6 +315,19 @@ type RecentTradesService struct {
 	limit  *int
 }
 
+// buildRequest creates the API request for RecentTrades
+func (s *RecentTradesService) buildRequest(endpoint string) *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: endpoint,
+	}
+	r.setParam("symbol", s.symbol)
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *RecentTradesService) Symbol(symbol string) *RecentTradesService {
 	s.symbol = symbol
@@ -275,14 +342,7 @@ func (s *RecentTradesService) Limit(limit int) *RecentTradesService {
 
 // Do send request
 func (s *RecentTradesService) Do(ctx context.Context, opts ...RequestOption) (res []*Trade, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v1/trades",
-	}
-	r.setParam("symbol", s.symbol)
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
+	r := s.buildRequest("/api/v1/trades")
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*Trade{}, err
@@ -292,5 +352,27 @@ func (s *RecentTradesService) Do(ctx context.Context, opts ...RequestOption) (re
 	if err != nil {
 		return []*Trade{}, err
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 201 - TradesResponse
+func (s *RecentTradesService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*Trade, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	// Use v3 endpoint for SBE
+	r := s.buildRequest("/api/v3/trades")
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*Trade, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }

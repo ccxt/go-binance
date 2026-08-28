@@ -17,6 +17,29 @@ type KlinesService struct {
 	timeZone  *string // Default: 0 (UTC)
 }
 
+// buildRequest creates the API request for Klines
+func (s *KlinesService) buildRequest() *request {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/api/v3/klines",
+	}
+	r.setParam("symbol", s.symbol)
+	r.setParam("interval", s.interval)
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.timeZone != nil {
+		r.setParam("timeZone", *s.timeZone)
+	}
+	return r
+}
+
 // Symbol set symbol
 func (s *KlinesService) Symbol(symbol string) *KlinesService {
 	s.symbol = symbol
@@ -55,24 +78,7 @@ func (s *KlinesService) TimeZone(timeZone string) *KlinesService {
 
 // Do send request
 func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*Kline, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/api/v3/klines",
-	}
-	r.setParam("symbol", s.symbol)
-	r.setParam("interval", s.interval)
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
-	if s.startTime != nil {
-		r.setParam("startTime", *s.startTime)
-	}
-	if s.endTime != nil {
-		r.setParam("endTime", *s.endTime)
-	}
-	if s.timeZone != nil {
-		r.setParam("timeZone", *s.timeZone)
-	}
+	r := s.buildRequest()
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*Kline{}, err
@@ -103,6 +109,27 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 			TakerBuyQuoteAssetVolume: item.GetIndex(10).MustString(),
 		}
 	}
+	return res, nil
+}
+
+// DoSBE sends the request with SBE encoding and returns the decoded response
+// Template 203 - KlinesResponse
+func (s *KlinesService) DoSBE(ctx context.Context, opts ...RequestOption) (res []*Kline, err error) {
+	// Add SBE headers
+	opts = append(opts, WithSBE(3, 1))
+
+	r := s.buildRequest()
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode SBE response using centralized decoder
+	res = make([]*Kline, 0)
+	if err := sbeDecoder.DecodeResponse(data, &res); err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
