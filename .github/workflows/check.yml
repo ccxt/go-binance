@@ -20,6 +20,11 @@ jobs:
           
   UnitTest:
     runs-on: ubuntu-latest
+    env:
+      BINANCE_PROXY_URL: "http://51.83.140.52:16301"
+      BINANCE_TESTNET: "true"
+      BINANCE_API_KEY: "u4L8MG2DbshTfTzkx2Xm7NfsHHigvafxeC29HrExEmah1P8JhxXkoOu6KntLICUc"
+      BINANCE_API_SECRET: "hBZEqhZUUS6YZkk7AIckjJ3iLjrgEFr5CRtFPp5gjzkrHKKC9DAv4OH25PlT6yq5"
     steps:
     - uses: actions/checkout@v3
     - name: Setup Go
@@ -34,5 +39,5 @@ jobs:
       run: ./check.sh vet
     - name: UnitTest
       run: ./check.sh unittest
-    # - name: IntegrationTest
-    #   run: ./check.sh integration
+    - name: IntegrationTest
+      run: ./check.sh integration
