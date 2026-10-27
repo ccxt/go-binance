@@ -872,6 +872,25 @@ func (s *websocketServiceTestSuite) assertBalanceUpdate(e, a *WsBalanceUpdate) {
 	r.Equal(e.TransactionTime, a.TransactionTime)
 }
 
+func (s *websocketServiceTestSuite) assertOCOUpdate(e, a *WsOCOUpdate) {
+	r := s.r()
+	r.Equal(e.Symbol, a.Symbol, "Symbol")
+	r.Equal(e.OrderListId, a.OrderListId, "OrderListId")
+	r.Equal(e.ContingencyType, a.ContingencyType, "ContingencyType")
+	r.Equal(e.ListStatusType, a.ListStatusType, "ListStatusType")
+	r.Equal(e.ListOrderStatus, a.ListOrderStatus, "ListOrderStatus")
+	r.Equal(e.RejectReason, a.RejectReason, "RejectReason")
+	r.Equal(e.ClientOrderId, a.ClientOrderId, "ClientOrderId")
+	r.Equal(e.TransactionTime, a.TransactionTime, "TransactionTime")
+	r.Len(a.Orders.WsOCOOrders, len(e.Orders.WsOCOOrders), "Orders")
+	for i, eo := range e.Orders.WsOCOOrders {
+		ao := a.Orders.WsOCOOrders[i]
+		r.Equal(eo.Symbol, ao.Symbol, "Orders.Symbol")
+		r.Equal(eo.OrderId, ao.OrderId, "Orders.OrderId")
+		r.Equal(eo.ClientOrderId, ao.ClientOrderId, "Orders.ClientOrderId")
+	}
+}
+
 func (s *websocketServiceTestSuite) assertUserDataEvent(e, a *WsUserDataEvent) {
 	r := s.r()
 	r.Equal(e.Event, a.Event, "Event")
@@ -882,6 +901,7 @@ func (s *websocketServiceTestSuite) assertUserDataEvent(e, a *WsUserDataEvent) {
 	}
 	s.assertOrderUpdate(&e.OrderUpdate, &a.OrderUpdate)
 	s.assertBalanceUpdate(&e.BalanceUpdate, &a.BalanceUpdate)
+	s.assertOCOUpdate(&e.OCOUpdate, &a.OCOUpdate)
 }
 
 func (s *websocketServiceTestSuite) testWsUserDataServe(data []byte, expectedEvent *WsUserDataEvent) {
@@ -1195,6 +1215,64 @@ func (s *websocketServiceTestSuite) TestWsUserDataServeOrderUpdateWithTradeOrder
 			QuoteVolume:             "0.00000000",
 			WorkingTime:             1709393640518,
 			SelfTradePreventionMode: "EXPIRE_MAKER",
+		},
+	}
+	s.testWsUserDataServe(data, expectedEvent)
+}
+
+func (s *websocketServiceTestSuite) TestWsUserDataServeListStatus() {
+	// Using example data from the API documentation:
+	// https://github.com/binance/binance-spot-api-docs/blob/master/user-data-stream.md#order-update
+	data := []byte(`{
+	   "e": "listStatus",
+	   "E": 1564035303637,
+	   "s": "ETHBTC",
+	   "g": 2,
+	   "c": "OCO",
+	   "l": "EXEC_STARTED",
+	   "L": "EXECUTING",
+	   "r": "NONE",
+	   "C": "F4QN4G8DlFATFlIUQ0cjdD",
+	   "T": 1564035303625,
+	   "O": [
+	      {
+	         "s": "ETHBTC",
+	         "i": 17,
+	         "c": "AJYsMjErWJesZvqlJCTUgL"
+	      },
+	      {
+	         "s": "ETHBTC",
+	         "i": 18,
+	         "c": "bfYPSQdLoqAJeNrOr9adzq"
+	      }
+	   ]
+	}`)
+	expectedEvent := &WsUserDataEvent{
+		Event: "listStatus",
+		Time:  1564035303637,
+		OCOUpdate: WsOCOUpdate{
+			Symbol:          "ETHBTC",
+			OrderListId:     2,
+			ContingencyType: "OCO",
+			ListStatusType:  "EXEC_STARTED",
+			ListOrderStatus: "EXECUTING",
+			RejectReason:    "NONE",
+			ClientOrderId:   "F4QN4G8DlFATFlIUQ0cjdD",
+			TransactionTime: 1564035303625,
+			Orders: WsOCOOrderList{
+				WsOCOOrders: []WsOCOOrder{
+					{
+						Symbol:        "ETHBTC",
+						OrderId:       17,
+						ClientOrderId: "AJYsMjErWJesZvqlJCTUgL",
+					},
+					{
+						Symbol:        "ETHBTC",
+						OrderId:       18,
+						ClientOrderId: "bfYPSQdLoqAJeNrOr9adzq",
+					},
+				},
+			},
 		},
 	}
 	s.testWsUserDataServe(data, expectedEvent)
