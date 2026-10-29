@@ -628,19 +628,30 @@ type WsOrderUpdate struct {
 }
 
 type WsOCOUpdate struct {
-	Symbol          string `json:"s"`
-	OrderListId     int64  `json:"g"`
-	ContingencyType string `json:"c"`
-	ListStatusType  string `json:"l"`
-	ListOrderStatus string `json:"L"`
-	RejectReason    string `json:"r"`
-	ClientOrderId   string `json:"C"` // List Client Order ID
-	TransactionTime int64  `json:"T"`
-	Orders          WsOCOOrderList
+	Symbol          string         `json:"s"`
+	OrderListId     int64          `json:"g"`
+	ContingencyType string         `json:"c"`
+	ListStatusType  string         `json:"l"`
+	ListOrderStatus string         `json:"L"`
+	RejectReason    string         `json:"r"`
+	ClientOrderId   string         `json:"C"` // List Client Order ID
+	TransactionTime int64          `json:"T"`
+	Orders          WsOCOOrderList `json:"O"`
 }
 
 type WsOCOOrderList struct {
 	WsOCOOrders []WsOCOOrder `json:"O"`
+}
+
+// UnmarshalJSON decodes the "O" field of a listStatus event, which is a plain
+// array of orders, into WsOCOOrders.
+func (l *WsOCOOrderList) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &l.WsOCOOrders)
+}
+
+// MarshalJSON encodes WsOCOOrders as the plain array used by the "O" field.
+func (l WsOCOOrderList) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.WsOCOOrders)
 }
 
 type WsOCOOrder struct {
