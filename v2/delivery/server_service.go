@@ -3,6 +3,7 @@ package delivery
 import (
 	"context"
 	"net/http"
+	"sync/atomic"
 )
 
 // PingService ping server
@@ -55,6 +56,6 @@ func (s *SetServerTimeService) Do(ctx context.Context, opts ...RequestOption) (t
 		return 0, err
 	}
 	timeOffset = currentTimestamp() - serverTime
-	s.c.TimeOffset = timeOffset
+	atomic.StoreInt64(&s.c.TimeOffset, timeOffset)
 	return timeOffset, nil
 }

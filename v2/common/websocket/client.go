@@ -249,6 +249,11 @@ func (c *client) handleReconnect() {
 		b.Reset()
 
 		c.connMu.Lock()
+		// Close the previous connection to avoid leaking its underlying socket/FD;
+		// only the new connection is retained after reconnect.
+		if c.conn != nil {
+			_ = c.conn.Close()
+		}
 		c.conn = conn
 		c.connMu.Unlock()
 
