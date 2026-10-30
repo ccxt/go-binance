@@ -26,7 +26,17 @@ func (s *ExerciseHistoryServiceTestSuite) TestExerciseHistory() {
 	s.mockDo(data, nil)
 	defer s.assertDo()
 
-	ETs, err := s.client.NewExerciseHistoryService().Do(newContext())
+	s.assertReq(func(r *request) {
+		e := newRequest().setParams(params{
+			"underlying": "BTCUSDT",
+			"startTime":  uint64(1716940800000),
+			"endTime":    uint64(1716969600000),
+			"limit":      uint64(10),
+		})
+		s.assertRequestEqual(e, r)
+	})
+	ETs, err := s.client.NewExerciseHistoryService().Underlying("BTCUSDT").
+		StartTime(1716940800000).EndTime(1716969600000).Limit(10).Do(newContext())
 	targetETs := []*ExerciseHistory{
 		{
 			Symbol:          "BTC-240529-67500-C",

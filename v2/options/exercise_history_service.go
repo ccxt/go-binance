@@ -51,16 +51,16 @@ func (s *ExerciseHistoryService) Do(ctx context.Context, opts ...RequestOption) 
 		endpoint: "/eapi/v1/exerciseHistory",
 	}
 	if s.underlying != nil {
-		r.setParam("underlying", s.underlying)
+		r.setParam("underlying", *s.underlying)
 	}
 	if s.startTime != nil {
-		r.setParam("startTime", s.startTime)
+		r.setParam("startTime", *s.startTime)
 	}
 	if s.endTime != nil {
-		r.setParam("endTime", s.endTime)
+		r.setParam("endTime", *s.endTime)
 	}
 	if s.limit != nil {
-		r.setParam("limit", s.limit)
+		r.setParam("limit", *s.limit)
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
