@@ -2,6 +2,7 @@ package binance
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/0x090909/go-binance/v2/common"
@@ -9,10 +10,11 @@ import (
 
 // ExchangeInfoService exchange info service
 type ExchangeInfoService struct {
-	c           *Client
-	symbol      string
-	symbols     []string
-	permissions []string
+	c                  *Client
+	symbol             string
+	symbols            []string
+	permissions        []string
+	showPermissionSets *bool
 }
 
 // Symbol set symbol
@@ -35,6 +37,13 @@ func (s *ExchangeInfoService) Permissions(permissions ...string) *ExchangeInfoSe
 	return s
 }
 
+// ShowPermissionSets set showPermissionSets
+func (s *ExchangeInfoService) ShowPermissionSets(showPermissionSets *bool) *ExchangeInfoService {
+	s.showPermissionSets = showPermissionSets
+
+	return s
+}
+
 // Do send request
 func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (res *ExchangeInfo, err error) {
 	r := &request{
@@ -52,6 +61,9 @@ func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (re
 	if len(s.permissions) != 0 {
 		m["permissions"] = s.permissions
 	}
+	if s.showPermissionSets != nil {
+		m["showPermissionSets"] = *s.showPermissionSets
+	}
 	r.setParams(m)
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -68,11 +80,11 @@ func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (re
 
 // ExchangeInfo exchange info
 type ExchangeInfo struct {
-	Timezone        string        `json:"timezone"`
-	ServerTime      int64         `json:"serverTime"`
-	RateLimits      []RateLimit   `json:"rateLimits"`
-	ExchangeFilters []interface{} `json:"exchangeFilters"`
-	Symbols         []Symbol      `json:"symbols"`
+	Timezone        string      `json:"timezone"`
+	ServerTime      int64       `json:"serverTime"`
+	RateLimits      []RateLimit `json:"rateLimits"`
+	ExchangeFilters []any       `json:"exchangeFilters"`
+	Symbols         []Symbol    `json:"symbols"`
 }
 
 // RateLimit struct
@@ -85,23 +97,24 @@ type RateLimit struct {
 
 // Symbol market symbol
 type Symbol struct {
-	Symbol                     string                   `json:"symbol"`
-	Status                     string                   `json:"status"`
-	BaseAsset                  string                   `json:"baseAsset"`
-	BaseAssetPrecision         int                      `json:"baseAssetPrecision"`
-	QuoteAsset                 string                   `json:"quoteAsset"`
-	QuotePrecision             int                      `json:"quotePrecision"`
-	QuoteAssetPrecision        int                      `json:"quoteAssetPrecision"`
-	BaseCommissionPrecision    int32                    `json:"baseCommissionPrecision"`
-	QuoteCommissionPrecision   int32                    `json:"quoteCommissionPrecision"`
-	OrderTypes                 []string                 `json:"orderTypes"`
-	IcebergAllowed             bool                     `json:"icebergAllowed"`
-	OcoAllowed                 bool                     `json:"ocoAllowed"`
-	QuoteOrderQtyMarketAllowed bool                     `json:"quoteOrderQtyMarketAllowed"`
-	IsSpotTradingAllowed       bool                     `json:"isSpotTradingAllowed"`
-	IsMarginTradingAllowed     bool                     `json:"isMarginTradingAllowed"`
-	Filters                    []map[string]interface{} `json:"filters"`
-	Permissions                []string                 `json:"permissions"`
+	Symbol                     string           `json:"symbol"`
+	Status                     string           `json:"status"`
+	BaseAsset                  string           `json:"baseAsset"`
+	BaseAssetPrecision         int              `json:"baseAssetPrecision"`
+	QuoteAsset                 string           `json:"quoteAsset"`
+	QuotePrecision             int              `json:"quotePrecision"`
+	QuoteAssetPrecision        int              `json:"quoteAssetPrecision"`
+	BaseCommissionPrecision    int32            `json:"baseCommissionPrecision"`
+	QuoteCommissionPrecision   int32            `json:"quoteCommissionPrecision"`
+	OrderTypes                 []string         `json:"orderTypes"`
+	IcebergAllowed             bool             `json:"icebergAllowed"`
+	OcoAllowed                 bool             `json:"ocoAllowed"`
+	QuoteOrderQtyMarketAllowed bool             `json:"quoteOrderQtyMarketAllowed"`
+	IsSpotTradingAllowed       bool             `json:"isSpotTradingAllowed"`
+	IsMarginTradingAllowed     bool             `json:"isMarginTradingAllowed"`
+	Filters                    []map[string]any `json:"filters"`
+	Permissions                []string         `json:"permissions"`
+	PermissionSets             [][]string       `json:"permissionSets"`
 }
 
 // LotSizeFilter define lot size filter of symbol

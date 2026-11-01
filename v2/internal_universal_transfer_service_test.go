@@ -30,7 +30,7 @@ func (s *internalUniversalTransferServiceTestSuite) TestInternalUniversalTransfe
 	fromAccountType := "USDT_FUTURE"
 	toAccountType := "SPOT"
 	asset := "USDT"
-	amount := 100.0
+	amount := "100.0"
 	clientTranId := "testID"
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setParams(params{

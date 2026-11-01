@@ -4,31 +4,52 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
 
 // Endpoints
-const (
-	baseWsMainUrl    = "wss://dstream.binance.com/ws"
-	baseWsTestnetUrl = "wss://dstream.binancefuture.com/ws"
+var (
+	BaseWsMainUrl    = "wss://dstream.binance.com/ws"
+	BaseWsTestnetUrl = "wss://dstream.binancefuture.com/ws"
+	BaseWsDemoURL    = "wss://dstream.binancefuture.com/ws"
 )
 
 var (
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
-	WebsocketTimeout = time.Second * 60
+	WebsocketTimeout = time.Second * 600
+	// WebsocketPongTimeout is an interval for sending a PONG frame in response to PING frame from server
+	WebsocketPongTimeout = time.Second * 10
 	// WebsocketKeepalive enables sending ping/pong messages to check the connection stability
-	WebsocketKeepalive = false
+	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
+	// UseDemo switch all the API endpoints from production to the demo
+	UseDemo  = false
+	ProxyUrl = ""
 )
 
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getWsEndpoint() string {
 	if UseTestnet {
-		return baseWsTestnetUrl
+		return BaseWsTestnetUrl
 	}
-	return baseWsMainUrl
+	if UseDemo {
+		return BaseWsDemoURL
+	}
+	return BaseWsMainUrl
+}
+
+func getWsProxyUrl() *string {
+	if ProxyUrl == "" {
+		return nil
+	}
+	return &ProxyUrl
+}
+
+func SetWsProxyUrl(url string) {
+	ProxyUrl = url
 }
 
 // WsAggTradeEvent define websocket aggTrde event.
@@ -657,6 +678,43 @@ type WsUserDataEvent struct {
 	TransactionTime     int64              `json:"T"`
 	AccountUpdate       WsAccountUpdate    `json:"a"`
 	OrderTradeUpdate    WsOrderTradeUpdate `json:"o"`
+}
+
+func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
+	var tmp struct {
+		Event               UserDataEventType  `json:"e"`
+		Time                any                `json:"E"`
+		Alias               string             `json:"i"`
+		CrossWalletBalance  string             `json:"cw"`
+		MarginCallPositions []WsPosition       `json:"p"`
+		TransactionTime     int64              `json:"T"`
+		AccountUpdate       WsAccountUpdate    `json:"a"`
+		OrderTradeUpdate    WsOrderTradeUpdate `json:"o"`
+	}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	e.Event = tmp.Event
+	switch v := tmp.Time.(type) {
+	case float64:
+		e.Time = int64(v)
+	case string:
+		parsedTime, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return err
+		}
+		e.Time = parsedTime
+	default:
+		return fmt.Errorf("unexpected type for E: %T", tmp.Time)
+	}
+	e.Alias = tmp.Alias
+	e.CrossWalletBalance = tmp.CrossWalletBalance
+	e.MarginCallPositions = tmp.MarginCallPositions
+	e.TransactionTime = tmp.TransactionTime
+	e.AccountUpdate = tmp.AccountUpdate
+	e.OrderTradeUpdate = tmp.OrderTradeUpdate
+	return nil
 }
 
 // WsAccountUpdate define account update

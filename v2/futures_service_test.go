@@ -105,3 +105,56 @@ func (s *futuresTransferTestSuite) assertFuturesTransferEqual(e, a FuturesTransf
 	r.Equal(e.Timestamp, a.Timestamp, "Timestamp")
 	r.Equal(e.Status, a.Status, "Status")
 }
+
+type futuresOrderBookHistoryTestSuite struct {
+	baseTestSuite
+}
+
+func TestFuturesOrderBookHistoryService(t *testing.T) {
+	suite.Run(t, new(futuresOrderBookHistoryTestSuite))
+}
+
+func (s *futuresOrderBookHistoryTestSuite) TestFuturesOrderBookHistory() {
+	data := []byte(`{
+		"data": [
+        {
+            "day": "2023-06-30",
+            "url": "https://bin-prod-user-rebate-bucket.s3.ap-northeast-1.amazonaws.com/future-data-symbol-update/2023-06-30/BTCUSDT_T_DEPTH_2023-06-30.tar.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230925T025710Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86399&X-Amz-Credential=AKIAVL364M5ZNFZ74IPP%2F20230925%2Fap-northeast-1%2Fs3%2Faws4_request&X-Amz-Signature=5fffcb390d10f34d71615726f81f99e42d80a11532edeac77b858c51a88cbf59"
+        }
+    	]
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	symbol := "BTCUSDT"
+	dataType := FuturesOrderBookHistoryDataTypeTDepth
+	startTime := int64(1625040000000)
+	endTime := int64(1625126399999)
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setParams(params{
+			"symbol":    symbol,
+			"dataType":  "T_DEPTH",
+			"startTime": startTime,
+			"endTime":   endTime,
+		})
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewFuturesOrderBookHistoryService().Symbol(symbol).
+		DataType(dataType).StartTime(startTime).EndTime(endTime).Do(newContext())
+	s.r().NoError(err)
+	e := &FuturesOrderBookHistory{
+		Data: []*FuturesOrderBookHistoryItem{
+			{
+				Day: "2023-06-30",
+				Url: "https://bin-prod-user-rebate-bucket.s3.ap-northeast-1.amazonaws.com/future-data-symbol-update/2023-06-30/BTCUSDT_T_DEPTH_2023-06-30.tar.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230925T025710Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86399&X-Amz-Credential=AKIAVL364M5ZNFZ74IPP%2F20230925%2Fap-northeast-1%2Fs3%2Faws4_request&X-Amz-Signature=5fffcb390d10f34d71615726f81f99e42d80a11532edeac77b858c51a88cbf59",
+			},
+		},
+	}
+	s.assertFuturesOrderBookHistoryEqual(e, res)
+}
+
+func (s *futuresOrderBookHistoryTestSuite) assertFuturesOrderBookHistoryEqual(a, e *FuturesOrderBookHistory) {
+	for index, v := range a.Data {
+		v.Day = e.Data[index].Day
+		v.Url = e.Data[index].Url
+	}
+}

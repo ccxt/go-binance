@@ -6,39 +6,147 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 // Endpoints
-const (
-	baseWsMainUrl          = "wss://fstream.binance.com/ws"
-	baseWsTestnetUrl       = "wss://stream.binancefuture.com/ws"
-	baseCombinedMainURL    = "wss://fstream.binance.com/stream?streams="
-	baseCombinedTestnetURL = "wss://stream.binancefuture.com/stream?streams="
+var (
+	BaseWsMainUrl          = "wss://fstream.binance.com/ws"
+	BaseWsTestnetUrl       = "wss://stream.binancefuture.com/ws"
+	BaseWsDemoURL          = "wss://fstream.binancefuture.com/ws"
+	BaseCombinedMainURL    = "wss://fstream.binance.com/stream?streams="
+	BaseCombinedTestnetURL = "wss://stream.binancefuture.com/stream?streams="
+	BaseCombinedDemoURL    = "wss://fstream.binancefuture.com/stream?streams="
+	BaseWsApiMainURL       = "wss://ws-fapi.binance.com/ws-fapi/v1"
+	BaseWsApiTestnetURL    = "wss://testnet.binancefuture.com/ws-fapi/v1"
+	BaseWsApiDemoURL       = "wss://testnet.binancefuture.com/ws-fapi/v1"
+
+	// Public endpoints (high-frequency public market data: bookTicker, depth)
+	BaseWsPublicMainUrl          = "wss://fstream.binance.com/public/ws"
+	BaseWsPublicTestnetUrl       = "wss://stream.binancefuture.com/public/ws"
+	BaseWsPublicDemoURL          = "wss://fstream.binancefuture.com/public/ws"
+	BaseCombinedPublicMainURL    = "wss://fstream.binance.com/public/stream?streams="
+	BaseCombinedPublicTestnetURL = "wss://stream.binancefuture.com/public/stream?streams="
+	BaseCombinedPublicDemoURL    = "wss://fstream.binancefuture.com/public/stream?streams="
+
+	// Market endpoints (regular market data: aggTrade, markPrice, kline, ticker, etc.)
+	BaseWsMarketMainUrl          = "wss://fstream.binance.com/market/ws"
+	BaseWsMarketTestnetUrl       = "wss://stream.binancefuture.com/market/ws"
+	BaseWsMarketDemoURL          = "wss://fstream.binancefuture.com/market/ws"
+	BaseCombinedMarketMainURL    = "wss://fstream.binance.com/market/stream?streams="
+	BaseCombinedMarketTestnetURL = "wss://stream.binancefuture.com/market/stream?streams="
+	BaseCombinedMarketDemoURL    = "wss://fstream.binancefuture.com/market/stream?streams="
+
+	// Private endpoints (user data streams)
+	BaseWsPrivateMainUrl    = "wss://fstream.binance.com/private/ws"
+	BaseWsPrivateTestnetUrl = "wss://stream.binancefuture.com/private/ws"
+	BaseWsPrivateDemoURL    = "wss://fstream.binancefuture.com/private/ws"
 )
 
 var (
 	// WebsocketTimeout is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
-	WebsocketTimeout = time.Second * 60
+	WebsocketTimeout = time.Second * 600
+	// WebsocketPongTimeout is an interval for sending a PONG frame in response to PING frame from server
+	WebsocketPongTimeout = time.Second * 10
 	// WebsocketKeepalive enables sending ping/pong messages to check the connection stability
-	WebsocketKeepalive = false
+	WebsocketKeepalive = true
 	// UseTestnet switch all the WS streams from production to the testnet
 	UseTestnet = false
+	// UseDemo switch all the WS streams from production to the demo
+	UseDemo = false
+	// WebsocketTimeoutReadWriteConnection is an interval for sending ping/pong messages if WebsocketKeepalive is enabled
+	// using for websocket API (read/write)
+	WebsocketTimeoutReadWriteConnection = time.Second * 10
+	ProxyUrl                            = ""
 )
+
+func getWsProxyUrl() *string {
+	if ProxyUrl == "" {
+		return nil
+	}
+	return &ProxyUrl
+}
+
+func SetWsProxyUrl(url string) {
+	ProxyUrl = url
+}
 
 // getWsEndpoint return the base endpoint of the WS according the UseTestnet flag
 func getWsEndpoint() string {
 	if UseTestnet {
-		return baseWsTestnetUrl
+		return BaseWsTestnetUrl
 	}
-	return baseWsMainUrl
+	if UseDemo {
+		return BaseWsDemoURL
+	}
+	return BaseWsMainUrl
 }
 
 // getCombinedEndpoint return the base endpoint of the combined stream according the UseTestnet flag
 func getCombinedEndpoint() string {
 	if UseTestnet {
-		return baseCombinedTestnetURL
+		return BaseCombinedTestnetURL
 	}
-	return baseCombinedMainURL
+	if UseDemo {
+		return BaseCombinedDemoURL
+	}
+	return BaseCombinedMainURL
+}
+
+// getWsPublicEndpoint return the base endpoint for high-frequency public data (bookTicker, depth)
+func getWsPublicEndpoint() string {
+	if UseTestnet {
+		return BaseWsPublicTestnetUrl
+	}
+	if UseDemo {
+		return BaseWsPublicDemoURL
+	}
+	return BaseWsPublicMainUrl
+}
+
+// getCombinedPublicEndpoint return the combined stream endpoint for public data
+func getCombinedPublicEndpoint() string {
+	if UseTestnet {
+		return BaseCombinedPublicTestnetURL
+	}
+	if UseDemo {
+		return BaseCombinedPublicDemoURL
+	}
+	return BaseCombinedPublicMainURL
+}
+
+// getWsMarketEndpoint return the base endpoint for regular market data (aggTrade, markPrice, kline, ticker, etc.)
+func getWsMarketEndpoint() string {
+	if UseTestnet {
+		return BaseWsMarketTestnetUrl
+	}
+	if UseDemo {
+		return BaseWsMarketDemoURL
+	}
+	return BaseWsMarketMainUrl
+}
+
+// getCombinedMarketEndpoint return the combined stream endpoint for market data
+func getCombinedMarketEndpoint() string {
+	if UseTestnet {
+		return BaseCombinedMarketTestnetURL
+	}
+	if UseDemo {
+		return BaseCombinedMarketDemoURL
+	}
+	return BaseCombinedMarketMainURL
+}
+
+// getWsPrivateEndpoint return the base endpoint for private user data streams
+func getWsPrivateEndpoint() string {
+	if UseTestnet {
+		return BaseWsPrivateTestnetUrl
+	}
+	if UseDemo {
+		return BaseWsPrivateDemoURL
+	}
+	return BaseWsPrivateMainUrl
 }
 
 // WsAggTradeEvent define websocket aggTrde event.
@@ -60,7 +168,7 @@ type WsAggTradeHandler func(event *WsAggTradeEvent)
 
 // WsAggTradeServe serve websocket that push trade information that is aggregated for a single taker order.
 func WsAggTradeServe(symbol string, handler WsAggTradeHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@aggTrade", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@aggTrade", getWsMarketEndpoint(), strings.ToLower(symbol))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsAggTradeEvent)
@@ -76,7 +184,7 @@ func WsAggTradeServe(symbol string, handler WsAggTradeHandler, errHandler ErrHan
 
 // WsCombinedAggTradeServe is similar to WsAggTradeServe, but it handles multiple symbols
 func WsCombinedAggTradeServe(symbols []string, handler WsAggTradeHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedMarketEndpoint()
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@aggTrade", strings.ToLower(s)) + "/"
 	}
@@ -140,7 +248,7 @@ func wsMarkPriceServe(endpoint string, handler WsMarkPriceHandler, errHandler Er
 
 // WsMarkPriceServe serve websocket that pushes price and funding rate for a single symbol.
 func WsMarkPriceServe(symbol string, handler WsMarkPriceHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@markPrice", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@markPrice", getWsMarketEndpoint(), strings.ToLower(symbol))
 	return wsMarkPriceServe(endpoint, handler, errHandler)
 }
 
@@ -155,7 +263,7 @@ func WsMarkPriceServeWithRate(symbol string, rate time.Duration, handler WsMarkP
 	default:
 		return nil, nil, errors.New("Invalid rate")
 	}
-	endpoint := fmt.Sprintf("%s/%s@markPrice%s", getWsEndpoint(), strings.ToLower(symbol), rateStr)
+	endpoint := fmt.Sprintf("%s/%s@markPrice%s", getWsMarketEndpoint(), strings.ToLower(symbol), rateStr)
 	return wsMarkPriceServe(endpoint, handler, errHandler)
 }
 
@@ -186,7 +294,7 @@ func wsCombinedMarkPriceServe(endpoint string, handler WsMarkPriceHandler, errHa
 
 // WsCombinedMarkPriceServe is similar to WsMarkPriceServe, but it handles multiple symbols
 func WsCombinedMarkPriceServe(symbols []string, handler WsMarkPriceHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedMarketEndpoint()
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@markPrice", strings.ToLower(s)) + "/"
 	}
@@ -197,7 +305,7 @@ func WsCombinedMarkPriceServe(symbols []string, handler WsMarkPriceHandler, errH
 
 // WsCombinedMarkPriceServeWithRate is similar to WsMarkPriceServeWithRate, but it for multiple symbols
 func WsCombinedMarkPriceServeWithRate(symbolLevels map[string]time.Duration, handler WsMarkPriceHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedMarketEndpoint()
 	for symbol, rate := range symbolLevels {
 		var rateStr string
 		switch rate {
@@ -239,7 +347,7 @@ func wsAllMarkPriceServe(endpoint string, handler WsAllMarkPriceHandler, errHand
 
 // WsAllMarkPriceServe serve websocket that pushes price and funding rate for all symbol.
 func WsAllMarkPriceServe(handler WsAllMarkPriceHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/!markPrice@arr", getWsEndpoint())
+	endpoint := fmt.Sprintf("%s/!markPrice@arr", getWsMarketEndpoint())
 	return wsAllMarkPriceServe(endpoint, handler, errHandler)
 }
 
@@ -254,7 +362,7 @@ func WsAllMarkPriceServeWithRate(rate time.Duration, handler WsAllMarkPriceHandl
 	default:
 		return nil, nil, errors.New("Invalid rate")
 	}
-	endpoint := fmt.Sprintf("%s/!markPrice@arr%s", getWsEndpoint(), rateStr)
+	endpoint := fmt.Sprintf("%s/!markPrice@arr%s", getWsMarketEndpoint(), rateStr)
 	return wsAllMarkPriceServe(endpoint, handler, errHandler)
 }
 
@@ -291,7 +399,7 @@ type WsKlineHandler func(event *WsKlineEvent)
 
 // WsKlineServe serve websocket kline handler with a symbol and interval like 15m, 30s
 func WsKlineServe(symbol string, interval string, handler WsKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@kline_%s", getWsEndpoint(), strings.ToLower(symbol), interval)
+	endpoint := fmt.Sprintf("%s/%s@kline_%s", getWsMarketEndpoint(), strings.ToLower(symbol), interval)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsKlineEvent)
@@ -307,9 +415,46 @@ func WsKlineServe(symbol string, interval string, handler WsKlineHandler, errHan
 
 // WsCombinedKlineServe is similar to WsKlineServe, but it handles multiple symbols with it interval
 func WsCombinedKlineServe(symbolIntervalPair map[string]string, handler WsKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedMarketEndpoint()
 	for symbol, interval := range symbolIntervalPair {
 		endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(symbol), interval) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		j, err := newJSON(message)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+
+		stream := j.Get("stream").MustString()
+		data := j.Get("data").MustMap()
+
+		symbol := strings.Split(stream, "@")[0]
+
+		jsonData, _ := json.Marshal(data)
+
+		event := new(WsKlineEvent)
+		err = json.Unmarshal(jsonData, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		event.Symbol = strings.ToUpper(symbol)
+
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsCombinedKlineServeMultiInterval is similar to WsCombinedKlineServe, but it supports multiple intervals per symbol
+func WsCombinedKlineServeMultiInterval(symbolIntervals map[string][]string, handler WsKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := getCombinedMarketEndpoint()
+	for symbol, intervals := range symbolIntervals {
+		for _, interval := range intervals {
+			endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(symbol), interval) + "/"
+		}
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	cfg := newWsConfig(endpoint)
@@ -368,8 +513,8 @@ type WsContinuousKline struct {
 	ActiveBuyQuoteVolume string `json:"Q"`
 }
 
-// WsContinuousKlineSubcribeArgs used with WsContinuousKlineServe or WsCombinedContinuousKlineServe
-type WsContinuousKlineSubcribeArgs struct {
+// WsContinuousKlineSubscribeArgs used with WsContinuousKlineServe or WsCombinedContinuousKlineServe
+type WsContinuousKlineSubscribeArgs struct {
 	Pair         string
 	ContractType string
 	Interval     string
@@ -379,9 +524,9 @@ type WsContinuousKlineSubcribeArgs struct {
 type WsContinuousKlineHandler func(event *WsContinuousKlineEvent)
 
 // WsContinuousKlineServe serve websocket continuous kline handler with a pair and contractType and interval like 15m, 30s
-func WsContinuousKlineServe(subscribeArgs *WsContinuousKlineSubcribeArgs, handler WsContinuousKlineHandler,
+func WsContinuousKlineServe(subscribeArgs *WsContinuousKlineSubscribeArgs, handler WsContinuousKlineHandler,
 	errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s_%s@continuousKline_%s", getWsEndpoint(), strings.ToLower(subscribeArgs.Pair),
+	endpoint := fmt.Sprintf("%s/%s_%s@continuousKline_%s", getWsMarketEndpoint(), strings.ToLower(subscribeArgs.Pair),
 		strings.ToLower(subscribeArgs.ContractType), subscribeArgs.Interval)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
@@ -397,9 +542,9 @@ func WsContinuousKlineServe(subscribeArgs *WsContinuousKlineSubcribeArgs, handle
 }
 
 // WsCombinedContinuousKlineServe is similar to WsContinuousKlineServe, but it handles multiple pairs of different contractType with its interval
-func WsCombinedContinuousKlineServe(subscribeArgsList []*WsContinuousKlineSubcribeArgs,
+func WsCombinedContinuousKlineServe(subscribeArgsList []*WsContinuousKlineSubscribeArgs,
 	handler WsContinuousKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedMarketEndpoint()
 	for _, val := range subscribeArgsList {
 		endpoint += fmt.Sprintf("%s_%s@continuousKline_%s", strings.ToLower(val.Pair),
 			strings.ToLower(val.ContractType), val.Interval) + "/"
@@ -447,7 +592,7 @@ type WsMiniMarketTickerHandler func(event *WsMiniMarketTickerEvent)
 
 // WsMiniMarketTickerServe serve websocket that pushes 24hr rolling window mini-ticker statistics for a single symbol.
 func WsMiniMarketTickerServe(symbol string, handler WsMiniMarketTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@miniTicker", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@miniTicker", getWsMarketEndpoint(), strings.ToLower(symbol))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsMiniMarketTickerEvent)
@@ -469,7 +614,7 @@ type WsAllMiniMarketTickerHandler func(event WsAllMiniMarketTickerEvent)
 
 // WsAllMiniMarketTickerServe serve websocket that pushes price and funding rate for all markets.
 func WsAllMiniMarketTickerServe(handler WsAllMiniMarketTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/!miniTicker@arr", getWsEndpoint())
+	endpoint := fmt.Sprintf("%s/!miniTicker@arr", getWsMarketEndpoint())
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		var event WsAllMiniMarketTickerEvent
@@ -510,7 +655,7 @@ type WsMarketTickerHandler func(event *WsMarketTickerEvent)
 
 // WsMarketTickerServe serve websocket that pushes 24hr rolling window mini-ticker statistics for a single symbol.
 func WsMarketTickerServe(symbol string, handler WsMarketTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@ticker", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@ticker", getWsMarketEndpoint(), strings.ToLower(symbol))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsMarketTickerEvent)
@@ -532,7 +677,7 @@ type WsAllMarketTickerHandler func(event WsAllMarketTickerEvent)
 
 // WsAllMarketTickerServe serve websocket that pushes price and funding rate for all markets.
 func WsAllMarketTickerServe(handler WsAllMarketTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/!ticker@arr", getWsEndpoint())
+	endpoint := fmt.Sprintf("%s/!ticker@arr", getWsMarketEndpoint())
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		var event WsAllMarketTickerEvent
@@ -559,12 +704,17 @@ type WsBookTickerEvent struct {
 	BestAskQty      string `json:"A"`
 }
 
+type WsCombinedBookTickerEvent struct {
+	Data   *WsBookTickerEvent `json:"data"`
+	Stream string             `json:"stream"`
+}
+
 // WsBookTickerHandler handle websocket that pushes updates to the best bid or ask price or quantity in real-time for a specified symbol.
 type WsBookTickerHandler func(event *WsBookTickerEvent)
 
 // WsBookTickerServe serve websocket that pushes updates to the best bid or ask price or quantity in real-time for a specified symbol.
 func WsBookTickerServe(symbol string, handler WsBookTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@bookTicker", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@bookTicker", getWsPublicEndpoint(), strings.ToLower(symbol))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsBookTickerEvent)
@@ -578,9 +728,28 @@ func WsBookTickerServe(symbol string, handler WsBookTickerHandler, errHandler Er
 	return wsServe(cfg, wsHandler, errHandler)
 }
 
+func WsCombinedBookTickerServe(symbols []string, handler WsBookTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := getCombinedPublicEndpoint()
+	for _, s := range symbols {
+		endpoint += fmt.Sprintf("%s@bookTicker", strings.ToLower(s)) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsCombinedBookTickerEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event.Data)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
 // WsAllBookTickerServe serve websocket that pushes updates to the best bid or ask price or quantity in real-time for all symbols.
 func WsAllBookTickerServe(handler WsBookTickerHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/!bookTicker", getWsEndpoint())
+	endpoint := fmt.Sprintf("%s/!bookTicker", getWsPublicEndpoint())
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsBookTickerEvent)
@@ -621,7 +790,7 @@ type WsLiquidationOrderHandler func(event *WsLiquidationOrderEvent)
 
 // WsLiquidationOrderServe serve websocket that pushes force liquidation order information for specific symbol.
 func WsLiquidationOrderServe(symbol string, handler WsLiquidationOrderHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@forceOrder", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@forceOrder", getWsMarketEndpoint(), strings.ToLower(symbol))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsLiquidationOrderEvent)
@@ -637,7 +806,7 @@ func WsLiquidationOrderServe(symbol string, handler WsLiquidationOrderHandler, e
 
 // WsAllLiquidationOrderServe serve websocket that pushes force liquidation order information for all symbols.
 func WsAllLiquidationOrderServe(handler WsLiquidationOrderHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/!forceOrder@arr", getWsEndpoint())
+	endpoint := fmt.Sprintf("%s/!forceOrder@arr", getWsMarketEndpoint())
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsLiquidationOrderEvent)
@@ -692,7 +861,7 @@ func WsDiffDepthServe(symbol string, handler WsDepthHandler, errHandler ErrHandl
 
 // WsCombinedDepthServe is similar to WsPartialDepthServe, but it for multiple symbols
 func WsCombinedDepthServe(symbolLevels map[string]string, handler WsDepthHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedPublicEndpoint()
 	for s, l := range symbolLevels {
 		endpoint += fmt.Sprintf("%s@depth%s", strings.ToLower(s), l) + "/"
 	}
@@ -713,19 +882,19 @@ func WsCombinedDepthServe(symbolLevels map[string]string, handler WsDepthHandler
 		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
 		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
 		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]interface{}))
+		bidsLen := len(data["b"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]interface{})[i].([]interface{})
+			item := data["b"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["a"].([]interface{}))
+		asksLen := len(data["a"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]interface{})[i].([]interface{})
+			item := data["a"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -738,7 +907,7 @@ func WsCombinedDepthServe(symbolLevels map[string]string, handler WsDepthHandler
 
 // WsCombinedDiffDepthServe is similar to WsDiffDepthServe, but it for multiple symbols
 func WsCombinedDiffDepthServe(symbols []string, handler WsDepthHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := getCombinedEndpoint()
+	endpoint := getCombinedPublicEndpoint()
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@depth", strings.ToLower(s)) + "/"
 	}
@@ -759,19 +928,19 @@ func WsCombinedDiffDepthServe(symbols []string, handler WsDepthHandler, errHandl
 		event.FirstUpdateID, _ = data["U"].(json.Number).Int64()
 		event.LastUpdateID, _ = data["u"].(json.Number).Int64()
 		event.PrevLastUpdateID, _ = data["pu"].(json.Number).Int64()
-		bidsLen := len(data["b"].([]interface{}))
+		bidsLen := len(data["b"].([]any))
 		event.Bids = make([]Bid, bidsLen)
 		for i := 0; i < bidsLen; i++ {
-			item := data["b"].([]interface{})[i].([]interface{})
+			item := data["b"].([]any)[i].([]any)
 			event.Bids[i] = Bid{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
 			}
 		}
-		asksLen := len(data["a"].([]interface{}))
+		asksLen := len(data["a"].([]any))
 		event.Asks = make([]Ask, asksLen)
 		for i := 0; i < asksLen; i++ {
-			item := data["a"].([]interface{})[i].([]interface{})
+			item := data["a"].([]any)[i].([]any)
 			event.Asks[i] = Ask{
 				Price:    item[0].(string),
 				Quantity: item[1].(string),
@@ -801,7 +970,7 @@ func wsDepthServe(symbol string, levels string, rate *time.Duration, handler WsD
 			return nil, nil, errors.New("Invalid rate")
 		}
 	}
-	endpoint := fmt.Sprintf("%s/%s@depth%s%s", getWsEndpoint(), strings.ToLower(symbol), levels, rateStr)
+	endpoint := fmt.Sprintf("%s/%s@depth%s%s", getWsPublicEndpoint(), strings.ToLower(symbol), levels, rateStr)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		j, err := newJSON(message)
@@ -864,7 +1033,7 @@ type WsBLVTInfoHandler func(event *WsBLVTInfoEvent)
 
 // WsBLVTInfoServe serve BLVT info stream
 func WsBLVTInfoServe(name string, handler WsBLVTInfoHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@tokenNav", getWsEndpoint(), strings.ToUpper(name))
+	endpoint := fmt.Sprintf("%s/%s@tokenNav", getWsMarketEndpoint(), strings.ToUpper(name))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsBLVTInfoEvent)
@@ -907,7 +1076,7 @@ type WsBLVTKlineHandler func(event *WsBLVTKlineEvent)
 
 // WsBLVTKlineServe serve BLVT kline stream
 func WsBLVTKlineServe(name string, interval string, handler WsBLVTKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@nav_Kline_%s", getWsEndpoint(), strings.ToUpper(name), interval)
+	endpoint := fmt.Sprintf("%s/%s@nav_Kline_%s", getWsMarketEndpoint(), strings.ToUpper(name), interval)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsBLVTKlineEvent)
@@ -923,18 +1092,21 @@ func WsBLVTKlineServe(name string, interval string, handler WsBLVTKlineHandler, 
 
 // WsCompositeIndexEvent websocket composite index event
 type WsCompositeIndexEvent struct {
-	Event       string          `json:"e"`
-	Time        int64           `json:"E"`
-	Symbol      string          `json:"s"`
-	Price       string          `json:"p"`
-	Composition []WsComposition `json:"c"`
+	Event         string          `json:"e"`
+	Time          int64           `json:"E"`
+	Symbol        string          `json:"s"`
+	Price         string          `json:"p"`
+	BaseAssetType string          `json:"C"`
+	Composition   []WsComposition `json:"c"`
 }
 
 // WsComposition websocket composite index event composition
 type WsComposition struct {
 	BaseAsset    string `json:"b"`
+	QuoteAsset   string `json:"q"`
 	WeightQty    string `json:"w"`
 	WeighPercent string `json:"W"`
+	IndexPrice   string `json:"i"`
 }
 
 // WsCompositeIndexHandler websocket composite index handler
@@ -942,7 +1114,7 @@ type WsCompositeIndexHandler func(event *WsCompositeIndexEvent)
 
 // WsCompositiveIndexServe serve composite index information for index symbols
 func WsCompositiveIndexServe(symbol string, handler WsCompositeIndexHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s@compositeIndex", getWsEndpoint(), strings.ToLower(symbol))
+	endpoint := fmt.Sprintf("%s/%s@compositeIndex", getWsMarketEndpoint(), strings.ToLower(symbol))
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsCompositeIndexEvent)
@@ -956,16 +1128,230 @@ func WsCompositiveIndexServe(symbol string, handler WsCompositeIndexHandler, err
 	return wsServe(cfg, wsHandler, errHandler)
 }
 
+// WsContractInfoEvent define websocket contract info event
+type WsContractInfoEvent struct {
+	Event string               `json:"e"`
+	Time  int64                `json:"E"`
+	Data  []WsContractInfoData `json:"data"`
+}
+
+// WsContractInfoData define contract info data
+type WsContractInfoData struct {
+	Symbol        string `json:"s"`
+	Pair          string `json:"ps"`
+	ContractType  string `json:"ct"`
+	DeliveryDate  int64  `json:"dt"`
+	OnboardDate   int64  `json:"ot"`
+	ContractState string `json:"cs"`
+}
+
+// WsContractInfoHandler handle WsContractInfoEvent
+type WsContractInfoHandler func(event *WsContractInfoEvent)
+
+// WsContractInfoServe serve websocket that pushes contract info updates
+func WsContractInfoServe(handler WsContractInfoHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/!contractInfo", getWsMarketEndpoint())
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsContractInfoEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsAssetIndexEvent define websocket asset index event
+type WsAssetIndexEvent struct {
+	Event                 string `json:"e"`
+	Time                  int64  `json:"E"`
+	Symbol                string `json:"s"`
+	Index                 string `json:"i"`
+	BidBuffer             string `json:"b"`
+	AskBuffer             string `json:"a"`
+	BidRate               string `json:"B"`
+	AskRate               string `json:"A"`
+	AutoExchangeBidBuffer string `json:"q"`
+	AutoExchangeAskBuffer string `json:"g"`
+	AutoExchangeBidRate   string `json:"Q"`
+	AutoExchangeAskRate   string `json:"G"`
+}
+
+// WsAllAssetIndexEvent define all asset index event
+type WsAllAssetIndexEvent []*WsAssetIndexEvent
+
+// WsAssetIndexHandler handle WsAssetIndexEvent
+type WsAssetIndexHandler func(event *WsAssetIndexEvent)
+
+// WsAssetIndexServe serve websocket that pushes asset index for a single symbol
+func WsAssetIndexServe(symbol string, handler WsAssetIndexHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/%s@assetIndex", getWsMarketEndpoint(), strings.ToLower(symbol))
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsAssetIndexEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsAllAssetIndexHandler handle WsAllAssetIndexEvent
+type WsAllAssetIndexHandler func(event WsAllAssetIndexEvent)
+
+// WsAllAssetIndexServe serve websocket that pushes asset index for all symbols
+func WsAllAssetIndexServe(handler WsAllAssetIndexHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/!assetIndex@arr", getWsMarketEndpoint())
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		var event WsAllAssetIndexEvent
+		err := json.Unmarshal(message, &event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
 // WsUserDataEvent define user data event
 type WsUserDataEvent struct {
-	Event               UserDataEventType     `json:"e"`
-	Time                int64                 `json:"E"`
-	CrossWalletBalance  string                `json:"cw"`
-	MarginCallPositions []WsPosition          `json:"p"`
-	TransactionTime     int64                 `json:"T"`
-	AccountUpdate       WsAccountUpdate       `json:"a"`
-	OrderTradeUpdate    WsOrderTradeUpdate    `json:"o"`
+	Event           UserDataEventType `json:"e"`
+	Time            int64             `json:"E"`
+	TransactionTime int64             `json:"T"`
+
+	// listenKeyExpired only have Event and Time
+	//
+
+	// MARGIN_CALL
+	WsUserDataMarginCall
+
+	// ACCOUNT_UPDATE
+	WsUserDataAccountUpdate
+
+	// ORDER_TRADE_UPDATE
+	WsUserDataOrderTradeUpdate
+
+	// ACCOUNT_CONFIG_UPDATE
+	WsUserDataAccountConfigUpdate
+
+	// TRADE_LITE
+	WsUserDataTradeLite
+
+	// CONDITIONAL_ORDER_TRIGGER_REJECT
+	WsUserDataConditionalOrderTriggerReject
+
+	// ALGO_UPDATE
+	WsUserDataAlgoUpdate
+}
+
+type WsUserDataAlgoUpdate struct {
+	AlgoUpdate WsAlgoUpdate `json:"o"`
+}
+
+type WsAlgoUpdate struct {
+	ClientAlgoID     string              `json:"caid"` // Client Algo Id
+	AlgoID           int64               `json:"aid"`  // Algo Id
+	AlgoType         OrderAlgoType       `json:"at"`   // Algo Type
+	OrderType        AlgoOrderType       `json:"o"`    // Order Type
+	Symbol           string              `json:"s"`    // Symbol
+	Side             SideType            `json:"S"`    // Side
+	PositionSide     PositionSideType    `json:"ps"`   // Position Side
+	TimeInForce      TimeInForceType     `json:"f"`    // Time in force
+	Quantity         string              `json:"q"`    // quantity
+	AlgoStatus       AlgoOrderStatusType `json:"X"`    // Algo status
+	OrderID          string              `json:"ai"`   // order id
+	AvgPrice         string              `json:"ap"`   // avg fill price in matching engine, only display when order is triggered and placed in matching engine
+	ExecutedQuantity string              `json:"aq"`   // executed quantity in matching engine, only display when order is triggered and placed in matching engine
+	ActualOrderType  string              `json:"act"`  // actual order type in matching engine, only display when order is triggered and placed in matching engine
+	TriggerPrice     string              `json:"tp"`   // Trigger price
+	OrderPrice       string              `json:"p"`    // Order Price
+	STPMode          string              `json:"V"`    // STP mode
+	WorkingType      WorkingType         `json:"wt"`   // Working type
+	PriceMatchMode   string              `json:"pm"`   // Price match mode
+	CloseAll         bool                `json:"cp"`   // If Close-All
+	PriceProtection  bool                `json:"pP"`   // If price protection is turned on
+	ReduceOnly       bool                `json:"R"`    // Is this reduce only
+	TriggerTime      int64               `json:"tt"`   // Trigger time
+	GoodTillTime     int64               `json:"gtd"`  // good till time for GTD time in force
+	FailedReason     string              `json:"rm"`   // algo order failed reason
+}
+
+type WsUserDataAccountConfigUpdate struct {
 	AccountConfigUpdate WsAccountConfigUpdate `json:"ac"`
+}
+
+type WsUserDataAccountUpdate struct {
+	AccountUpdate WsAccountUpdate `json:"a"`
+}
+
+type WsUserDataMarginCall struct {
+	CrossWalletBalance  string       `json:"cw"`
+	MarginCallPositions []WsPosition `json:"p"`
+}
+
+type WsUserDataOrderTradeUpdate struct {
+	OrderTradeUpdate WsOrderTradeUpdate `json:"o"`
+}
+
+type WsUserDataTradeLite struct {
+	Symbol          string   `json:"s"`
+	OriginalQty     string   `json:"q"`
+	OriginalPrice   string   `json:"p"`
+	IsMaker         bool     `json:"m"`
+	ClientOrderID   string   `json:"c"`
+	Side            SideType `json:"S"`
+	LastFilledPrice string   `json:"L"`
+	LastFilledQty   string   `json:"l"`
+	TradeID         int64    `json:"t"`
+	OrderID         int64    `json:"i"`
+}
+
+type WsUserDataConditionalOrderTriggerReject struct {
+	ConditionalOrderTriggerReject WsConditionalOrderTriggerReject `json:"or"`
+}
+
+func (e *WsUserDataEvent) UnmarshalJSON(data []byte) error {
+	j, err := newJSON(data)
+	if err != nil {
+		return err
+	}
+	e.Event = UserDataEventType(j.Get("e").MustString())
+	e.Time = j.Get("E").MustInt64()
+	if v, ok := j.CheckGet("T"); ok {
+		e.TransactionTime = v.MustInt64()
+	}
+
+	// use standard json unmarshal for event types
+	eventMaps := map[UserDataEventType]any{
+		UserDataEventTypeMarginCall:                    &e.WsUserDataMarginCall,
+		UserDataEventTypeAccountUpdate:                 &e.WsUserDataAccountUpdate,
+		UserDataEventTypeOrderTradeUpdate:              &e.WsUserDataOrderTradeUpdate,
+		UserDataEventTypeAccountConfigUpdate:           &e.WsUserDataAccountConfigUpdate,
+		UserDataEventTypeConditionalOrderTriggerReject: &e.WsUserDataConditionalOrderTriggerReject,
+		UserDataEventTypeTradeLite:                     &e.WsUserDataTradeLite,
+		UserDataEventTypeAlgoUpdate:                    &e.WsUserDataAlgoUpdate,
+	}
+
+	// ignore event types, No additional data
+	ignoreEventTypes := map[UserDataEventType]struct{}{
+		UserDataEventTypeListenKeyExpired: {},
+	}
+
+	if v, ok := eventMaps[e.Event]; ok {
+		return json.Unmarshal(data, v)
+	} else if _, ok := ignoreEventTypes[e.Event]; ok {
+		return nil
+	}
+
+	return fmt.Errorf("unexpected event type: %v", e.Event)
 }
 
 // WsAccountUpdate define account update
@@ -1041,12 +1427,18 @@ type WsAccountConfigUpdate struct {
 	Leverage int64  `json:"l"`
 }
 
+type WsConditionalOrderTriggerReject struct {
+	Symbol       string `json:"s"`
+	OrderId      int64  `json:"i"`
+	RejectReason string `json:"r"`
+}
+
 // WsUserDataHandler handle WsUserDataEvent
 type WsUserDataHandler func(event *WsUserDataEvent)
 
 // WsUserDataServe serve user data handler with listen key
 func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
-	endpoint := fmt.Sprintf("%s/%s", getWsEndpoint(), listenKey)
+	endpoint := fmt.Sprintf("%s?listenKey=%s", getWsPrivateEndpoint(), listenKey)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
 		event := new(WsUserDataEvent)
@@ -1058,4 +1450,81 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 		handler(event)
 	}
 	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsUserDataServeWithEvents serve user data handler with listen key and event filter using the
+// new query-param format: /private/ws?listenKey=<key>&events=EVENT1/EVENT2
+func WsUserDataServeWithEvents(listenKey string, events []string, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s?listenKey=%s", getWsPrivateEndpoint(), listenKey)
+	if len(events) > 0 {
+		endpoint += "&events=" + strings.Join(events, "/")
+	}
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsUserDataEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsPrivateStreamConfig defines a listen key and its event subscriptions for the multi-key stream mode
+type WsPrivateStreamConfig struct {
+	ListenKey string
+	Events    []string
+}
+
+// WsUserDataServeMultiple serve user data handler with multiple listen keys using the stream mode:
+// /private/stream?listenKey=<key1>&events=EVENT1&listenKey=<key2>&events=EVENT2
+func WsUserDataServeMultiple(configs []WsPrivateStreamConfig, handler WsUserDataHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := getWsPrivateEndpoint()
+	endpoint = strings.Replace(endpoint, "/ws", "/stream", 1)
+	params := ""
+	for _, c := range configs {
+		if params != "" {
+			params += "&"
+		}
+		params += "listenKey=" + c.ListenKey
+		if len(c.Events) > 0 {
+			params += "&events=" + strings.Join(c.Events, "/")
+		}
+	}
+	endpoint += "?" + params
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsUserDataEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+// WsApiInitReadWriteConn create and serve connection
+func WsApiInitReadWriteConn() (*websocket.Conn, error) {
+	cfg := newWsConfig(getWsApiEndpoint())
+	conn, err := WsGetReadWriteConnection(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, err
+}
+
+// getWsApiEndpoint return the base endpoint of the API WS according the UseTestnet flag
+func getWsApiEndpoint() string {
+	if UseTestnet {
+		return BaseWsApiTestnetURL
+	}
+	if UseDemo {
+		return BaseWsApiDemoURL
+	}
+	return BaseWsApiMainURL
 }

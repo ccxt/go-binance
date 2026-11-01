@@ -1,3 +1,5 @@
 pkg/
 .idea
 *.iml
+coverage.txt
+vendor/

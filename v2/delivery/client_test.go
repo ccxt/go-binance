@@ -3,7 +3,7 @@ package delivery
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -85,7 +85,7 @@ func anyHTTPRequest() mock.AnythingOfTypeArgument {
 
 func newHTTPResponse(data []byte, statusCode int) *http.Response {
 	return &http.Response{
-		Body:       ioutil.NopCloser(bytes.NewBuffer(data)),
+		Body:       io.NopCloser(bytes.NewBuffer(data)),
 		StatusCode: statusCode,
 	}
 }

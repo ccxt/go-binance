@@ -9,7 +9,7 @@ import (
 
 type websocketServiceTestSuite struct {
 	baseTestSuite
-	origWsServe func(*WsConfig, WsHandler, ErrHandler) (chan struct{}, chan struct{}, error)
+	origWsServe func(*WsConfig, WsHandler, ErrHandler, ConnHandler) (chan struct{}, chan struct{}, error)
 	serveCount  int
 }
 
@@ -18,16 +18,16 @@ func TestWebsocketService(t *testing.T) {
 }
 
 func (s *websocketServiceTestSuite) SetupTest() {
-	s.origWsServe = wsServe
+	s.origWsServe = wsServeWithConnHandler
 }
 
 func (s *websocketServiceTestSuite) TearDownTest() {
-	wsServe = s.origWsServe
+	wsServeWithConnHandler = s.origWsServe
 	s.serveCount = 0
 }
 
 func (s *websocketServiceTestSuite) mockWsServe(data []byte, err error) {
-	wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, innerErr error) {
+	wsServeWithConnHandler = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler, connHandler ConnHandler) (doneC, stopC chan struct{}, innerErr error) {
 		s.serveCount++
 		doneC = make(chan struct{})
 		stopC = make(chan struct{})
@@ -680,6 +680,73 @@ func (s *websocketServiceTestSuite) TestWsCombinedKlineServe() {
 	<-doneC
 }
 
+func (s *websocketServiceTestSuite) TestWsCombinedKlineServeMultiInterval() {
+	data := []byte(`{
+	"stream":"ethbtc@kline_1m",
+	"data": {
+        "e": "kline",
+        "E": 1499404907056,
+        "s": "ETHBTC",
+        "k": {
+            "t": 1499404860000,
+            "T": 1499404919999,
+            "s": "ETHBTC",
+            "i": "1m",
+            "f": 77462,
+            "L": 77465,
+            "o": "0.10278577",
+            "c": "0.10278645",
+            "h": "0.10278712",
+            "l": "0.10278518",
+            "v": "17.47929838",
+            "n": 4,
+            "x": false,
+            "q": "1.79662878",
+            "V": "2.34879839",
+            "Q": "0.24142166",
+            "B": "13279784.01349473"
+        }
+	}}`)
+	fakeErrMsg := "fake error"
+	s.mockWsServe(data, errors.New(fakeErrMsg))
+	defer s.assertWsServe()
+
+	input := map[string][]string{
+		"ETHBTC": {"1m", "5m"},
+	}
+	doneC, stopC, err := WsCombinedKlineServeMultiInterval(input, func(event *WsKlineEvent) {
+		e := &WsKlineEvent{
+			Event:  "kline",
+			Time:   1499404907056,
+			Symbol: "ETHBTC",
+			Kline: WsKline{
+				StartTime:            1499404860000,
+				EndTime:              1499404919999,
+				Symbol:               "ETHBTC",
+				Interval:             "1m",
+				FirstTradeID:         77462,
+				LastTradeID:          77465,
+				Open:                 "0.10278577",
+				Close:                "0.10278645",
+				High:                 "0.10278712",
+				Low:                  "0.10278518",
+				Volume:               "17.47929838",
+				TradeNum:             4,
+				IsFinal:              false,
+				QuoteVolume:          "1.79662878",
+				ActiveBuyVolume:      "2.34879839",
+				ActiveBuyQuoteVolume: "0.24142166",
+			},
+		}
+		s.assertWsKlineEventEqual(e, event)
+	}, func(err error) {
+		s.r().EqualError(err, fakeErrMsg)
+	})
+	s.r().NoError(err)
+	stopC <- struct{}{}
+	<-doneC
+}
+
 func (s *websocketServiceTestSuite) TestWsCombinedAggTradeServe() {
 	data := []byte(`{
 	"stream":"ethbtc@aggTrade",
@@ -805,6 +872,25 @@ func (s *websocketServiceTestSuite) assertBalanceUpdate(e, a *WsBalanceUpdate) {
 	r.Equal(e.TransactionTime, a.TransactionTime)
 }
 
+func (s *websocketServiceTestSuite) assertOCOUpdate(e, a *WsOCOUpdate) {
+	r := s.r()
+	r.Equal(e.Symbol, a.Symbol, "Symbol")
+	r.Equal(e.OrderListId, a.OrderListId, "OrderListId")
+	r.Equal(e.ContingencyType, a.ContingencyType, "ContingencyType")
+	r.Equal(e.ListStatusType, a.ListStatusType, "ListStatusType")
+	r.Equal(e.ListOrderStatus, a.ListOrderStatus, "ListOrderStatus")
+	r.Equal(e.RejectReason, a.RejectReason, "RejectReason")
+	r.Equal(e.ClientOrderId, a.ClientOrderId, "ClientOrderId")
+	r.Equal(e.TransactionTime, a.TransactionTime, "TransactionTime")
+	r.Len(a.Orders.WsOCOOrders, len(e.Orders.WsOCOOrders), "Orders")
+	for i, eo := range e.Orders.WsOCOOrders {
+		ao := a.Orders.WsOCOOrders[i]
+		r.Equal(eo.Symbol, ao.Symbol, "Orders.Symbol")
+		r.Equal(eo.OrderId, ao.OrderId, "Orders.OrderId")
+		r.Equal(eo.ClientOrderId, ao.ClientOrderId, "Orders.ClientOrderId")
+	}
+}
+
 func (s *websocketServiceTestSuite) assertUserDataEvent(e, a *WsUserDataEvent) {
 	r := s.r()
 	r.Equal(e.Event, a.Event, "Event")
@@ -815,6 +901,7 @@ func (s *websocketServiceTestSuite) assertUserDataEvent(e, a *WsUserDataEvent) {
 	}
 	s.assertOrderUpdate(&e.OrderUpdate, &a.OrderUpdate)
 	s.assertBalanceUpdate(&e.BalanceUpdate, &a.BalanceUpdate)
+	s.assertOCOUpdate(&e.OCOUpdate, &a.OCOUpdate)
 }
 
 func (s *websocketServiceTestSuite) testWsUserDataServe(data []byte, expectedEvent *WsUserDataEvent) {
@@ -1128,6 +1215,64 @@ func (s *websocketServiceTestSuite) TestWsUserDataServeOrderUpdateWithTradeOrder
 			QuoteVolume:             "0.00000000",
 			WorkingTime:             1709393640518,
 			SelfTradePreventionMode: "EXPIRE_MAKER",
+		},
+	}
+	s.testWsUserDataServe(data, expectedEvent)
+}
+
+func (s *websocketServiceTestSuite) TestWsUserDataServeListStatus() {
+	// Using example data from the API documentation:
+	// https://github.com/binance/binance-spot-api-docs/blob/master/user-data-stream.md#order-update
+	data := []byte(`{
+	   "e": "listStatus",
+	   "E": 1564035303637,
+	   "s": "ETHBTC",
+	   "g": 2,
+	   "c": "OCO",
+	   "l": "EXEC_STARTED",
+	   "L": "EXECUTING",
+	   "r": "NONE",
+	   "C": "F4QN4G8DlFATFlIUQ0cjdD",
+	   "T": 1564035303625,
+	   "O": [
+	      {
+	         "s": "ETHBTC",
+	         "i": 17,
+	         "c": "AJYsMjErWJesZvqlJCTUgL"
+	      },
+	      {
+	         "s": "ETHBTC",
+	         "i": 18,
+	         "c": "bfYPSQdLoqAJeNrOr9adzq"
+	      }
+	   ]
+	}`)
+	expectedEvent := &WsUserDataEvent{
+		Event: "listStatus",
+		Time:  1564035303637,
+		OCOUpdate: WsOCOUpdate{
+			Symbol:          "ETHBTC",
+			OrderListId:     2,
+			ContingencyType: "OCO",
+			ListStatusType:  "EXEC_STARTED",
+			ListOrderStatus: "EXECUTING",
+			RejectReason:    "NONE",
+			ClientOrderId:   "F4QN4G8DlFATFlIUQ0cjdD",
+			TransactionTime: 1564035303625,
+			Orders: WsOCOOrderList{
+				WsOCOOrders: []WsOCOOrder{
+					{
+						Symbol:        "ETHBTC",
+						OrderId:       17,
+						ClientOrderId: "AJYsMjErWJesZvqlJCTUgL",
+					},
+					{
+						Symbol:        "ETHBTC",
+						OrderId:       18,
+						ClientOrderId: "bfYPSQdLoqAJeNrOr9adzq",
+					},
+				},
+			},
 		},
 	}
 	s.testWsUserDataServe(data, expectedEvent)
@@ -1677,4 +1822,62 @@ func (s *websocketServiceTestSuite) assertWsBookTickerEvent(e, a *WsBookTickerEv
 	r.Equal(e.BestBidQty, a.BestBidQty, "BestBidQty")
 	r.Equal(e.BestAskPrice, a.BestAskPrice, "BestAskPrice")
 	r.Equal(e.BestAskQty, a.BestAskQty, "BestAskQty")
+}
+
+// https://binance-docs.github.io/apidocs/spot/en/#all-book-tickers-stream
+func (s *websocketServiceTestSuite) TestWsAnnouncementServe() {
+	data := []byte(`{
+  "type": "DATA",
+  "topic": "com_announcement_en",
+  "data": "{\"catalogId\":161,\"catalogName\":\"Delisting\",\"publishDate\":1753257631403,\"title\":\"Notice of...\",\"body\":\"This is...\",\"disclaimer\":\"Trade on-the-go...\"}"
+}`)
+	fakeErrMsg := "fake error"
+	s.mockWsServe(data, errors.New(fakeErrMsg))
+	defer s.assertWsServe()
+
+	doneC, stopC, err := WsAnnouncementServe(WsAnnouncementParam{}, func(event *WsAnnouncementEvent) {
+		e := &WsAnnouncementEvent{
+			CatalogID:   161,
+			CatalogName: "Delisting",
+			PublishDate: 1753257631403,
+			Title:       "Notice of...",
+			Body:        "This is...",
+			Disclaimer:  "Trade on-the-go...",
+		}
+		s.assertWsAnnouncementEvent(e, event)
+	},
+		func(err error) {
+			s.r().EqualError(err, fakeErrMsg)
+		})
+
+	s.r().NoError(err)
+	stopC <- struct{}{}
+	<-doneC
+}
+
+func (s *websocketServiceTestSuite) assertWsAnnouncementEvent(e, a *WsAnnouncementEvent) {
+	r := s.r()
+	r.Equal(e.CatalogID, a.CatalogID, "CatalogID")
+	r.Equal(e.CatalogName, a.CatalogName, "CatalogName")
+	r.Equal(e.PublishDate, a.PublishDate, "PublishDate")
+	r.Equal(e.Title, a.Title, "Title")
+	r.Equal(e.Body, a.Body, "Body")
+	r.Equal(e.Disclaimer, a.Disclaimer, "Disclaimer")
+}
+
+func (s *websocketServiceTestSuite) TestWsUserDataServeSignatureErrorWithEmptyCredentials() {
+	apiKey := ""
+	secretKey := ""
+	keyType := "HMAC"
+	timeOffset := int64(0)
+
+	handler := func(event *WsUserDataEvent) {
+	}
+
+	errHandler := func(err error) {
+	}
+
+	_, _, err := WsUserDataServeSignature(apiKey, secretKey, keyType, timeOffset, handler, errHandler)
+
+	s.r().Error(err)
 }

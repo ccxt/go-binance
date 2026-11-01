@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/0x090909/go-binance/v2/common"
@@ -13,23 +14,26 @@ import (
 
 // CreateOrderService create order
 type CreateOrderService struct {
-	c                *Client
-	symbol           string
-	side             SideType
-	positionSide     *PositionSideType
-	orderType        OrderType
-	timeInForce      *TimeInForceType
-	quantity         string
-	reduceOnly       *bool
-	price            *string
-	newClientOrderID *string
-	stopPrice        *string
-	workingType      *WorkingType
-	activationPrice  *string
-	callbackRate     *string
-	priceProtect     *bool
-	newOrderRespType NewOrderRespType
-	closePosition    *bool
+	c                       *Client
+	symbol                  string
+	side                    SideType
+	positionSide            *PositionSideType
+	orderType               OrderType
+	timeInForce             *TimeInForceType
+	quantity                string
+	reduceOnly              *string
+	price                   *string
+	newClientOrderID        *string
+	stopPrice               *string
+	workingType             *WorkingType
+	activationPrice         *string
+	callbackRate            *string
+	priceProtect            *string
+	newOrderRespType        NewOrderRespType
+	priceMatch              *PriceMatchType
+	closePosition           *string
+	selfTradePreventionMode *SelfTradePreventionMode
+	goodTillDate            int64
 }
 
 // Symbol set symbol
@@ -70,13 +74,20 @@ func (s *CreateOrderService) Quantity(quantity string) *CreateOrderService {
 
 // ReduceOnly set reduceOnly
 func (s *CreateOrderService) ReduceOnly(reduceOnly bool) *CreateOrderService {
-	s.reduceOnly = &reduceOnly
+	reduceOnlyStr := strconv.FormatBool(reduceOnly)
+	s.reduceOnly = &reduceOnlyStr
 	return s
 }
 
 // Price set price
 func (s *CreateOrderService) Price(price string) *CreateOrderService {
 	s.price = &price
+	return s
+}
+
+// PriceMatch set priceMatch
+func (s *CreateOrderService) PriceMatch(priceMatch PriceMatchType) *CreateOrderService {
+	s.priceMatch = &priceMatch
 	return s
 }
 
@@ -112,7 +123,8 @@ func (s *CreateOrderService) CallbackRate(callbackRate string) *CreateOrderServi
 
 // PriceProtect set priceProtect
 func (s *CreateOrderService) PriceProtect(priceProtect bool) *CreateOrderService {
-	s.priceProtect = &priceProtect
+	priceProtectStr := strconv.FormatBool(priceProtect)
+	s.priceProtect = &priceProtectStr
 	return s
 }
 
@@ -124,12 +136,24 @@ func (s *CreateOrderService) NewOrderResponseType(newOrderResponseType NewOrderR
 
 // ClosePosition set closePosition
 func (s *CreateOrderService) ClosePosition(closePosition bool) *CreateOrderService {
-	s.closePosition = &closePosition
+	closePositionStr := strconv.FormatBool(closePosition)
+	s.closePosition = &closePositionStr
+	return s
+}
+
+// SelfTradePreventionMode set selfTradePreventionMode
+func (s *CreateOrderService) SelfTradePreventionMode(selfTradePreventionMode SelfTradePreventionMode) *CreateOrderService {
+	s.selfTradePreventionMode = &selfTradePreventionMode
+	return s
+}
+
+// GoodTillDate set goodTillDate
+func (s *CreateOrderService) GoodTillDate(goodTillDate int64) *CreateOrderService {
+	s.goodTillDate = goodTillDate
 	return s
 }
 
 func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
-
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: endpoint,
@@ -156,8 +180,13 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	if s.price != nil {
 		m["price"] = *s.price
 	}
+	if s.priceMatch != nil {
+		m["priceMatch"] = *s.priceMatch
+	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSwapId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice
@@ -176,6 +205,12 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.closePosition != nil {
 		m["closePosition"] = *s.closePosition
+	}
+	if s.selfTradePreventionMode != nil {
+		m["selfTradePreventionMode"] = *s.selfTradePreventionMode
+	}
+	if s.goodTillDate > 0 && *s.timeInForce == TimeInForceTypeGTD {
+		m["goodTillDate"] = s.goodTillDate
 	}
 	r.setFormParams(m)
 	data, header, err = s.c.callAPI(ctx, r, opts...)
@@ -232,6 +267,143 @@ type CreateOrderResponse struct {
 	OrigType                OrderType        `json:"origType"`                    //
 	RateLimitOrder10s       string           `json:"rateLimitOrder10s,omitempty"` //
 	RateLimitOrder1m        string           `json:"rateLimitOrder1m,omitempty"`  //
+}
+
+// ModifyOrderService create order
+type ModifyOrderService struct {
+	c                 *Client
+	orderID           *int64
+	origClientOrderID *string
+	symbol            string
+	side              SideType
+	quantity          string
+	price             *string
+	priceMatch        *PriceMatchType
+}
+
+// Symbol set symbol
+func (s *ModifyOrderService) Symbol(symbol string) *ModifyOrderService {
+	s.symbol = symbol
+	return s
+}
+
+// OrderID will prevail over OrigClientOrderID
+func (s *ModifyOrderService) OrderID(orderID int64) *ModifyOrderService {
+	s.orderID = &orderID
+	return s
+}
+
+// OrigClientOrderID is not necessary if OrderID is provided
+func (s *ModifyOrderService) OrigClientOrderID(origClientOrderID string) *ModifyOrderService {
+	s.origClientOrderID = &origClientOrderID
+	return s
+}
+
+// Side set side
+func (s *ModifyOrderService) Side(side SideType) *ModifyOrderService {
+	s.side = side
+	return s
+}
+
+// Quantity set quantity
+func (s *ModifyOrderService) Quantity(quantity string) *ModifyOrderService {
+	s.quantity = quantity
+	return s
+}
+
+// Price set price
+func (s *ModifyOrderService) Price(price string) *ModifyOrderService {
+	s.price = &price
+	return s
+}
+
+// PriceMatch set priceMatch
+func (s *ModifyOrderService) PriceMatch(priceMatch PriceMatchType) *ModifyOrderService {
+	s.priceMatch = &priceMatch
+	return s
+}
+
+func (s *ModifyOrderService) modifyOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+	r := &request{
+		method:   http.MethodPut,
+		endpoint: endpoint,
+		secType:  secTypeSigned,
+	}
+	m := params{
+		"symbol":   s.symbol,
+		"side":     s.side,
+		"quantity": s.quantity,
+	}
+	if s.orderID != nil {
+		m["orderId"] = *s.orderID
+	}
+	if s.origClientOrderID != nil {
+		m["origClientOrderId"] = *s.origClientOrderID
+	}
+	if s.price != nil {
+		m["price"] = *s.price
+	}
+	if s.priceMatch != nil {
+		m["priceMatch"] = *s.priceMatch
+	}
+	r.setFormParams(m)
+	data, header, err = s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return []byte{}, &http.Header{}, err
+	}
+	return data, header, nil
+}
+
+// Do send request:
+//   - Either orderId or origClientOrderId must be sent, and the orderId will prevail if both are sent
+//   - Either price or priceMatch must be sent. Sending both will fail the request
+//   - When the new quantity or price doesn't satisfy PriceFilter / PercentPriceFilter / LotSizeFilter,
+//     amendment will be rejected and the order will stay as it is
+//   - However the order will be cancelled by the amendment in the following situations:
+//     -- when the order is in partially filled status and the new quantity <= executedQty
+//     -- when the order is TimeInForceTypeGTX and the new price will cause it to be executed immediately
+//   - One order can only be modified for less than 10000 times
+//   - Will set ModifyOrderResponse.SelfTradePreventionMode to "NONE"
+func (s *ModifyOrderService) Do(ctx context.Context, opts ...RequestOption) (res *ModifyOrderResponse, err error) {
+	data, _, err := s.modifyOrder(ctx, "/fapi/v1/order", opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(ModifyOrderResponse)
+	err = json.Unmarshal(data, res)
+
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+type ModifyOrderResponse struct {
+	OrderID                 int64            `json:"orderId"`
+	Symbol                  string           `json:"symbol"`
+	Pair                    string           `json:"pair"`
+	Status                  OrderStatusType  `json:"status"`
+	ClientOrderID           string           `json:"clientOrderId"`
+	Price                   string           `json:"price"`
+	AveragePrice            string           `json:"avgPrice"`
+	OriginalQuantity        string           `json:"origQty"`
+	ExecutedQuantity        string           `json:"executedQty"`
+	CumulativeQuantity      string           `json:"cumQty"`
+	CumulativeBase          string           `json:"cumBase"`
+	TimeInForce             TimeInForceType  `json:"timeInForce"`
+	Type                    OrderType        `json:"type"`
+	ReduceOnly              bool             `json:"reduceOnly"`
+	ClosePosition           bool             `json:"closePosition"`
+	Side                    SideType         `json:"side"`
+	PositionSide            PositionSideType `json:"positionSide"`
+	StopPrice               string           `json:"stopPrice"`
+	WorkingType             WorkingType      `json:"workingType"`
+	PriceProtect            bool             `json:"priceProtect"` // if conditional order trigger is protected
+	OriginalType            OrderType        `json:"origType"`
+	PriceMatch              PriceMatchType   `json:"priceMatch"`
+	SelfTradePreventionMode string           `json:"selfTradePreventionMode"`
+	GoodTillDate            int64            `json:"goodTillDate"` // order pre-set auto cancel time for TIF GTD order
+	UpdateTime              int64            `json:"updateTime"`
 }
 
 // ListOpenOrdersService list opened orders
@@ -380,7 +552,7 @@ type Order struct {
 	ReduceOnly              bool             `json:"reduceOnly"`
 	OrigQuantity            string           `json:"origQty"`
 	ExecutedQuantity        string           `json:"executedQty"`
-	CumQuantity             string           `json:"cumQty"`
+	CumQuantity             string           `json:"cumQty"` // deprecated: use ExecutedQuantity instead
 	CumQuote                string           `json:"cumQuote"`
 	Status                  OrderStatusType  `json:"status"`
 	TimeInForce             TimeInForceType  `json:"timeInForce"`
@@ -528,27 +700,28 @@ func (s *CancelOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 
 // CancelOrderResponse define response of canceling order
 type CancelOrderResponse struct {
-	ClientOrderID    string           `json:"clientOrderId"`
-	CumQuantity      string           `json:"cumQty"`
-	CumQuote         string           `json:"cumQuote"`
-	ExecutedQuantity string           `json:"executedQty"`
-	OrderID          int64            `json:"orderId"`
-	OrigQuantity     string           `json:"origQty"`
-	Price            string           `json:"price"`
-	ReduceOnly       bool             `json:"reduceOnly"`
-	Side             SideType         `json:"side"`
-	Status           OrderStatusType  `json:"status"`
-	StopPrice        string           `json:"stopPrice"`
-	Symbol           string           `json:"symbol"`
-	TimeInForce      TimeInForceType  `json:"timeInForce"`
-	Type             OrderType        `json:"type"`
-	UpdateTime       int64            `json:"updateTime"`
-	WorkingType      WorkingType      `json:"workingType"`
-	ActivatePrice    string           `json:"activatePrice"`
-	PriceRate        string           `json:"priceRate"`
-	OrigType         string           `json:"origType"`
-	PositionSide     PositionSideType `json:"positionSide"`
-	PriceProtect     bool             `json:"priceProtect"`
+	ClientOrderID           string                  `json:"clientOrderId"`
+	CumQuantity             string                  `json:"cumQty"` // deprecated: use ExecutedQuantity instead
+	CumQuote                string                  `json:"cumQuote"`
+	ExecutedQuantity        string                  `json:"executedQty"`
+	OrderID                 int64                   `json:"orderId"`
+	OrigQuantity            string                  `json:"origQty"`
+	Price                   string                  `json:"price"`
+	ReduceOnly              bool                    `json:"reduceOnly"`
+	Side                    SideType                `json:"side"`
+	Status                  OrderStatusType         `json:"status"`
+	StopPrice               string                  `json:"stopPrice"`
+	Symbol                  string                  `json:"symbol"`
+	TimeInForce             TimeInForceType         `json:"timeInForce"`
+	Type                    OrderType               `json:"type"`
+	UpdateTime              int64                   `json:"updateTime"`
+	WorkingType             WorkingType             `json:"workingType"`
+	ActivatePrice           string                  `json:"activatePrice"`
+	PriceRate               string                  `json:"priceRate"`
+	OrigType                string                  `json:"origType"`
+	PositionSide            PositionSideType        `json:"positionSide"`
+	PriceProtect            bool                    `json:"priceProtect"`
+	SelfTradePreventionMode SelfTradePreventionMode `json:"selfTradePreventionMode"`
 }
 
 // CancelAllOpenOrdersService cancel all open orders
@@ -618,7 +791,9 @@ func (s *CancelMultiplesOrdersService) Do(ctx context.Context, opts ...RequestOp
 		r.setFormParam("orderIdList", orderIDListString)
 	}
 	if s.origClientOrderIDList != nil {
-		r.setFormParam("origClientOrderIdList", s.origClientOrderIDList)
+		// convert a slice of strings to a string e.g. ["my_id_1","my_id_2"], encode the double quotes. No space after comma.
+		origClientOrderIDListString := "[\"" + strings.Join(s.origClientOrderIDList, "\",\"") + "\"]"
+		r.setFormParam("origClientOrderIdList", origClientOrderIDListString)
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -666,6 +841,7 @@ func (s *ListLiquidationOrdersService) Limit(limit int) *ListLiquidationOrdersSe
 }
 
 // Do send request
+// Deprecated: use /fapi/v1/forceOrders instead
 func (s *ListLiquidationOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*LiquidationOrder, err error) {
 	r := &request{
 		method:   http.MethodGet,
@@ -819,7 +995,7 @@ type CreateBatchOrdersResponse struct {
 	// List of orders which were placed successfully which can have a length between 0 and N
 	Orders []*Order
 	// List of errors of length N, where each item corresponds to a nil value if
-	// the order from that specific index was placed succeessfully OR an non-nil *APIError if there was an error with
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
 	// the order at that index
 	Errors []error
 }
@@ -867,6 +1043,8 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 		}
 		if order.newClientOrderID != nil {
 			m["newClientOrderId"] = *order.newClientOrderID
+		} else {
+			m["newClientOrderId"] = common.GenerateSwapId()
 		}
 		if order.stopPrice != nil {
 			m["stopPrice"] = *order.stopPrice
@@ -933,4 +1111,177 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 	}
 
 	return batchCreateOrdersResponse, nil
+}
+
+// ModifyOrder contains parameters for order modification request
+type ModifyOrder struct {
+	orderID           *int64
+	origClientOrderID *string
+	symbol            string
+	side              SideType
+	quantity          string
+	price             *string
+	priceMatch        *PriceMatchType
+}
+
+// Symbol set symbol
+func (s *ModifyOrder) Symbol(symbol string) *ModifyOrder {
+	s.symbol = symbol
+	return s
+}
+
+// OrderID will prevail over OrigClientOrderID
+func (s *ModifyOrder) OrderID(orderID int64) *ModifyOrder {
+	s.orderID = &orderID
+	return s
+}
+
+// OrigClientOrderID is not necessary if OrderID is provided
+func (s *ModifyOrder) OrigClientOrderID(origClientOrderID string) *ModifyOrder {
+	s.origClientOrderID = &origClientOrderID
+	return s
+}
+
+// Side set side
+func (s *ModifyOrder) Side(side SideType) *ModifyOrder {
+	s.side = side
+	return s
+}
+
+// Quantity set quantity
+func (s *ModifyOrder) Quantity(quantity string) *ModifyOrder {
+	s.quantity = quantity
+	return s
+}
+
+// Price set price
+func (s *ModifyOrder) Price(price string) *ModifyOrder {
+	s.price = &price
+	return s
+}
+
+// PriceMatch set priceMatch
+func (s *ModifyOrder) PriceMatch(priceMatch PriceMatchType) *ModifyOrder {
+	s.priceMatch = &priceMatch
+	return s
+}
+
+// ModifyBatchOrdersService handles batch modification of orders
+type ModifyBatchOrdersService struct {
+	c      *Client
+	orders []*ModifyOrder
+}
+
+// CreateBatchOrdersResponse contains the response from CreateBatchOrders operation
+type ModifyBatchOrdersResponse struct {
+	// Total number of messages in the response
+	N int
+	// List of orders which were modified successfully which can have a length between 0 and N
+	Orders []*Order
+	// List of errors of length N, where each item corresponds to a nil value if
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
+	// the order at that index
+	Errors []error
+}
+
+func newModifyBatchOrdersResponse(n int) *ModifyBatchOrdersResponse {
+	return &ModifyBatchOrdersResponse{
+		N:      n,
+		Errors: make([]error, n),
+	}
+}
+
+// OrderList set the list of ModifyOrder to be used in the ModifyBatchOrders operation
+func (s *ModifyBatchOrdersService) OrderList(orders []*ModifyOrder) *ModifyBatchOrdersService {
+	s.orders = orders
+	return s
+}
+
+// Do sends a request to modify a batch of orders.
+// It constructs the necessary parameters for each order and marshals them into a JSON payload.
+// The function returns a ModifyBatchOrdersResponse, which contains the results of the modification attempt.
+func (s *ModifyBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res *ModifyBatchOrdersResponse, err error) {
+	// Create a new request with method PUT and the appropriate endpoint.
+	r := &request{
+		method:   http.MethodPut,
+		endpoint: "/fapi/v1/batchOrders",
+		secType:  secTypeSigned,
+	}
+
+	orders := []params{}
+	// Iterate through the orders to construct parameters for each order.
+	for _, order := range s.orders {
+		m := params{
+			"symbol":   order.symbol,
+			"side":     order.side,
+			"quantity": order.quantity,
+			"price":    order.price,
+		}
+
+		// Convert orderID to string to avoid API error with code -1102.
+		if order.orderID != nil {
+			m["orderId"] = strconv.FormatInt(*order.orderID, 10)
+		}
+		if order.origClientOrderID != nil {
+			m["origClientOrderId"] = *order.origClientOrderID
+		} else {
+			m["newClientOrderId"] = common.GenerateSwapId()
+		}
+		if order.priceMatch != nil {
+			m["priceMatch"] = *order.priceMatch
+		}
+
+		orders = append(orders, m)
+	}
+
+	// Marshal the orders into a JSON payload.
+	b, err := json.Marshal(orders)
+	if err != nil {
+		return &ModifyBatchOrdersResponse{}, err
+	}
+
+	// Set the marshaled orders as form parameters.
+	m := params{
+		"batchOrders": string(b),
+	}
+	r.setFormParams(m)
+
+	// Call the API with the constructed request.
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return &ModifyBatchOrdersResponse{}, err
+	}
+
+	rawMessages := make([]*json.RawMessage, 0)
+	// Unmarshal the response into raw JSON messages.
+	err = json.Unmarshal(data, &rawMessages)
+	if err != nil {
+		return &ModifyBatchOrdersResponse{}, err
+	}
+
+	// Create a response object to hold the results.
+	batchModifyOrdersResponse := newModifyBatchOrdersResponse(len(rawMessages))
+	for i, j := range rawMessages {
+		// Check if the response contains an API error.
+		e := new(common.APIError)
+		if err := json.Unmarshal(*j, e); err != nil {
+			return nil, err
+		}
+
+		// If there's an error code or message, record it and continue.
+		if e.Code > 0 || e.Message != "" {
+			batchModifyOrdersResponse.Errors[i] = e
+			continue
+		}
+
+		// Otherwise, unmarshal the order information.
+		o := new(Order)
+		if err := json.Unmarshal(*j, o); err != nil {
+			return nil, err
+		}
+
+		batchModifyOrdersResponse.Orders = append(batchModifyOrdersResponse.Orders, o)
+	}
+
+	return batchModifyOrdersResponse, nil
 }

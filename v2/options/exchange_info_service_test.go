@@ -122,7 +122,7 @@ func (s *exchangeInfoServiceTestSuite) TestExchangeInfo() {
 			{
 				ContractId: 2,
 				ExpiryDate: 1660521600000,
-				Filters: []map[string]interface{}{
+				Filters: []map[string]any{
 					{"filterType": "PRICE_FILTER", "minPrice": "0.02", "maxPrice": "80000.01", "tickSize": "0.01"},
 					{"filterType": "LOT_SIZE", "minQty": "0.01", "maxQty": "100", "stepSize": "0.01"},
 				},

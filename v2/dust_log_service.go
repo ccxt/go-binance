@@ -11,6 +11,7 @@ package binance
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 )
 
@@ -70,13 +71,13 @@ type DustResult struct {
 // UserAssetDribblet represents one dust log row
 type UserAssetDribblet struct {
 	OperateTime              int64                     `json:"operateTime"`
-	TotalTransferedAmount    string                    `json:"totalTransferedAmount"`    //Total transfered BNB amount for this exchange.
+	TotalTransferedAmount    string                    `json:"totalTransferedAmount"`    //Total transferred BNB amount for this exchange.
 	TotalServiceChargeAmount string                    `json:"totalServiceChargeAmount"` //Total service charge amount for this exchange.
 	TransID                  int64                     `json:"transId"`
 	UserAssetDribbletDetails []UserAssetDribbletDetail `json:"userAssetDribbletDetails"` //Details of this exchange.
 }
 
-// DustLog represents one dust log informations
+// DustLog represents one dust log information
 type UserAssetDribbletDetail struct {
 	TransID             int    `json:"transId"`
 	ServiceChargeAmount string `json:"serviceChargeAmount"`

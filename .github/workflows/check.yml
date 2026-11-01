@@ -10,6 +10,14 @@ on:
   workflow_dispatch:
 
 jobs:
+  TyposCheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crate-ci/typos@v1.22.7
+        with:
+          config: ./typos.toml
+          
   UnitTest:
     runs-on: ubuntu-latest
     steps:
@@ -26,3 +34,5 @@ jobs:
       run: ./check.sh vet
     - name: UnitTest
       run: ./check.sh unittest
+    # - name: IntegrationTest
+    #   run: ./check.sh integration

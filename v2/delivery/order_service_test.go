@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -71,15 +72,15 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 			"type":             orderType,
 			"timeInForce":      timeInForce,
 			"quantity":         quantity,
-			"reduceOnly":       reduceOnly,
+			"reduceOnly":       strconv.FormatBool(reduceOnly),
 			"price":            price,
 			"newClientOrderId": newClientOrderID,
 			"stopPrice":        stopPrice,
-			"closePosition":    closePosition,
+			"closePosition":    strconv.FormatBool(closePosition),
 			"activationPrice":  activationPrice,
 			"callbackRate":     callbackRate,
 			"workingType":      workingType,
-			"priceProtect":     priceProtect,
+			"priceProtect":     strconv.FormatBool(priceProtect),
 			"newOrderRespType": newOrderResponseType,
 		})
 		s.assertRequestEqual(e, r)

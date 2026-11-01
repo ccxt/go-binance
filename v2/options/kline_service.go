@@ -99,16 +99,16 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 
 // Kline define kline info
 type Kline struct {
-	OpenTime    int64  `json:"openTime"`
 	Open        string `json:"open"`
 	High        string `json:"high"`
 	Low         string `json:"low"`
 	Close       string `json:"close"`
-	CloseTime   int64  `json:"closeTime"`
-	Amount      string `json:"amount"`
-	TakerAmount string `json:"takerAmount"`
 	Volume      string `json:"volume"`
-	TakerVolume string `json:"takerVolume"`
+	Amount      string `json:"amount"`
 	Interval    string `json:"interval"`
 	TradeCount  int64  `json:"tradeCount"`
+	TakerVolume string `json:"takerVolume"`
+	TakerAmount string `json:"takerAmount"`
+	OpenTime    int64  `json:"openTime"`
+	CloseTime   int64  `json:"closeTime"`
 }

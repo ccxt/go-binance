@@ -228,7 +228,7 @@ func (s *accountServiceTestSuite) assertAccountEqual(e, a *Account) {
 		r.Equal(e.Assets[i].MarginBalance, a.Assets[i].MarginBalance, "MarginBalance")
 		r.Equal(e.Assets[i].MaxWithdrawAmount, a.Assets[i].MaxWithdrawAmount, "MaxWithdrawAmount")
 		r.Equal(e.Assets[i].OpenOrderInitialMargin, a.Assets[i].OpenOrderInitialMargin, "OpenOrderInitialMargin")
-		r.Equal(e.Assets[i].PositionInitialMargin, e.Assets[i].PositionInitialMargin, "PossitionInitialMargin")
+		r.Equal(e.Assets[i].PositionInitialMargin, e.Assets[i].PositionInitialMargin, "PositionInitialMargin")
 		r.Equal(e.Assets[i].UnrealizedProfit, a.Assets[i].UnrealizedProfit, "UnrealizedProfit")
 		r.Equal(e.Assets[i].WalletBalance, a.Assets[i].WalletBalance, "WalletBalance")
 	}

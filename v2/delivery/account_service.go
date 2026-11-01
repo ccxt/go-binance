@@ -93,7 +93,7 @@ type AccountAsset struct {
 	AvailableBalance       string `json:"availableBalance"`
 }
 
-// AccountPosition define accoutn position
+// AccountPosition define account position
 type AccountPosition struct {
 	Symbol                 string `json:"symbol"`
 	PositionAmt            string `json:"positionAmt"`

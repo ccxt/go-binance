@@ -45,16 +45,22 @@ func (s *accountServiceTestSuite) TestGetAccount() {
 			],
 			"permissions": [
 				"SPOT"
-			]
+			],
+            "uid": 354937868
   }`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
+
+	omitZeroBalances := true
+
 	s.assertReq(func(r *request) {
-		e := newSignedRequest()
+		e := newSignedRequest().setParams(params{
+			"omitZeroBalances": omitZeroBalances,
+		})
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewGetAccountService().Do(newContext())
+	res, err := s.client.NewGetAccountService().OmitZeroBalances(omitZeroBalances).Do(newContext())
 	s.r().NoError(err)
 	e := &Account{
 		MakerCommission:  15,
@@ -85,6 +91,7 @@ func (s *accountServiceTestSuite) TestGetAccount() {
 			},
 		},
 		Permissions: []string{"SPOT"},
+		UID:         354937868,
 	}
 	s.assertAccountEqual(e, res)
 }
@@ -108,6 +115,7 @@ func (s *accountServiceTestSuite) assertAccountEqual(e, a *Account) {
 		r.Equal(e.Balances[i].Free, a.Balances[i].Free, "Free")
 		r.Equal(e.Balances[i].Locked, a.Balances[i].Locked, "Locked")
 	}
+	r.Equal(e.UID, a.UID, "UID")
 }
 
 func (s *accountServiceTestSuite) TestGetAccountSnapshot() {

@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/adshao/go-binance/v2/common"
 )
 
 // CreateOrderService create order
@@ -15,15 +18,15 @@ type CreateOrderService struct {
 	orderType        OrderType
 	timeInForce      *TimeInForceType
 	quantity         string
-	reduceOnly       *bool
+	reduceOnly       *string
 	price            *string
 	newClientOrderID *string
 	stopPrice        *string
-	closePosition    *bool
+	closePosition    *string
 	activationPrice  *string
 	callbackRate     *string
 	workingType      *WorkingType
-	priceProtect     *bool
+	priceProtect     *string
 	newOrderRespType NewOrderRespType
 }
 
@@ -65,7 +68,8 @@ func (s *CreateOrderService) Quantity(quantity string) *CreateOrderService {
 
 // ReduceOnly set reduceOnly
 func (s *CreateOrderService) ReduceOnly(reduceOnly bool) *CreateOrderService {
-	s.reduceOnly = &reduceOnly
+	reduceOnlyStr := strconv.FormatBool(reduceOnly)
+	s.reduceOnly = &reduceOnlyStr
 	return s
 }
 
@@ -107,7 +111,8 @@ func (s *CreateOrderService) CallbackRate(callbackRate string) *CreateOrderServi
 
 // PriceProtect set priceProtect
 func (s *CreateOrderService) PriceProtect(priceProtect bool) *CreateOrderService {
-	s.priceProtect = &priceProtect
+	priceProtectStr := strconv.FormatBool(priceProtect)
+	s.priceProtect = &priceProtectStr
 	return s
 }
 
@@ -119,7 +124,8 @@ func (s *CreateOrderService) NewOrderResponseType(newOrderResponseType NewOrderR
 
 // ClosePosition set closePosition
 func (s *CreateOrderService) ClosePosition(closePosition bool) *CreateOrderService {
-	s.closePosition = &closePosition
+	closePositionStr := strconv.FormatBool(closePosition)
+	s.closePosition = &closePositionStr
 	return s
 }
 
@@ -150,6 +156,8 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSwapId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice

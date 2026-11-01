@@ -3,12 +3,23 @@ package common
 import (
 	"bytes"
 	"fmt"
-	"math"
+	"strings"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
-// AmountToLotSize converts an amount to a lot sized amount
-func AmountToLotSize(lot float64, precision int, amount float64) float64 {
-	return math.Trunc(math.Floor(amount/lot)*lot*math.Pow10(precision)) / math.Pow10(precision)
+// AmountToLotSize convert amount to lot size
+func AmountToLotSize(amount, minQty, stepSize string, precision int) string {
+	amountDec := decimal.RequireFromString(amount)
+	minQtyDec := decimal.RequireFromString(minQty)
+	baseAmountDec := amountDec.Sub(minQtyDec)
+	if baseAmountDec.LessThan(decimal.Zero) {
+		return "0"
+	}
+	stepSizeDec := decimal.RequireFromString(stepSize)
+	baseAmountDec = baseAmountDec.Div(stepSizeDec).Truncate(0).Mul(stepSizeDec)
+	return baseAmountDec.Add(minQtyDec).Truncate(int32(precision)).String()
 }
 
 // ToJSONList convert v to json list if v is a map
@@ -23,7 +34,7 @@ func ToJSONList(v []byte) []byte {
 	return v
 }
 
-func ToInt(digit interface{}) (i int, err error) {
+func ToInt(digit any) (i int, err error) {
 	if intVal, ok := digit.(int); ok {
 		return int(intVal), nil
 	}
@@ -33,7 +44,7 @@ func ToInt(digit interface{}) (i int, err error) {
 	return 0, fmt.Errorf("unexpected digit: %v", digit)
 }
 
-func ToInt64(digit interface{}) (i int64, err error) {
+func ToInt64(digit any) (i int64, err error) {
 	if intVal, ok := digit.(int); ok {
 		return int64(intVal), nil
 	}
@@ -41,4 +52,25 @@ func ToInt64(digit interface{}) (i int64, err error) {
 		return int64(floatVal), nil
 	}
 	return 0, fmt.Errorf("unexpected digit: %v", digit)
+}
+
+const (
+	SPOT_ORDER_PREFIX     = "x-TKT5PX2F"
+	CONTRACT_ORDER_PREFIX = "x-cvBPrNm9"
+)
+
+func BaseUID() string {
+	return strings.ReplaceAll(uuid.New().String(), "-", "")
+}
+
+func Uuid22() string {
+	return BaseUID()[:22]
+}
+
+func GenerateSpotId() string {
+	return SPOT_ORDER_PREFIX + Uuid22()
+}
+
+func GenerateSwapId() string {
+	return CONTRACT_ORDER_PREFIX + Uuid22()
 }

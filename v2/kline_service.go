@@ -14,6 +14,7 @@ type KlinesService struct {
 	limit     *int
 	startTime *int64
 	endTime   *int64
+	timeZone  *string // Default: 0 (UTC)
 }
 
 // Symbol set symbol
@@ -46,6 +47,12 @@ func (s *KlinesService) EndTime(endTime int64) *KlinesService {
 	return s
 }
 
+// TimeZone set timeZone
+func (s *KlinesService) TimeZone(timeZone string) *KlinesService {
+	s.timeZone = &timeZone
+	return s
+}
+
 // Do send request
 func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*Kline, err error) {
 	r := &request{
@@ -62,6 +69,9 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 	}
 	if s.endTime != nil {
 		r.setParam("endTime", *s.endTime)
+	}
+	if s.timeZone != nil {
+		r.setParam("timeZone", *s.timeZone)
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {

@@ -1,0 +1,30 @@
+[files]
+ignore-files = true
+ignore-hidden = false
+extend-exclude = [
+    ".git/",
+    "v2/go.mod",
+    "v2/go.sum",
+    "v2/go.work.sum",
+]
+
+
+[default]
+extend-ignore-re=[
+    "ios_54d9b18d8e7a4caf9d149573e16480ba",
+    "Pn",
+    "SIZ9",
+    "alo",
+    "ot",
+    "[Cc]ummulative",
+    "OTU",
+    "[Tt]ransfered",
+    "DELIVERED_SETTELMENT",
+    "SETTELMENT",
+    "[Aa]ccured"
+]
+check-filename = true
+
+
+
+

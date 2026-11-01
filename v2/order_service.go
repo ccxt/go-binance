@@ -2,25 +2,28 @@ package binance
 
 import (
 	"context"
-	stdjson "encoding/json"
+	"encoding/json"
 	"net/http"
+
+	"github.com/adshao/go-binance/v2/common"
 )
 
 // CreateOrderService create order
 type CreateOrderService struct {
-	c                *Client
-	symbol           string
-	side             SideType
-	orderType        OrderType
-	timeInForce      *TimeInForceType
-	newOrderRespType *NewOrderRespType
-	quantity         *string
-	quoteOrderQty    *string
-	price            *string
-	newClientOrderID *string
-	stopPrice        *string
-	trailingDelta    *string
-	icebergQuantity  *string
+	c                       *Client
+	symbol                  string
+	side                    SideType
+	orderType               OrderType
+	timeInForce             *TimeInForceType
+	newOrderRespType        *NewOrderRespType
+	quantity                *string
+	quoteOrderQty           *string
+	price                   *string
+	newClientOrderID        *string
+	stopPrice               *string
+	trailingDelta           *string
+	icebergQuantity         *string
+	selfTradePreventionMode *SelfTradePreventionMode
 }
 
 // Symbol set symbol
@@ -95,6 +98,12 @@ func (s *CreateOrderService) NewOrderRespType(newOrderRespType NewOrderRespType)
 	return s
 }
 
+// SelfTradePreventionMode set selfTradePreventionMode
+func (s *CreateOrderService) SelfTradePreventionMode(selfTradePreventionMode SelfTradePreventionMode) *CreateOrderService {
+	s.selfTradePreventionMode = &selfTradePreventionMode
+	return s
+}
+
 func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, err error) {
 	r := &request{
 		method:   http.MethodPost,
@@ -120,6 +129,8 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSpotId()
 	}
 	if s.stopPrice != nil {
 		m["stopPrice"] = *s.stopPrice
@@ -132,6 +143,9 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	}
 	if s.newOrderRespType != nil {
 		m["newOrderRespType"] = *s.newOrderRespType
+	}
+	if s.selfTradePreventionMode != nil {
+		m["selfTradePreventionMode"] = *s.selfTradePreventionMode
 	}
 	r.setFormParams(m)
 	data, err = s.c.callAPI(ctx, r, opts...)
@@ -169,6 +183,7 @@ type CreateOrderResponse struct {
 	TransactTime             int64  `json:"transactTime"`
 	Price                    string `json:"price"`
 	OrigQuantity             string `json:"origQty"`
+	OrigQuoteOrderQuantity   string `json:"origQuoteOrderQty"`
 	ExecutedQuantity         string `json:"executedQty"`
 	CummulativeQuoteQuantity string `json:"cummulativeQuoteQty"`
 	IsIsolated               bool   `json:"isIsolated"` // for isolated margin
@@ -182,6 +197,8 @@ type CreateOrderResponse struct {
 	Fills                 []*Fill `json:"fills"`
 	MarginBuyBorrowAmount string  `json:"marginBuyBorrowAmount"` // for margin
 	MarginBuyBorrowAsset  string  `json:"marginBuyBorrowAsset"`
+
+	SelfTradePreventionMode SelfTradePreventionMode `json:"selfTradePreventionMode"`
 }
 
 // Fill may be returned in an array of fills in a CreateOrderResponse.
@@ -410,7 +427,7 @@ type Oco struct {
 func (s *ListOpenOcoService) Do(ctx context.Context, opts ...RequestOption) (res []*Oco, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/api/v3/openOrderList ",
+		endpoint: "/api/v3/openOrderList",
 		secType:  secTypeSigned,
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
@@ -754,7 +771,7 @@ func (s *CancelOpenOrdersService) Do(ctx context.Context, opts ...RequestOption)
 	if err != nil {
 		return &CancelOpenOrdersResponse{}, err
 	}
-	rawMessages := make([]*stdjson.RawMessage, 0)
+	rawMessages := make([]*json.RawMessage, 0)
 	err = json.Unmarshal(data, &rawMessages)
 	if err != nil {
 		return &CancelOpenOrdersResponse{}, err
@@ -787,20 +804,22 @@ type CancelOpenOrdersResponse struct {
 
 // CancelOrderResponse may be returned included in a CancelOpenOrdersResponse.
 type CancelOrderResponse struct {
-	Symbol                   string          `json:"symbol"`
-	OrigClientOrderID        string          `json:"origClientOrderId"`
-	OrderID                  int64           `json:"orderId"`
-	OrderListID              int64           `json:"orderListId"`
-	ClientOrderID            string          `json:"clientOrderId"`
-	TransactTime             int64           `json:"transactTime"`
-	Price                    string          `json:"price"`
-	OrigQuantity             string          `json:"origQty"`
-	ExecutedQuantity         string          `json:"executedQty"`
-	CummulativeQuoteQuantity string          `json:"cummulativeQuoteQty"`
-	Status                   OrderStatusType `json:"status"`
-	TimeInForce              TimeInForceType `json:"timeInForce"`
-	Type                     OrderType       `json:"type"`
-	Side                     SideType        `json:"side"`
+	Symbol                   string                  `json:"symbol"`
+	OrigClientOrderID        string                  `json:"origClientOrderId"`
+	OrderID                  int64                   `json:"orderId"`
+	OrderListID              int64                   `json:"orderListId"`
+	ClientOrderID            string                  `json:"clientOrderId"`
+	TransactTime             int64                   `json:"transactTime"`
+	Price                    string                  `json:"price"`
+	OrigQuantity             string                  `json:"origQty"`
+	OrigQuoteOrderQuantity   string                  `json:"origQuoteOrderQty"`
+	ExecutedQuantity         string                  `json:"executedQty"`
+	CummulativeQuoteQuantity string                  `json:"cummulativeQuoteQty"`
+	Status                   OrderStatusType         `json:"status"`
+	TimeInForce              TimeInForceType         `json:"timeInForce"`
+	Type                     OrderType               `json:"type"`
+	Side                     SideType                `json:"side"`
+	SelfTradePreventionMode  SelfTradePreventionMode `json:"selfTradePreventionMode"`
 }
 
 // CancelOCOResponse may be returned included in a CancelOpenOrdersResponse.
@@ -814,4 +833,223 @@ type CancelOCOResponse struct {
 	Symbol            string            `json:"symbol"`
 	Orders            []*OCOOrder       `json:"orders"`
 	OrderReports      []*OCOOrderReport `json:"orderReports"`
+}
+
+// CancelReplaceOrderService cancel an existing order and place a new order
+type CancelReplaceOrderService struct {
+	c                       *Client
+	symbol                  string
+	side                    SideType
+	orderType               OrderType
+	cancelReplaceMode       CancelReplaceMode
+	timeInForce             *TimeInForceType
+	quantity                *string
+	quoteOrderQty           *string
+	price                   *string
+	newClientOrderID        *string
+	stopPrice               *string
+	trailingDelta           *string
+	icebergQuantity         *string
+	newOrderRespType        *NewOrderRespType
+	selfTradePreventionMode *SelfTradePreventionMode
+	cancelOrderID           *int64
+	cancelOrigClientOrderID *string
+	cancelNewClientOrderID  *string
+	strategyId              *int64
+	strategyType            *int64
+}
+
+// Symbol set symbol
+func (s *CancelReplaceOrderService) Symbol(symbol string) *CancelReplaceOrderService {
+	s.symbol = symbol
+	return s
+}
+
+// Side set side
+func (s *CancelReplaceOrderService) Side(side SideType) *CancelReplaceOrderService {
+	s.side = side
+	return s
+}
+
+// Type set type
+func (s *CancelReplaceOrderService) Type(orderType OrderType) *CancelReplaceOrderService {
+	s.orderType = orderType
+	return s
+}
+
+// CancelReplaceMode set cancelReplaceMode
+func (s *CancelReplaceOrderService) CancelReplaceMode(cancelReplaceMode CancelReplaceMode) *CancelReplaceOrderService {
+	s.cancelReplaceMode = cancelReplaceMode
+	return s
+}
+
+// TimeInForce set timeInForce
+func (s *CancelReplaceOrderService) TimeInForce(timeInForce TimeInForceType) *CancelReplaceOrderService {
+	s.timeInForce = &timeInForce
+	return s
+}
+
+// Quantity set quantity
+func (s *CancelReplaceOrderService) Quantity(quantity string) *CancelReplaceOrderService {
+	s.quantity = &quantity
+	return s
+}
+
+// QuoteOrderQty set quoteOrderQty
+func (s *CancelReplaceOrderService) QuoteOrderQty(quoteOrderQty string) *CancelReplaceOrderService {
+	s.quoteOrderQty = &quoteOrderQty
+	return s
+}
+
+// Price set price
+func (s *CancelReplaceOrderService) Price(price string) *CancelReplaceOrderService {
+	s.price = &price
+	return s
+}
+
+// NewClientOrderID set newClientOrderID
+func (s *CancelReplaceOrderService) NewClientOrderID(newClientOrderID string) *CancelReplaceOrderService {
+	s.newClientOrderID = &newClientOrderID
+	return s
+}
+
+// StopPrice set stopPrice
+func (s *CancelReplaceOrderService) StopPrice(stopPrice string) *CancelReplaceOrderService {
+	s.stopPrice = &stopPrice
+	return s
+}
+
+// TrailingDelta set trailingDelta
+func (s *CancelReplaceOrderService) TrailingDelta(trailingDelta string) *CancelReplaceOrderService {
+	s.trailingDelta = &trailingDelta
+	return s
+}
+
+// IcebergQuantity set icebergQuantity
+func (s *CancelReplaceOrderService) IcebergQuantity(icebergQuantity string) *CancelReplaceOrderService {
+	s.icebergQuantity = &icebergQuantity
+	return s
+}
+
+// NewOrderRespType set newOrderRespType
+func (s *CancelReplaceOrderService) NewOrderRespType(newOrderRespType NewOrderRespType) *CancelReplaceOrderService {
+	s.newOrderRespType = &newOrderRespType
+	return s
+}
+
+// SelfTradePreventionMode set selfTradePreventionMode
+func (s *CancelReplaceOrderService) SelfTradePreventionMode(selfTradePreventionMode SelfTradePreventionMode) *CancelReplaceOrderService {
+	s.selfTradePreventionMode = &selfTradePreventionMode
+	return s
+}
+
+// CancelOrderID set cancelOrderID
+func (s *CancelReplaceOrderService) CancelOrderID(cancelOrderID int64) *CancelReplaceOrderService {
+	s.cancelOrderID = &cancelOrderID
+	return s
+}
+
+// CancelOrigClientOrderID set cancelOrigClientOrderID
+func (s *CancelReplaceOrderService) CancelOrigClientOrderID(cancelOrigClientOrderID string) *CancelReplaceOrderService {
+	s.cancelOrigClientOrderID = &cancelOrigClientOrderID
+	return s
+}
+
+// CancelNewClientOrderID set cancelNewClientOrderID
+func (s *CancelReplaceOrderService) CancelNewClientOrderID(cancelNewClientOrderID string) *CancelReplaceOrderService {
+	s.cancelNewClientOrderID = &cancelNewClientOrderID
+	return s
+}
+
+// StrategyId set strategyId
+func (s *CancelReplaceOrderService) StrategyId(strategyId int64) *CancelReplaceOrderService {
+	s.strategyId = &strategyId
+	return s
+}
+
+// StrategyType set strategyType
+func (s *CancelReplaceOrderService) StrategyType(strategyType int64) *CancelReplaceOrderService {
+	s.strategyType = &strategyType
+	return s
+}
+
+// Do send request
+func (s *CancelReplaceOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CancelReplaceOrderResponse, err error) {
+	r := &request{
+		method:   http.MethodPost,
+		endpoint: "/api/v3/order/cancelReplace",
+		secType:  secTypeSigned,
+	}
+	m := params{
+		"symbol":            s.symbol,
+		"side":              s.side,
+		"type":              s.orderType,
+		"cancelReplaceMode": s.cancelReplaceMode,
+	}
+	if s.quantity != nil {
+		m["quantity"] = *s.quantity
+	}
+	if s.quoteOrderQty != nil {
+		m["quoteOrderQty"] = *s.quoteOrderQty
+	}
+	if s.timeInForce != nil {
+		m["timeInForce"] = *s.timeInForce
+	}
+	if s.price != nil {
+		m["price"] = *s.price
+	}
+	if s.newClientOrderID != nil {
+		m["newClientOrderId"] = *s.newClientOrderID
+	} else {
+		m["newClientOrderId"] = common.GenerateSpotId()
+	}
+	if s.stopPrice != nil {
+		m["stopPrice"] = *s.stopPrice
+	}
+	if s.trailingDelta != nil {
+		m["trailingDelta"] = *s.trailingDelta
+	}
+	if s.icebergQuantity != nil {
+		m["icebergQty"] = *s.icebergQuantity
+	}
+	if s.newOrderRespType != nil {
+		m["newOrderRespType"] = *s.newOrderRespType
+	}
+	if s.selfTradePreventionMode != nil {
+		m["selfTradePreventionMode"] = *s.selfTradePreventionMode
+	}
+	if s.cancelOrderID != nil {
+		m["cancelOrderId"] = *s.cancelOrderID
+	}
+	if s.cancelOrigClientOrderID != nil {
+		m["cancelOrigClientOrderId"] = *s.cancelOrigClientOrderID
+	}
+	if s.cancelNewClientOrderID != nil {
+		m["cancelNewClientOrderId"] = *s.cancelNewClientOrderID
+	}
+	if s.strategyId != nil {
+		m["strategyId"] = *s.strategyId
+	}
+	if s.strategyType != nil {
+		m["strategyType"] = *s.strategyType
+	}
+	r.setFormParams(m)
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(CancelReplaceOrderResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// CancelReplaceOrderResponse define cancel replace order response
+type CancelReplaceOrderResponse struct {
+	CancelResult     string               `json:"cancelResult"`
+	NewOrderResult   string               `json:"newOrderResult"`
+	CancelResponse   *CancelOrderResponse `json:"cancelResponse,omitempty"`
+	NewOrderResponse *CreateOrderResponse `json:"newOrderResponse,omitempty"`
 }

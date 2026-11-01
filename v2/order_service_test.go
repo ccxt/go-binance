@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -26,6 +27,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 		"transactTime": 1499827319559,
 		"price": "0.0001",
 		"origQty": "12.00",
+		"origQuoteOrderQty": "10.00",
 		"executedQty": "10.00",
 		"cummulativeQuoteQty": "10.00",
 		"status": "FILLED",
@@ -69,6 +71,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 		TransactTime:             1499827319559,
 		Price:                    "0.0001",
 		OrigQuantity:             "12.00",
+		OrigQuoteOrderQuantity:   "10.00",
 		ExecutedQuantity:         "10.00",
 		CummulativeQuoteQuantity: "10.00",
 		Status:                   OrderStatusTypeFilled,
@@ -84,6 +87,43 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 	s.r().NoError(err)
 }
 
+func (s *orderServiceTestSuite) TestCreateOrderId() {
+	data := []byte(`{
+		"symbol": "LTCBTC",
+		"orderId": 1,
+		"transactTime": 1499827319559,
+		"price": "0.0001",
+		"origQty": "12.00",
+		"origQuoteOrderQty": "10.00",
+		"executedQty": "10.00",
+		"cummulativeQuoteQty": "10.00",
+		"status": "FILLED",
+		"timeInForce": "GTC",
+		"type": "LIMIT",
+		"side": "BUY"
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	symbol := "LTCBTC"
+	side := SideTypeBuy
+	orderType := OrderTypeLimit
+	timeInForce := TimeInForceTypeGTC
+	quantity := "12.00"
+	quoteOrderQty := "10.00"
+	price := "0.0001"
+	// trailingDelta := "1000"
+
+	s.assertReq(func(r *request) {
+		s.Assertions.True(strings.HasPrefix(r.form.Get("newClientOrderId"), "x-TKT5PX2F"))
+	})
+
+	_, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
+		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).QuoteOrderQty(quoteOrderQty).
+		Price(price).Do(newContext())
+	s.r().NoError(err)
+
+}
+
 func (s *orderServiceTestSuite) TestCreateOrderFull() {
 	data := []byte(`{
 		"symbol": "LTCBTC",
@@ -92,6 +132,7 @@ func (s *orderServiceTestSuite) TestCreateOrderFull() {
 		"transactTime": 1499827319559,
 		"price": "0.0001",
 		"origQty": "12.00",
+		"origQuoteOrderQty": "10.00",
 		"executedQty": "10.00",
 		"cummulativeQuoteQty": "10.00",
 		"status": "FILLED",
@@ -145,6 +186,7 @@ func (s *orderServiceTestSuite) TestCreateOrderFull() {
 		TransactTime:             1499827319559,
 		Price:                    "0.0001",
 		OrigQuantity:             "12.00",
+		OrigQuoteOrderQuantity:   "10.00",
 		ExecutedQuantity:         "10.00",
 		CummulativeQuoteQuantity: "10.00",
 		Status:                   OrderStatusTypeFilled,
@@ -177,6 +219,7 @@ func (s *baseOrderTestSuite) assertCreateOrderResponseEqual(e, a *CreateOrderRes
 	r.Equal(e.TransactTime, a.TransactTime, "TransactTime")
 	r.Equal(e.Price, a.Price, "Price")
 	r.Equal(e.OrigQuantity, a.OrigQuantity, "OrigQuantity")
+	r.Equal(e.OrigQuoteOrderQuantity, a.OrigQuoteOrderQuantity, "OrigQuoteOrderQuantity")
 	r.Equal(e.ExecutedQuantity, a.ExecutedQuantity, "ExecutedQuantity")
 	r.Equal(e.CummulativeQuoteQuantity, a.CummulativeQuoteQuantity, "CummulativeQuoteQuantity")
 	r.Equal(e.Status, a.Status, "Status")
@@ -793,6 +836,7 @@ func (s *orderServiceTestSuite) TestCancelOrder() {
 		"transactTime": 1507725176595,
 		"price": "1.00000000",
 		"origQty": "10.00000000",
+		"origQuoteOrderQty": "11.00000000",
 		"executedQty": "8.00000000",
 		"cummulativeQuoteQty": "8.00000000",
 		"status": "CANCELED",
@@ -830,6 +874,7 @@ func (s *orderServiceTestSuite) TestCancelOrder() {
 		TransactTime:             1507725176595,
 		Price:                    "1.00000000",
 		OrigQuantity:             "10.00000000",
+		OrigQuoteOrderQuantity:   "11.00000000",
 		ExecutedQuantity:         "8.00000000",
 		CummulativeQuoteQuantity: "8.00000000",
 		Status:                   OrderStatusTypeCanceled,
@@ -1015,6 +1060,7 @@ func (s *baseOrderTestSuite) assertCancelOrderResponseEqual(e, a *CancelOrderRes
 	r.Equal(e.TransactTime, a.TransactTime, "TransactTime")
 	r.Equal(e.Price, a.Price, "Price")
 	r.Equal(e.OrigQuantity, a.OrigQuantity, "OrigQuantity")
+	r.Equal(e.OrigQuoteOrderQuantity, a.OrigQuoteOrderQuantity, "OrigQuoteOrderQuantity")
 	r.Equal(e.ExecutedQuantity, a.ExecutedQuantity, "ExecutedQuantity")
 	r.Equal(e.CummulativeQuoteQuantity, a.CummulativeQuoteQuantity, "CummulativeQuoteQuantity")
 	r.Equal(e.Status, a.Status, "Status")
@@ -1041,5 +1087,224 @@ func (s *baseOrderTestSuite) assertCancelOCOResponseEqual(e, a *CancelOCORespons
 	r.Len(a.Orders, len(e.Orders))
 	for idx, order := range e.Orders {
 		s.assertOCOOrderEqual(order, a.Orders[idx])
+	}
+}
+
+func (s *orderServiceTestSuite) TestCancelReplaceOrder() {
+	data := []byte(`{
+		"cancelResult": "SUCCESS",
+		"newOrderResult": "SUCCESS",
+		"cancelResponse": {
+			"symbol": "LTCBTC",
+			"orderId": 4,
+			"orderListId": -1,
+			"clientOrderId": "myOrder1",
+			"origClientOrderId": "JYdYzLVhuxtLm10bYM6FOx",
+			"transactTime": 1499827319559,
+			"price": "0.00000000",
+			"origQty": "12.00000000",
+			"origQuoteOrderQty": "0.00000000",
+			"executedQty": "0.00000000",
+			"cummulativeQuoteQty": "0.00000000",
+			"status": "CANCELED",
+			"timeInForce": "GTC",
+			"type": "LIMIT",
+			"side": "BUY",
+			"selfTradePreventionMode": "NONE"
+		},
+		"newOrderResponse": {
+			"symbol": "LTCBTC",
+			"orderId": 5,
+			"orderListId": -1,
+			"clientOrderId": "myOrder2",
+			"transactTime": 1499827319559,
+			"price": "0.0002",
+			"origQty": "12.00000000",
+			"origQuoteOrderQty": "0.00000000",
+			"executedQty": "0.00000000",
+			"cummulativeQuoteQty": "0.00000000",
+			"status": "NEW",
+			"timeInForce": "GTC",
+			"type": "LIMIT",
+			"side": "BUY",
+			"fills": [],
+			"selfTradePreventionMode": "NONE"
+		}
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	symbol := "LTCBTC"
+	side := SideTypeBuy
+	orderType := OrderTypeLimit
+	cancelReplaceMode := CancelReplaceModeStopOnFailure
+	timeInForce := TimeInForceTypeGTC
+	quantity := "12.00"
+	price := "0.0002"
+	newClientOrderID := "myOrder2"
+	cancelOrderID := int64(4)
+
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setFormParams(params{
+			"symbol":            symbol,
+			"side":              side,
+			"type":              orderType,
+			"cancelReplaceMode": cancelReplaceMode,
+			"timeInForce":       timeInForce,
+			"quantity":          quantity,
+			"price":             price,
+			"newClientOrderId":  newClientOrderID,
+			"cancelOrderId":     cancelOrderID,
+		})
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewCancelReplaceOrderService().Symbol(symbol).Side(side).
+		Type(orderType).CancelReplaceMode(cancelReplaceMode).TimeInForce(timeInForce).
+		Quantity(quantity).Price(price).NewClientOrderID(newClientOrderID).
+		CancelOrderID(cancelOrderID).Do(newContext())
+
+	s.r().NoError(err)
+
+	e := &CancelReplaceOrderResponse{
+		CancelResult:   "SUCCESS",
+		NewOrderResult: "SUCCESS",
+		CancelResponse: &CancelOrderResponse{
+			Symbol:                   "LTCBTC",
+			OrderID:                  4,
+			OrderListID:              -1,
+			ClientOrderID:            "myOrder1",
+			OrigClientOrderID:        "JYdYzLVhuxtLm10bYM6FOx",
+			TransactTime:             1499827319559,
+			Price:                    "0.00000000",
+			OrigQuantity:             "12.00000000",
+			OrigQuoteOrderQuantity:   "0.00000000",
+			ExecutedQuantity:         "0.00000000",
+			CummulativeQuoteQuantity: "0.00000000",
+			Status:                   OrderStatusTypeCanceled,
+			TimeInForce:              TimeInForceTypeGTC,
+			Type:                     OrderTypeLimit,
+			Side:                     SideTypeBuy,
+			SelfTradePreventionMode:  SelfTradePreventionModeNone,
+		},
+		NewOrderResponse: &CreateOrderResponse{
+			Symbol:                   "LTCBTC",
+			OrderID:                  5,
+			ClientOrderID:            "myOrder2",
+			TransactTime:             1499827319559,
+			Price:                    "0.0002",
+			OrigQuantity:             "12.00000000",
+			OrigQuoteOrderQuantity:   "0.00000000",
+			ExecutedQuantity:         "0.00000000",
+			CummulativeQuoteQuantity: "0.00000000",
+			Status:                   OrderStatusTypeNew,
+			TimeInForce:              TimeInForceTypeGTC,
+			Type:                     OrderTypeLimit,
+			Side:                     SideTypeBuy,
+			Fills:                    []*Fill{},
+			SelfTradePreventionMode:  SelfTradePreventionModeNone,
+		},
+	}
+	s.assertCancelReplaceOrderResponseEqual(e, res)
+}
+
+func (s *orderServiceTestSuite) TestCancelReplaceOrderAllowFailure() {
+	data := []byte(`{
+		"cancelResult": "FAILURE",
+		"newOrderResult": "SUCCESS",
+		"newOrderResponse": {
+			"symbol": "LTCBTC",
+			"orderId": 6,
+			"orderListId": -1,
+			"clientOrderId": "myOrder3",
+			"transactTime": 1499827319559,
+			"price": "0.0003",
+			"origQty": "10.00000000",
+			"origQuoteOrderQty": "0.00000000",
+			"executedQty": "0.00000000",
+			"cummulativeQuoteQty": "0.00000000",
+			"status": "NEW",
+			"timeInForce": "GTC",
+			"type": "LIMIT",
+			"side": "SELL",
+			"fills": [],
+			"selfTradePreventionMode": "NONE"
+		}
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	symbol := "LTCBTC"
+	side := SideTypeSell
+	orderType := OrderTypeLimit
+	cancelReplaceMode := CancelReplaceModeAllowFailure
+	timeInForce := TimeInForceTypeGTC
+	quantity := "10.00"
+	price := "0.0003"
+	newClientOrderID := "myOrder3"
+	cancelOrigClientOrderID := "originalOrder123"
+
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setFormParams(params{
+			"symbol":                  symbol,
+			"side":                    side,
+			"type":                    orderType,
+			"cancelReplaceMode":       cancelReplaceMode,
+			"timeInForce":             timeInForce,
+			"quantity":                quantity,
+			"price":                   price,
+			"newClientOrderId":        newClientOrderID,
+			"cancelOrigClientOrderId": cancelOrigClientOrderID,
+		})
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewCancelReplaceOrderService().Symbol(symbol).Side(side).
+		Type(orderType).CancelReplaceMode(cancelReplaceMode).TimeInForce(timeInForce).
+		Quantity(quantity).Price(price).NewClientOrderID(newClientOrderID).
+		CancelOrigClientOrderID(cancelOrigClientOrderID).Do(newContext())
+
+	s.r().NoError(err)
+
+	e := &CancelReplaceOrderResponse{
+		CancelResult:   "FAILURE",
+		NewOrderResult: "SUCCESS",
+		CancelResponse: nil,
+		NewOrderResponse: &CreateOrderResponse{
+			Symbol:                   "LTCBTC",
+			OrderID:                  6,
+			ClientOrderID:            "myOrder3",
+			TransactTime:             1499827319559,
+			Price:                    "0.0003",
+			OrigQuantity:             "10.00000000",
+			OrigQuoteOrderQuantity:   "0.00000000",
+			ExecutedQuantity:         "0.00000000",
+			CummulativeQuoteQuantity: "0.00000000",
+			Status:                   OrderStatusTypeNew,
+			TimeInForce:              TimeInForceTypeGTC,
+			Type:                     OrderTypeLimit,
+			Side:                     SideTypeSell,
+			Fills:                    []*Fill{},
+			SelfTradePreventionMode:  SelfTradePreventionModeNone,
+		},
+	}
+	s.assertCancelReplaceOrderResponseEqual(e, res)
+}
+
+func (s *baseOrderTestSuite) assertCancelReplaceOrderResponseEqual(e, a *CancelReplaceOrderResponse) {
+	r := s.r()
+	r.Equal(e.CancelResult, a.CancelResult, "CancelResult")
+	r.Equal(e.NewOrderResult, a.NewOrderResult, "NewOrderResult")
+
+	if e.CancelResponse != nil {
+		r.NotNil(a.CancelResponse, "CancelResponse should not be nil")
+		s.assertCancelOrderResponseEqual(e.CancelResponse, a.CancelResponse)
+	} else {
+		r.Nil(a.CancelResponse, "CancelResponse should be nil")
+	}
+
+	if e.NewOrderResponse != nil {
+		r.NotNil(a.NewOrderResponse, "NewOrderResponse should not be nil")
+		s.assertCreateOrderResponseEqual(e.NewOrderResponse, a.NewOrderResponse)
+	} else {
+		r.Nil(a.NewOrderResponse, "NewOrderResponse should be nil")
 	}
 }
