@@ -257,7 +257,7 @@ func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (
 		r.setParam("symbol", s.symbol)
 	}
 	if s.pair != "" {
-		r.setParam("pair", s.symbol)
+		r.setParam("pair", s.pair)
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
