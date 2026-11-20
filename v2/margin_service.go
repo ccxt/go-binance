@@ -3,6 +3,7 @@ package binance
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -242,9 +243,14 @@ func (s *MarginBorrowRepayService) Do(ctx context.Context, opts ...RequestOption
 	m := params{
 		"asset":      s.asset,
 		"isIsolated": s.isIsolated,
-		"symbol":     s.symbol,
 		"amount":     s.amount,
 		"type":       string(s._type),
+	}
+	if s.isIsolated {
+		if s.symbol == "" {
+			return nil, fmt.Errorf("symbol is required for isolated margin borrow/repay")
+		}
+		m["symbol"] = s.symbol // Only set symbol param when isIsolated is true
 	}
 	r.setFormParams(m)
 	res = new(TransactionResponse)
@@ -327,13 +333,6 @@ func (s *ListMarginBorrowRepayService) Do(ctx context.Context, opts ...RequestOp
 		secType:  secTypeSigned,
 	}
 	m := params{
-		//"asset":          s.asset,
-		//"isolatedSymbol": s.isolatedSymbol,
-		//"txId":           s.txId,
-		//"startTime":      s.startTime,
-		//"endTime":        s.endTime,
-		//"current":        s.current,
-		//"size":           s.size,
 		"type": string(s._type),
 	}
 	r.setParams(m)

@@ -106,7 +106,6 @@ func (s *marginTestSuite) TestBorrowRepayBorrow() {
 			"asset":      asset,
 			"amount":     amount,
 			"isIsolated": false,
-			"symbol":     "",
 			"type":       string(_type),
 		})
 		s.assertRequestEqual(e, r)
@@ -137,7 +136,6 @@ func (s *marginTestSuite) TestBorrowRepayRepay() {
 			"asset":      asset,
 			"amount":     amount,
 			"isIsolated": false,
-			"symbol":     "",
 			"type":       string(_type),
 		})
 		s.assertRequestEqual(e, r)
@@ -152,6 +150,56 @@ func (s *marginTestSuite) TestBorrowRepayRepay() {
 		TranID: 100000001,
 	}
 	s.assertTransactionResponseEqual(e, res)
+}
+
+func (s *marginTestSuite) TestBorrowRepayBorrowIsolated() {
+	data := []byte(`{
+		"tranId": 100000001
+	}`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	asset := "BTC"
+	amount := "1.000"
+	symbol := "BTCUSDT"
+	_type := MarginAccountBorrow
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setFormParams(params{
+			"asset":      asset,
+			"amount":     amount,
+			"isIsolated": true,
+			"symbol":     symbol,
+			"type":       string(_type),
+		})
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewMarginBorrowRepayService().
+		Asset(asset).
+		Amount(amount).
+		IsIsolated(true).
+		Symbol(symbol).
+		Type(_type).
+		Do(newContext())
+	s.r().NoError(err)
+	e := &TransactionResponse{
+		TranID: 100000001,
+	}
+	s.assertTransactionResponseEqual(e, res)
+}
+
+func (s *marginTestSuite) TestBorrowRepayBorrowIsolatedWithoutSymbol() {
+	asset := "BTC"
+	amount := "1.000"
+	_type := MarginAccountBorrow
+	res, err := s.client.NewMarginBorrowRepayService().
+		Asset(asset).
+		Amount(amount).
+		IsIsolated(true).
+		Type(_type).
+		Do(newContext())
+	s.r().Error(err)
+	s.r().EqualError(err, "symbol is required for isolated margin borrow/repay")
+	s.r().Nil(res)
+	s.client.AssertNotCalled(s.T(), "do", anyHTTPRequest())
 }
 
 func (s *marginTestSuite) TestListBorrowRepay() {
