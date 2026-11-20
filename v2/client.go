@@ -125,6 +125,7 @@ type FuturesAlgoOrderStatusType string
 // Endpoints
 var (
 	BaseAPIMainURL    = "https://api.binance.com"
+	BaseAPIMainUSURL  = "https://api.binance.us"
 	BaseAPITestnetURL = "https://testnet.binance.vision"
 	BaseAPIDemoURL    = "https://demo-api.binance.com"
 )
@@ -142,6 +143,9 @@ var UseTestnet = false
 
 // UseDemo switch all the API endpoints from production to the demo
 var UseDemo = false
+
+// UseUSDomain switch all the API endpoints from production to the binance.us
+var UseUSDomain = false
 
 // Global enums
 const (
@@ -367,6 +371,9 @@ func getAPIEndpoint() string {
 	}
 	if UseDemo {
 		return BaseAPIDemoURL
+	}
+	if UseUSDomain {
+		return BaseAPIMainUSURL
 	}
 	return BaseAPIMainURL
 }
