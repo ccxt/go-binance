@@ -20,6 +20,8 @@ type ConstituentsServiceRsp struct {
 type Constituents struct {
 	Exchange string `json:"exchange"`
 	Symbol   string `json:"symbol"`
+	Price    string `json:"price"`
+	Weight   string `json:"weight"`
 }
 
 func (s *ConstituentsService) Symbol(symbol string) *ConstituentsService {
