@@ -43,15 +43,21 @@ func (s *c2cServiceTestSuite) TestC2CTradeHistory() {
 	defer s.assertDo()
 
 	tradeType := SideTypeSell
+	startTimestamp := int64(1619308800000)
+	endTimestamp := int64(1619395200000)
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setParams(params{
-			"tradeType": tradeType,
+			"tradeType":      tradeType,
+			"startTimestamp": startTimestamp,
+			"endTimestamp":   endTimestamp,
 		})
 		s.assertRequestEqual(e, r)
 	})
 
 	res, err := s.client.NewC2CTradeHistoryService().
 		TradeType(tradeType).
+		StartTimestamp(startTimestamp).
+		EndTime(endTimestamp).
 		Do(newContext())
 	s.r().NoError(err)
 	e := &C2CTradeHistory{

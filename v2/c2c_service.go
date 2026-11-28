@@ -58,7 +58,7 @@ func (s *C2CTradeHistoryService) Do(ctx context.Context, opts ...RequestOption) 
 		r.setParam("startTimestamp", *s.startTimestamp)
 	}
 	if s.endTimestamp != nil {
-		r.setParam("endTime", *s.endTimestamp)
+		r.setParam("endTimestamp", *s.endTimestamp)
 	}
 	if s.page != nil {
 		r.setParam("page", *s.page)
